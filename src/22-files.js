@@ -24,3 +24,16 @@ function reportHtml(p,w){const t=esc(p.title);return `<!DOCTYPE html><html lang=
 <p class="m">${esc(p.company)} · решение студента платформы ${BRAND}</p><h1>${t}</h1><h2>Задача</h2><p>${esc(p.task||'')}</p>
 <h2>Что сделано</h2><ol>${p.wsTasks.map((x,i)=>`<li><b>${esc(x[0])}</b>${w.tasks[i]?'':' — не завершено'}: ${esc(x[1])}</li>`).join('')}</ol>
 <h2>Итог решения</h2><p>${esc(w.summary||'').replace(/\n/g,'<br>')}</p>${p.metrics?`<h2>Ключевые результаты</h2><ul>${p.metrics.map(m=>`<li><b>${esc(m[0])}</b> — ${esc(m[1])}</li>`).join('')}</ul>`:''}</body></html>`}
+/* ================= reading a resume: pdf / docx / txt → text → skills ================= */
+const LIBS={pdf:'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js',pdfWorker:'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js',docx:'https://cdn.jsdelivr.net/npm/mammoth@1.8.0/mammoth.browser.min.js'};
+const loadScript=src=>new Promise((ok,no)=>{if(document.querySelector(`script[data-src="${src}"]`)){ok();return}const s=document.createElement('script');s.src=src;s.dataset.src=src;s.onload=()=>ok();s.onerror=()=>no(new Error('load'));document.head.appendChild(s)});
+async function extractText(file){const ext=extOf(file.name);
+ if(['txt','md','csv'].includes(ext))return await file.text();
+ if(ext==='pdf'){await loadScript(LIBS.pdf);const lib=window.pdfjsLib;lib.GlobalWorkerOptions.workerSrc=LIBS.pdfWorker;const doc=await lib.getDocument({data:await file.arrayBuffer()}).promise;let out='';for(let i=1;i<=Math.min(doc.numPages,8);i++){const pg=await doc.getPage(i);const c=await pg.getTextContent();out+=c.items.map(x=>x.str).join(' ')+'\n'}return out}
+ if(ext==='docx'){await loadScript(LIBS.docx);const r=await window.mammoth.extractRawText({arrayBuffer:await file.arrayBuffer()});return r.value}
+ throw new Error('format')}
+/* which platform skills a text mentions (by name and synonyms) */
+function detectSkills(text){const t=' '+text.toLowerCase().replace(/ё/g,'е')+' ';const found=[];
+ Object.entries(SK).forEach(([id,s])=>{const names=[s.name,...(SYN[s.name]||[])].map(x=>x.toLowerCase().replace(/ё/g,'е').replace(/\s*\(.*\)/,'').trim()).filter(x=>x.length>=2);
+  if(names.some(n=>n.length<=4?new RegExp(`[^a-zа-я]${n.replace(/[.*+?^${}()|[\]\\/]/g,'\\$&')}[^a-zа-я]`,'i').test(t):t.includes(n)))found.push(id)});
+ return found}

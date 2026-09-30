@@ -159,3 +159,6 @@
  body.has-cta .view{padding-bottom:calc(var(--tabbar-h) + 170px + env(safe-area-inset-bottom,0px))}
  body.has-cta .fab{bottom:calc(var(--tabbar-h) + 86px + env(safe-area-inset-bottom,0px))}
 }
+/* long words and links never widen the page */
+.quote,.bub,.msg,.task-q,.letter,.card p,.fileln .b,.iss .sm{overflow-wrap:anywhere}
+.card-h{flex-wrap:wrap}

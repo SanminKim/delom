@@ -19,7 +19,7 @@ const btnAttr=spec=>{const [k,a,b]=spec.split(':');return k==='go'?`data-go="${a
 
 /* ================= state ================= */
 const KEY='delom-demo-v2';
-const fresh=()=>({authed:false,onboarded:false,resume:false,goal:'pm',pstat:{},ws:{},scores:{},sel:{},portfolio:{},inv:{},tests:{},courses:{},mentorReq:{},teams:{},chats:{},applied:{},projApplied:{},visited:{},flags:{},notifSeen:0,empInvited:{},published:[],extraVac:[],badgesSeen:null,acted:false,empCo:null,lastRole:'student',cv:null,cvTpl:'modern',cvTarget:null,cvBest:0,cvVersions:[],stories:[],interviews:[],apps:{},appsExtra:[],offers:null,offW:null,hrReview:null,peerDone:0,pitch:null,pitchVideo:null,recs:{},reviews:{},mentorConf:{},courseDone:{},waitlist:{},tier:null,salesReq:[],consOk:{},uniCourses:[],hrAt:0,profile:null,vis:null});
+const fresh=()=>({authed:false,onboarded:false,resume:false,goal:'pm',pstat:{},ws:{},scores:{},sel:{},portfolio:{},inv:{},tests:{},courses:{},mentorReq:{},teams:{},chats:{},applied:{},projApplied:{},visited:{},flags:{},notifSeen:0,empInvited:{},published:[],extraVac:[],badgesSeen:null,acted:false,empCo:null,lastRole:'student',cv:null,cvTpl:'modern',cvTarget:null,cvBest:0,cvVersions:[],stories:[],interviews:[],apps:{},appsExtra:[],offers:null,offW:null,hrReview:null,peerDone:0,pitch:null,pitchVideo:null,recs:{},reviews:{},mentorConf:{},courseDone:{},resumeSkills:null,resumeFile:null,waitlist:{},tier:null,salesReq:[],consOk:{},uniCourses:[],hrAt:0,profile:null,vis:null});
 let S=fresh();
 try{const raw=localStorage.getItem(KEY);if(raw)S=Object.assign(fresh(),JSON.parse(raw))}catch(e){}
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
@@ -39,7 +39,7 @@ const emp=()=>EMPLOYERS[S.empCo||(S.goal==='da'?'tb':'su')];
 const mentorMe=()=>S.goal==='da'?MENTORS[1]:MENTORS[0];
 function sk(id){
  const b=SK[id];if(!b)return null;
- const o={id,name:b.name,st:b.st,pct:b.pct||0,basis:b.basis,src:b.src,date:b.date,baseOk:b.st==='ok'};
+ const o={id,name:b.name,st:b.st==='gap'&&(S.resumeSkills||[]).includes(id)?'self':b.st,pct:b.pct||0,basis:b.basis,src:b.src,date:b.date,baseOk:b.st==='ok'};
  const pid=Object.keys(S.pstat).find(k=>S.pstat[k]==='done'&&confirmsOf(k).includes(id));
  if(pid){const p=P(pid);Object.assign(o,{st:'ok',basis:`Проект «${p.short}»`,src:`${p.company} · оценка ${S.scores[pid]||p.score} из 5`,date:S.flags['d_'+pid]||todayStr(),fresh:!o.baseOk,via:'project',pid})}
  else if(S.mentorConf&&S.mentorConf[id]&&S.mentorConf[id].passed&&o.st!=='ok'){const m=S.mentorConf[id];Object.assign(o,{st:'ok',basis:`Оценка ментора · ${m.stars} из 5`,src:m.by,date:m.date,fresh:1,via:'mentor'})}
@@ -96,9 +96,9 @@ function checkBadges(){const earned=BADGES.filter(b=>b.ok()).map(b=>b.id);if(S.b
  earned.filter(id=>!S.badgesSeen.includes(id)).forEach((id,i)=>{const b=BADGES.find(x=>x.id===id);setTimeout(()=>toast(`Новое достижение: «${b.n}»`,'trophy'),400+i*500)});S.badgesSeen=earned;save()}
 
 /* ================= chats ================= */
-function ensureInviteChat(pid){const id='inv-'+pid;if(S.chats[id])return;const p=P(pid),e=empOfProj(pid);
+function ensureInviteChat(pid,custom){const id='inv-'+pid;if(S.chats[id])return;const p=P(pid),e=empOfProj(pid);
  S.chats[id]={id,kind:'inv',co:p.company,title:p.company,sub:`${e.person} · ${e.pos}`,pid,unreadS:3,unreadE:0,msgs:[
-  {f:'them',t:`Здравствуйте, Алексей! Я ${e.person}, ${e.pos} в ${p.company}. Мы изучили ваше решение по проекту «${p.short}». ${p.inviteHook}`,tm:tnow()},
+  {f:'them',t:custom||`Здравствуйте, Алексей! Я ${e.person}, ${e.pos} в ${p.company}. Мы изучили ваше решение по проекту «${p.short}». ${p.inviteHook||''}`,tm:tnow()},
   {f:'card',pid},
   {f:'them',t:'Выберите, пожалуйста, удобное время. Интервью займёт 45 минут, онлайн.',tm:tnow()}]}}
 const TEAMMATES=[['Екатерина Волкова','ЕВ','#C2410C'],['Никита Орлов','НО','#1D4ED8'],['Полина Смирнова','ПС','#BE185D'],['Тимур Ахметов','ТА','#0E7490'],['Мария Кузнецова','МК','#DB2777'],['Илья Морозов','ИМ','#7C3AED']];
@@ -139,7 +139,7 @@ function lineChart(labels,values,{h=230,fmtv=v=>v,unit=''}={}){
 const hbars=(rows,maxv)=>{const mx=maxv||Math.max(...rows.map(r=>r[1]));return rows.map(r=>`<div class="hbar"><span class="t2">${esc(r[0])}</span><div class="bar" style="height:10px"><i data-w="${Math.max(1.5,r[1]/mx*100)}" style="width:0;${r[2]?`background:${r[2]}`:''}"></i></div><b style="text-align:right">${r[3]||fmt(r[1])}</b></div>`).join('')};
 
 /* ================= router ================= */
-const BARE=['welcome','auth'];
+const BARE=['welcome','auth','u'];
 const ROLE_OF={dashboard:'student',career:'student',projects:'student',project:'student',workspace:'student',complete:'student',internships:'student',vacancies:'student',jobs:'student',job:'student',skills:'student',portfolio:'student',profile:'student',try:'student',messages:'student',resume:'student',interview:'student',applications:'student',
  empdash:'employer',candidates:'employer',empjobs:'employer',postproject:'employer',pricing:'employer',empmessages:'employer',mentor:'mentor',review:'mentor',uni:'uni',unistudents:'uni'};
 const HOME={student:'dashboard',employer:'empdash',mentor:'mentor',uni:'uni'};
@@ -217,6 +217,9 @@ function togglePop(name,html){const el=$('#'+name+'Pop');const was=UI.pop===name
 function notifs(){
  const a=[],t=T(),m=t.main,p=P(m),inv=S.inv[m];
  Object.values(S.chats).filter(c=>c.unreadS).forEach(c=>a.push({t:`Новое сообщение: ${c.title}`,s:c.sub,time:'только что',go:'messages-'+c.id,ic:'msg',hot:1}));
+ Object.keys(S.ws).filter(pid=>S.ws[pid].returned&&pst(pid)==='active'&&P(pid)).forEach(pid=>a.push({t:'Решение вернули на доработку',s:`${P(pid).short} · ${S.ws[pid].returned.comment.slice(0,60)}`,time:S.ws[pid].returned.date,go:'workspace-'+pid,ic:'pen',hot:1}));
+ if(S.hrReview&&S.hrReview.st==='done')a.push({t:'Ментор прислал разбор резюме',s:(MENTORS.find(m=>m.id===S.hrReview.who)||{}).name||'',time:S.hrReview.doneAt,go:'resume-people',ic:'pen'});
+ Object.entries(S.mentorConf||{}).forEach(([id,m])=>a.push({t:m.passed?`Навык «${SK[id].name}» подтверждён ментором`:`Ментор оценил навык «${SK[id].name}»`,s:m.comment.slice(0,70),time:m.date,go:'skills',ic:'shield'}));
  if(inv&&inv.st==='accepted')a.push({t:'Интервью назначено',s:`${p.company} · ${inv.slot}`,time:'только что',go:'messages-inv-'+m,ic:'cal'});
  if(pst(m)==='done'){
   a.push({t:`${p.company} приглашает вас на интервью`,s:'Позиция '+p.invitePos,time:'5 мин назад',go:'complete-'+m,ic:'mail',hot:!inv||inv.st!=='accepted'});

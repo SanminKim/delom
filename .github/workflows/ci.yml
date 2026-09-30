@@ -1,0 +1,56 @@
+name: Тесты и публикация
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  test:
+    name: Автотесты
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Сборка и проверка, что index.html собран из src/
+        run: |
+          ./build.sh
+          git diff --exit-code index.html || (echo "::error::index.html не совпадает с исходниками — запустите ./build.sh и закоммитьте результат" && exit 1)
+      - name: Установка Playwright
+        run: |
+          pip install -r tests/requirements.txt
+          python -m playwright install --with-deps chromium
+      - name: Тесты
+        run: python -m pytest tests -n 4 -q
+  deploy:
+    name: Публикация на GitHub Pages
+    needs: test
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+        with:
+          enablement: true
+      - name: Только сам сайт
+        run: mkdir _site && cp index.html .nojekyll _site/
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: deployment
+        uses: actions/deploy-pages@v4

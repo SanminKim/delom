@@ -112,8 +112,11 @@ Object.assign(A,{
   if(e.dataset.id==='replace'){if(!p.edu.length)p.edu=base.edu;S.cv=p}else{base.exp=[...base.exp,...p.exp];base.skills=[base.skills,p.skills].filter(Boolean).join(', ')}
   UI.hhParsed=null;UI.tasks.hhParse={status:'idle'};UI.tasks.cvAI={status:'idle'};save();go('resume','build');toast('Резюме обновлено — посмотрите советы','upload')},
  hhCopy(e){copyText(hhFields()[+e.dataset.id]||'','Поле скопировано — вставьте его на hh.ru')},
- hrOrder(e){S.hrReview={who:e.dataset.id,st:'pending'};S.acted=true;save();render();toast('Заявка на проверку отправлена','send')},
- hrDone(){S.hrReview.st='done';save();render()},
+ hrOrder(e){S.hrReview={who:e.dataset.id,st:'pending',date:todayStr()};S.acted=true;save();render();toast('Резюме отправлено ментору на разбор','send')},
+ hrCancel(){S.hrReview=null;save();render();toast('Заявка на разбор отменена','x')},
+ hrWrite(){const a=analyzeCv(cv(),cvTargetJob());const draft=a.issues.slice(0,4).map((x,i)=>`${i+1}. ${x.title}. ${x.text}`).join('\n');
+  openModal(mh('Разбор резюме · Алексей Иванов',`Под вакансию «${cvTargetJob().title}» · экспресс-оценка ${a.score}`)+`<div class="modal-b col g12"><div class="paper-wrap" style="max-height:40vh">${cvPaper(cv(),{tpl:S.cvTpl||'modern'})}</div><label class="field"><span>Ваш разбор</span><textarea class="inp" id="hr-text" rows="7">${esc(draft)}</textarea></label><p class="xs muted">Черновик собран из автоматического анализа — отредактируйте его своими словами.</p><div class="row g8" style="justify-content:flex-end"><button class="btn btn-s" data-act="closeModal">Отмена</button><button class="btn btn-p" data-act="hrSend">Отправить студенту</button></div></div>`,'wide')},
+ hrSend(){const t=($('#hr-text').value||'').trim();if(t.length<40){toast('Разбор слишком короткий','x');return}Object.assign(S.hrReview,{st:'done',text:t,doneAt:todayStr()});save();closeModal();render();toast('Разбор отправлен студенту','send')},
  peerSend(){const c=$('#peer-comment').value.trim();if(c.length<10){toast('Напишите хотя бы один конкретный совет','x');return}S.peerDone=(S.peerDone||0)+1;S.acted=true;save();render();toast('Отзыв отправлен · +50 XP','star')},
  /* interview */
  ivType(e){UI.iv.type=e.dataset.id;render()},
@@ -163,7 +166,7 @@ document.addEventListener('change',e=>{const t=e.target,id=t.id;
  if(id==='let-job'&&UI.let){UI.let.job=t.value;UI.tasks.letter={status:'idle'};render()}
  if(id==='dec-job'&&UI.dec)UI.dec.job=t.value;
  if(id==='ver-job')UI.verJob=t.value;
- if(id==='pitch-video'&&t.files[0]){S.pitchVideo=t.files[0].name;save();render();toast('Видео прикреплено','video')}
+ if(id==='pitch-video'&&t.files[0]){const f=t.files[0];if(f.size>200*1048576){toast('Видео больше 200 МБ — сожмите его','x');return}storeUpload('pitch',f).then(()=>{S.pitchVideo={name:f.name,size:f.size};save();render();toast('Видео прикреплено','video')})}
  if(/^sal-/.test(id)){UI.sal[id.slice(4)]=t.value;render()}
  if(t.dataset&&t.dataset.off){const [oid,k]=t.dataset.off.split(':');const o=offers().find(x=>x.id===oid);o.sc[k]=+t.value;save();render()}
  if(/^w-/.test(id)){weights()[id.slice(2)]=+t.value;save();render()}

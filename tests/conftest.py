@@ -15,6 +15,11 @@ URL = (ROOT / "index.html").as_uri()
 STUB = re.compile(r"в реальном сервисе|появится в (ближайшем|следующей)|в демо полностью|режиме предпросмотра|менеджер свяжется|отправлен на почту", re.I)
 
 
+# Анимации переходов между экранами (View Transitions) выполняются асинхронно;
+# в тестах отключаем их, чтобы экран отрисовывался сразу и проверки были детерминированными.
+NO_VT = "delete Document.prototype.startViewTransition; document.startViewTransition = undefined;"
+
+
 @pytest.fixture(scope="session")
 def browser():
     with sync_playwright() as p:
@@ -75,6 +80,7 @@ class App:
 def app(browser):
     ctx = browser.new_context(viewport={"width": 1280, "height": 900})
     ctx.route(re.compile(r"fonts\.(googleapis|gstatic)\.com"), lambda r: r.abort())
+    ctx.add_init_script(NO_VT)
     page = ctx.new_page()
     a = App(page)
     yield a
@@ -86,6 +92,7 @@ def app(browser):
 def phone(browser):
     ctx = browser.new_context(viewport={"width": 390, "height": 844}, is_mobile=True, has_touch=True)
     ctx.route(re.compile(r"fonts\.(googleapis|gstatic)\.com"), lambda r: r.abort())
+    ctx.add_init_script(NO_VT)
     page = ctx.new_page()
     a = App(page)
     yield a

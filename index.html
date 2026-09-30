@@ -1125,6 +1125,9 @@ textarea.inp{height:auto;padding:10px 12px;resize:vertical;line-height:1.5}
  body.has-cta .view{padding-bottom:calc(var(--tabbar-h) + 170px + env(safe-area-inset-bottom,0px))}
  body.has-cta .fab{bottom:calc(var(--tabbar-h) + 86px + env(safe-area-inset-bottom,0px))}
 }
+/* long words and links never widen the page */
+.quote,.bub,.msg,.task-q,.letter,.card p,.fileln .b,.iss .sm{overflow-wrap:anywhere}
+.card-h{flex-wrap:wrap}
 </style>
 </head>
 <body>
@@ -1419,6 +1422,7 @@ const TESTS={
 /* ================= resume ================= */
 const RESUME=[['Product Thinking','учебный кейс'],['Customer Development','14 интервью'],['SQL','курс, 70%'],['Python','курс, 60%'],['Excel','3 курсовые'],['CJM','кейс-чемпионат'],['Работа с гипотезами','продуктовый клуб'],['Figma','прототип'],['Презентация выводов','2 место в чемпионате'],['Приоритизация (RICE)','продуктовый клуб'],['Статистика','курс теорвера'],['Product Analytics','самостоятельно'],['Очистка данных','курсовая']];
 
+const RESUME_TEXT=`Алексей Иванов — студент 3 курса, НИУ ВШЭ, бизнес-информатика. Навыки: Product Thinking (учебный кейс), Customer Development (14 интервью), SQL (курс), Python (курс), Excel (3 курсовые), CJM (кейс-чемпионат), работа с гипотезами (продуктовый клуб), Figma (прототип), презентация выводов (2 место в кейс-чемпионате), приоритизация RICE, статистика (курс теорвера), product analytics, очистка данных (курсовая).`;
 /* ================= simulators ================= */
 const SIMS={
  'Product Manager':{ic:'target',col:'#3B47E0',intro:'Вы работаете Product Manager в сервисе доставки еды.',qs:[
@@ -1580,7 +1584,7 @@ const btnAttr=spec=>{const [k,a,b]=spec.split(':');return k==='go'?`data-go="${a
 
 /* ================= state ================= */
 const KEY='delom-demo-v2';
-const fresh=()=>({authed:false,onboarded:false,resume:false,goal:'pm',pstat:{},ws:{},scores:{},sel:{},portfolio:{},inv:{},tests:{},courses:{},mentorReq:{},teams:{},chats:{},applied:{},projApplied:{},visited:{},flags:{},notifSeen:0,empInvited:{},published:[],extraVac:[],badgesSeen:null,acted:false,empCo:null,lastRole:'student',cv:null,cvTpl:'modern',cvTarget:null,cvBest:0,cvVersions:[],stories:[],interviews:[],apps:{},appsExtra:[],offers:null,offW:null,hrReview:null,peerDone:0,pitch:null,pitchVideo:null,recs:{},reviews:{},mentorConf:{},courseDone:{},waitlist:{},tier:null,salesReq:[],consOk:{},uniCourses:[],hrAt:0,profile:null,vis:null});
+const fresh=()=>({authed:false,onboarded:false,resume:false,goal:'pm',pstat:{},ws:{},scores:{},sel:{},portfolio:{},inv:{},tests:{},courses:{},mentorReq:{},teams:{},chats:{},applied:{},projApplied:{},visited:{},flags:{},notifSeen:0,empInvited:{},published:[],extraVac:[],badgesSeen:null,acted:false,empCo:null,lastRole:'student',cv:null,cvTpl:'modern',cvTarget:null,cvBest:0,cvVersions:[],stories:[],interviews:[],apps:{},appsExtra:[],offers:null,offW:null,hrReview:null,peerDone:0,pitch:null,pitchVideo:null,recs:{},reviews:{},mentorConf:{},courseDone:{},resumeSkills:null,resumeFile:null,waitlist:{},tier:null,salesReq:[],consOk:{},uniCourses:[],hrAt:0,profile:null,vis:null});
 let S=fresh();
 try{const raw=localStorage.getItem(KEY);if(raw)S=Object.assign(fresh(),JSON.parse(raw))}catch(e){}
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
@@ -1600,7 +1604,7 @@ const emp=()=>EMPLOYERS[S.empCo||(S.goal==='da'?'tb':'su')];
 const mentorMe=()=>S.goal==='da'?MENTORS[1]:MENTORS[0];
 function sk(id){
  const b=SK[id];if(!b)return null;
- const o={id,name:b.name,st:b.st,pct:b.pct||0,basis:b.basis,src:b.src,date:b.date,baseOk:b.st==='ok'};
+ const o={id,name:b.name,st:b.st==='gap'&&(S.resumeSkills||[]).includes(id)?'self':b.st,pct:b.pct||0,basis:b.basis,src:b.src,date:b.date,baseOk:b.st==='ok'};
  const pid=Object.keys(S.pstat).find(k=>S.pstat[k]==='done'&&confirmsOf(k).includes(id));
  if(pid){const p=P(pid);Object.assign(o,{st:'ok',basis:`Проект «${p.short}»`,src:`${p.company} · оценка ${S.scores[pid]||p.score} из 5`,date:S.flags['d_'+pid]||todayStr(),fresh:!o.baseOk,via:'project',pid})}
  else if(S.mentorConf&&S.mentorConf[id]&&S.mentorConf[id].passed&&o.st!=='ok'){const m=S.mentorConf[id];Object.assign(o,{st:'ok',basis:`Оценка ментора · ${m.stars} из 5`,src:m.by,date:m.date,fresh:1,via:'mentor'})}
@@ -1657,9 +1661,9 @@ function checkBadges(){const earned=BADGES.filter(b=>b.ok()).map(b=>b.id);if(S.b
  earned.filter(id=>!S.badgesSeen.includes(id)).forEach((id,i)=>{const b=BADGES.find(x=>x.id===id);setTimeout(()=>toast(`Новое достижение: «${b.n}»`,'trophy'),400+i*500)});S.badgesSeen=earned;save()}
 
 /* ================= chats ================= */
-function ensureInviteChat(pid){const id='inv-'+pid;if(S.chats[id])return;const p=P(pid),e=empOfProj(pid);
+function ensureInviteChat(pid,custom){const id='inv-'+pid;if(S.chats[id])return;const p=P(pid),e=empOfProj(pid);
  S.chats[id]={id,kind:'inv',co:p.company,title:p.company,sub:`${e.person} · ${e.pos}`,pid,unreadS:3,unreadE:0,msgs:[
-  {f:'them',t:`Здравствуйте, Алексей! Я ${e.person}, ${e.pos} в ${p.company}. Мы изучили ваше решение по проекту «${p.short}». ${p.inviteHook}`,tm:tnow()},
+  {f:'them',t:custom||`Здравствуйте, Алексей! Я ${e.person}, ${e.pos} в ${p.company}. Мы изучили ваше решение по проекту «${p.short}». ${p.inviteHook||''}`,tm:tnow()},
   {f:'card',pid},
   {f:'them',t:'Выберите, пожалуйста, удобное время. Интервью займёт 45 минут, онлайн.',tm:tnow()}]}}
 const TEAMMATES=[['Екатерина Волкова','ЕВ','#C2410C'],['Никита Орлов','НО','#1D4ED8'],['Полина Смирнова','ПС','#BE185D'],['Тимур Ахметов','ТА','#0E7490'],['Мария Кузнецова','МК','#DB2777'],['Илья Морозов','ИМ','#7C3AED']];
@@ -1700,7 +1704,7 @@ function lineChart(labels,values,{h=230,fmtv=v=>v,unit=''}={}){
 const hbars=(rows,maxv)=>{const mx=maxv||Math.max(...rows.map(r=>r[1]));return rows.map(r=>`<div class="hbar"><span class="t2">${esc(r[0])}</span><div class="bar" style="height:10px"><i data-w="${Math.max(1.5,r[1]/mx*100)}" style="width:0;${r[2]?`background:${r[2]}`:''}"></i></div><b style="text-align:right">${r[3]||fmt(r[1])}</b></div>`).join('')};
 
 /* ================= router ================= */
-const BARE=['welcome','auth'];
+const BARE=['welcome','auth','u'];
 const ROLE_OF={dashboard:'student',career:'student',projects:'student',project:'student',workspace:'student',complete:'student',internships:'student',vacancies:'student',jobs:'student',job:'student',skills:'student',portfolio:'student',profile:'student',try:'student',messages:'student',resume:'student',interview:'student',applications:'student',
  empdash:'employer',candidates:'employer',empjobs:'employer',postproject:'employer',pricing:'employer',empmessages:'employer',mentor:'mentor',review:'mentor',uni:'uni',unistudents:'uni'};
 const HOME={student:'dashboard',employer:'empdash',mentor:'mentor',uni:'uni'};
@@ -1778,6 +1782,9 @@ function togglePop(name,html){const el=$('#'+name+'Pop');const was=UI.pop===name
 function notifs(){
  const a=[],t=T(),m=t.main,p=P(m),inv=S.inv[m];
  Object.values(S.chats).filter(c=>c.unreadS).forEach(c=>a.push({t:`Новое сообщение: ${c.title}`,s:c.sub,time:'только что',go:'messages-'+c.id,ic:'msg',hot:1}));
+ Object.keys(S.ws).filter(pid=>S.ws[pid].returned&&pst(pid)==='active'&&P(pid)).forEach(pid=>a.push({t:'Решение вернули на доработку',s:`${P(pid).short} · ${S.ws[pid].returned.comment.slice(0,60)}`,time:S.ws[pid].returned.date,go:'workspace-'+pid,ic:'pen',hot:1}));
+ if(S.hrReview&&S.hrReview.st==='done')a.push({t:'Ментор прислал разбор резюме',s:(MENTORS.find(m=>m.id===S.hrReview.who)||{}).name||'',time:S.hrReview.doneAt,go:'resume-people',ic:'pen'});
+ Object.entries(S.mentorConf||{}).forEach(([id,m])=>a.push({t:m.passed?`Навык «${SK[id].name}» подтверждён ментором`:`Ментор оценил навык «${SK[id].name}»`,s:m.comment.slice(0,70),time:m.date,go:'skills',ic:'shield'}));
  if(inv&&inv.st==='accepted')a.push({t:'Интервью назначено',s:`${p.company} · ${inv.slot}`,time:'только что',go:'messages-inv-'+m,ic:'cal'});
  if(pst(m)==='done'){
   a.push({t:`${p.company} приглашает вас на интервью`,s:'Позиция '+p.invitePos,time:'5 мин назад',go:'complete-'+m,ic:'mail',hot:!inv||inv.st!=='accepted'});
@@ -1855,6 +1862,19 @@ function reportHtml(p,w){const t=esc(p.title);return `<!DOCTYPE html><html lang=
 <p class="m">${esc(p.company)} · решение студента платформы ${BRAND}</p><h1>${t}</h1><h2>Задача</h2><p>${esc(p.task||'')}</p>
 <h2>Что сделано</h2><ol>${p.wsTasks.map((x,i)=>`<li><b>${esc(x[0])}</b>${w.tasks[i]?'':' — не завершено'}: ${esc(x[1])}</li>`).join('')}</ol>
 <h2>Итог решения</h2><p>${esc(w.summary||'').replace(/\n/g,'<br>')}</p>${p.metrics?`<h2>Ключевые результаты</h2><ul>${p.metrics.map(m=>`<li><b>${esc(m[0])}</b> — ${esc(m[1])}</li>`).join('')}</ul>`:''}</body></html>`}
+/* ================= reading a resume: pdf / docx / txt → text → skills ================= */
+const LIBS={pdf:'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js',pdfWorker:'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js',docx:'https://cdn.jsdelivr.net/npm/mammoth@1.8.0/mammoth.browser.min.js'};
+const loadScript=src=>new Promise((ok,no)=>{if(document.querySelector(`script[data-src="${src}"]`)){ok();return}const s=document.createElement('script');s.src=src;s.dataset.src=src;s.onload=()=>ok();s.onerror=()=>no(new Error('load'));document.head.appendChild(s)});
+async function extractText(file){const ext=extOf(file.name);
+ if(['txt','md','csv'].includes(ext))return await file.text();
+ if(ext==='pdf'){await loadScript(LIBS.pdf);const lib=window.pdfjsLib;lib.GlobalWorkerOptions.workerSrc=LIBS.pdfWorker;const doc=await lib.getDocument({data:await file.arrayBuffer()}).promise;let out='';for(let i=1;i<=Math.min(doc.numPages,8);i++){const pg=await doc.getPage(i);const c=await pg.getTextContent();out+=c.items.map(x=>x.str).join(' ')+'\n'}return out}
+ if(ext==='docx'){await loadScript(LIBS.docx);const r=await window.mammoth.extractRawText({arrayBuffer:await file.arrayBuffer()});return r.value}
+ throw new Error('format')}
+/* which platform skills a text mentions (by name and synonyms) */
+function detectSkills(text){const t=' '+text.toLowerCase().replace(/ё/g,'е')+' ';const found=[];
+ Object.entries(SK).forEach(([id,s])=>{const names=[s.name,...(SYN[s.name]||[])].map(x=>x.toLowerCase().replace(/ё/g,'е').replace(/\s*\(.*\)/,'').trim()).filter(x=>x.length>=2);
+  if(names.some(n=>n.length<=4?new RegExp(`[^a-zа-я]${n.replace(/[.*+?^${}()|[\]\\/]/g,'\\$&')}[^a-zа-я]`,'i').test(t):t.includes(n)))found.push(id)});
+ return found}
 /* ================= shared student bits ================= */
 const VIEWS={};
 function reqMarks(skills){return `<div class="req">${skills.map(n=>{const s=skByName(n);if(s&&(s.st==='ok'||s.st==='self'))return `<span class="y">${ic('check',14)}${esc(n)}</span>`;if(s&&s.st==='progress')return `<span class="t">△ ${esc(n)}</span>`;return `<span class="n">○ ${esc(n)}</span>`}).join('')}</div>`}
@@ -1864,7 +1884,7 @@ function jobCard(j,compact){
   <div class="row g12" style="align-items:flex-start;flex-wrap:nowrap">${logo(j.company)}<div class="grow"><div class="row g8"><span class="sm t2 b">${esc(j.company)}</span>${isNew||j.isNew?'<span class="new-tag">Новое</span>':''}</div><h3 style="margin-top:2px">${esc(j.title)}</h3><div class="meta" style="margin-top:6px"><span>${ic('pin')}${j.city} / ${j.format.toLowerCase()}</span>${j.salary?`<span>${ic('briefcase')}${j.salary}</span>`:''}</div></div>${ring(m,54)}</div>
   ${compact?`<div class="chips">${j.skills.map(s=>`<span class="pill">${esc(s)}</span>`).join('')}</div>`:`<div><div class="xs muted" style="margin-bottom:6px">Из необходимых навыков</div>${reqMarks(j.skills)}</div>`}
   <div class="row between" style="margin-top:auto"><div class="chips"><span class="pill ${j.type==='intern'?'ac':''}">${j.type==='intern'?'Стажировка':'Вакансия'}</span>${j.paid?'<span class="pill">Оплачиваемая</span>':''}</div>
-  <div class="row g8">${compact?`<button class="btn btn-s btn-sm" data-go="job-${j.id}">Подробнее</button>`:applied?`<span class="pill ok">${ic('check')}Отклик отправлен</span>`:`<button class="btn btn-p btn-sm" data-act="apply" data-id="${j.id}">Откликнуться</button>`}</div></div>
+  <div class="row g8">${compact?`<button class="btn btn-s btn-sm" data-go="job-${j.id}">Подробнее</button>`:applied?`<span class="pill ok">${ic('check')}Отклик отправлен</span>`:lk?'':`<button class="btn btn-p btn-sm" data-act="apply" data-id="${j.id}">Откликнуться</button>`}</div></div>
   ${lk?`<div class="lock-veil"><span class="lk">${ic('lock')}</span><div class="b">Откроется при готовности ${j.min}% к ${tr.goal}</div><div class="sm muted">Сейчас ${readinessOf(tr.id)}%. Подтвердите ${tr.focus} в проекте</div><button class="btn btn-s btn-sm" data-go="project-${tr.main}">Как открыть</button></div>`:''}
  </article>`}
 function projCard(p){
@@ -2038,7 +2058,7 @@ VIEWS.project=(id)=>{
   <div class="stack">
    <section class="card">
     <div class="row g16" style="flex-wrap:nowrap;align-items:flex-start">${logo(p.company,'lg')}<div class="grow col g6"><div class="row g8"><span class="b t2">${esc(p.company)}</span><span class="xs muted">${esc(p.ind)}</span></div><h1>${esc(p.title)}</h1>
-    <div class="meta"><span>${ic('target')}${esc(p.dir)}</span><span>${ic('clock')}${esc(p.dur)}</span><span>${ic('layers')}${esc(p.diff)}</span><span>${ic(team?'users':'user')}${esc(p.format)}</span></div></div></div>
+    <div class="meta"><span>${ic('target')}${esc(p.dir)}</span><span>${ic('clock')}${esc(p.dur)}</span><span>${ic('layers')}${esc(p.diff)}</span><span>${ic(team?'users':'user')}${esc(p.format)}</span></div>${(S.uniCourses||[]).filter(c=>c.pid===p.id).map(c=>`<span class="pill ac" style="align-self:flex-start">${ic('cap')}Входит в курс «${esc(c.course)}» · НИУ ВШЭ</span>`).join('')}</div></div>
    </section>
    ${teamBlock(p.id)}
    <section class="card col g12"><h2>О компании</h2><p class="t2">${esc(p.about)}</p></section>
@@ -2191,46 +2211,53 @@ VIEWS.job=(id)=>{
  </div>`};
 
 /* ================= portfolio ================= */
-VIEWS.portfolio=()=>{
- const t=T(),conf=confAll();
- const PF=[];
- Object.keys(S.portfolio).forEach(pid=>{const p=P(pid);PF.push({title:p.title,company:p.company,date:'Сентябрь 2026',fresh:1,metrics:p.metrics,skills:p.pfSkills,review:`«${p.review}»`,who:`${empOfProj(pid).person}, ${empOfProj(pid).pos}, ${p.company}`,score:S.scores[pid]||p.score})});
- PF.push({title:'Customer Development для студенческого кофе-сервиса',company:ACAD,date:'Май 2026',metrics:[['14','глубинных интервью'],['3','сегмента аудитории'],['2','ключевых инсайта']],skills:['Customer Development','CJM'],review:'«Хорошая дисциплина в интервью и честные выводы, даже когда они противоречили исходной идее».',who:'Ольга Сафина, ментор, Senior PM в Avito',score:'4,7'});
+const PROF=()=>Object.assign({city:'Москва',prog:'Бизнес-информатика, 3 курс',about:'Студент 3 курса бизнес-информатики. Интересуюсь продуктовой аналитикой и EdTech. Провёл 14 интервью с пользователями и довёл учебный продукт до прототипа.',tg:'@a_ivanov_pm',format:'Гибрид',start:'С октября 2026'},S.profile||{});
+const VIS=()=>Object.assign({show:true,inv:true,uni:true},S.vis||{});
+const publicUrl=()=>location.href.split('#')[0]+'#u';
+function portfolioItems(){const PF=[];
+ Object.keys(S.portfolio).forEach(pid=>{const p=P(pid);if(!p)return;const e=empOfProj(pid);PF.push({pid,title:p.title,company:p.company,date:S.flags['d_'+pid]||'Сентябрь 2026',fresh:1,team:!!S.teams[pid],metrics:p.metrics,skills:confirmsOf(pid).map(id=>SK[id].name),review:(S.reviews[pid]||{}).comment||p.review,who:`${e.person}, ${e.pos}, ${p.company}`,score:S.scores[pid]||p.score})});
+ PF.push({title:'Customer Development для студенческого кофе-сервиса',company:ACAD,date:'Май 2026',metrics:[['14','глубинных интервью'],['3','сегмента аудитории'],['2','ключевых инсайта']],skills:['Customer Development','CJM'],review:'Хорошая дисциплина в интервью и честные выводы, даже когда они противоречили исходной идее.',who:'Ольга Сафина, ментор, Senior PM в Avito',score:'4,7'});
  PF.push({title:'Онбординг фитнес-приложения',company:ACAD,date:'Март 2026',metrics:[['−18%','шагов в онбординге'],['4','экрана в прототипе']],skills:['Product Thinking','Figma'],score:'4,6'});
  PF.push({title:'Анализ конкурентов сервиса аренды самокатов',company:'Флоу',date:'Декабрь 2025',team:1,metrics:[['6','конкурентов'],['2','сценария позиционирования']],skills:['Конкурентный анализ'],score:'4,3'});
+ return PF}
+function pfProjects(PF){return PF.map(p=>`<article class="pf-proj ${p.fresh?'fresh':''}">
+  <div class="row g12" style="flex-wrap:nowrap;align-items:flex-start">${logo(p.company,'sm')}<div class="grow"><div class="row g8"><span class="sm b t2">${esc(p.company)}</span><span class="xs muted">${esc(p.date)}${p.team?' · командный':''}</span></div><h3 style="font-size:16px;margin-top:2px">${esc(p.title)}</h3></div><span class="pill">${ic('star')}${p.score}</span></div>
+  <div><div class="label" style="margin-bottom:8px">Результат</div><div class="grid-3" style="gap:8px">${p.metrics.map(m=>`<div class="metric"><b>${esc(m[0])}</b><span class="xs muted">${esc(m[1])}</span></div>`).join('')}</div></div>
+  <div><div class="label" style="margin-bottom:8px">Подтверждённые навыки</div><div class="chips">${p.skills.map(s=>`<span class="pill ok">${ic('shield')}${esc(s)}</span>`).join('')}</div></div>
+  ${p.review?`<div class="quote">«${esc(p.review)}»<div class="xs muted" style="margin-top:6px">${esc(p.who)}</div></div>`:''}
+ </article>`).join('')}
+function pfSide(pub){const t=T(),conf=confAll();const acc=Object.keys(S.inv).find(k=>S.inv[k].st==='accepted');
+ return `<section class="card col g12"><h2>Подтверждённые навыки</h2>${conf.map(s=>`<div class="row g8" style="flex-wrap:nowrap;align-items:flex-start;padding:6px 0;border-top:1px solid var(--border)"><span style="color:var(--green)">${ic('shield',16)}</span><div class="grow"><div class="b sm">${esc(s.name)}</div><div class="xs muted">${esc(s.basis||'')}${s.src?' · '+esc(s.src):''}${s.date?' · '+esc(s.date):''}</div></div></div>`).join('')}${skAll().filter(s=>s.st!=='ok'&&has(s)).length?`<div class="xs muted">Указаны, но пока не подтверждены: ${skAll().filter(s=>s.st!=='ok'&&has(s)).map(s=>esc(s.name)).join(', ')}</div>`:''}</section>
+  <section class="card col g12"><h2>Образование</h2><div><div class="b">НИУ ВШЭ</div><div class="sm muted">${esc(PROF().prog)} · бакалавриат · 2023–2027</div></div><div><div class="b">${ACAD}</div><div class="sm muted">Трек ${esc(t.goal)} · 2026</div></div></section>
+  <section class="card col g12"><h2>Сертификаты и курсы</h2>${[['Яндекс Практикум','SQL для анализа данных','Август 2026'],[ACAD,'Основы продуктовой аналитики','Июнь 2026'],['Stepik','Customer Development на практике','Апрель 2026'],...Object.keys(S.tests).filter(k=>S.tests[k].passed).map(k=>[ACAD,'Тест: '+SK[k].name+' · '+S.tests[k].score+' из 5',S.tests[k].date]),...Object.entries(S.courseDone||{}).map(([k,c])=>[c.provider,c.title+' · итоговое задание '+c.score,c.date])].map(c=>`<div class="row g12" style="flex-wrap:nowrap">${logo(c[0],'sm')}<div><div class="b sm">${esc(c[1])}</div><div class="xs muted">${esc(c[0])} · ${esc(c[2])}</div></div></div>`).join('')}</section>
+  ${!pub&&acc?`<section class="card col g12"><h2>Интервью</h2><div class="row g12" style="flex-wrap:nowrap">${logo(P(acc).company,'sm')}<div><div class="b sm">${esc(P(acc).invitePos)} · ${esc(P(acc).company)}</div><div class="xs muted">${esc(S.inv[acc].slot)}</div></div></div></section>`:''}
+  ${Object.keys(S.recs||{}).length?`<section class="card col g12"><h2>Рекомендации менторов</h2>${Object.entries(S.recs).map(([pid,r])=>`<div class="quote sm">${md(r)}</div>${pub?'':`<button class="btn btn-s btn-sm" data-act="recToCv" data-id="${pid}" style="align-self:flex-start">${ic('plus')}Добавить в резюме</button>`}`).join('')}</section>`:''}`}
+VIEWS.portfolio=()=>{
+ const t=T(),PF=portfolioItems(),pr=PROF(),vis=VIS();
  const done=doneProjects().filter(pid=>!S.portfolio[pid]);
- const acc=Object.keys(S.inv).find(k=>S.inv[k].st==='accepted');
  return `
  <section class="card" style="padding:28px;margin-bottom:20px"><div class="pf-head">
   <div class="pf-av">АИ</div>
-  <div class="grow col g6" style="min-width:220px"><h1>Алексей Иванов</h1><div class="b t2" style="font-size:16px">${t.junior}</div><div class="meta"><span>${ic('cap')}НИУ ВШЭ · Бизнес-информатика, 3 курс</span><span>${ic('pin')}Москва</span><span>${ic('target')}Цель: ${t.goal}</span></div></div>
-  <div class="col g8"><div class="row g8"><button class="btn btn-p" data-act="copyLink">${ic('copy')}Поделиться портфолио</button><button class="btn btn-s" data-go="profile">${ic('pen')}Редактировать</button></div><div class="xs muted">${DOMAIN}/@a.ivanov · ${148+64*doneProjects().length} просмотров работодателями</div></div>
+  <div class="grow col g6" style="min-width:220px"><h1>Алексей Иванов</h1><div class="b t2" style="font-size:16px">${t.junior}</div><div class="meta"><span>${ic('cap')}НИУ ВШЭ · ${esc(pr.prog)}</span><span>${ic('pin')}${esc(pr.city)}</span><span>${ic('target')}Цель: ${t.goal}</span></div><p class="sm t2" style="max-width:620px">${esc(pr.about)}</p></div>
+  <div class="col g8"><div class="row g8"><button class="btn btn-p" data-act="copyLink" ${vis.show?'':'disabled'}>${ic('copy')}Поделиться портфолио</button><button class="btn btn-s" data-go="u">${ic('eye')}Как видят другие</button><button class="btn btn-s" data-go="profile">${ic('pen')}Редактировать</button></div><div class="xs muted">${vis.show?'Публичная страница открыта по ссылке':'Профиль скрыт — ссылка не работает. Включите видимость в профиле'}</div></div>
  </div></section>
- ${done.map(pid=>`<div class="banner ac"><span class="ic">${ic('plus',20)}</span><div class="grow"><div class="b">Проект ${P(pid).company} завершён — добавьте его в портфолио</div><div class="sm t2">Оценка ${S.scores[pid]||P(pid).score}, отзыв компании и ${confirmsOf(pid).length} подтверждённых навыков.</div></div><button class="btn btn-p btn-sm" data-act="addPortfolio" data-id="${pid}">Добавить</button></div>`).join('')}
+ ${done.map(pid=>`<div class="banner ac"><span class="ic">${ic('plus',20)}</span><div class="grow"><div class="b">Проект ${esc(P(pid).company)} завершён — добавьте его в портфолио</div><div class="sm t2">Оценка ${S.scores[pid]||P(pid).score}, отзыв и ${confirmsOf(pid).length} ${plural(confirmsOf(pid).length,'подтверждённый навык','подтверждённых навыка','подтверждённых навыков')}.</div></div><button class="btn btn-p btn-sm" data-act="addPortfolio" data-id="${pid}">Добавить</button></div>`).join('')}
  <div class="split">
-  <div class="stack">
-   <section class="card col g16"><div class="row between"><h2>Проекты</h2><span class="sm muted">${PF.length}</span></div>
-    ${PF.map(p=>`<article class="pf-proj ${p.fresh?'fresh':''}">
-     <div class="row g12" style="flex-wrap:nowrap;align-items:flex-start">${logo(p.company,'sm')}<div class="grow"><div class="row g8"><span class="sm b t2">${p.company}</span><span class="xs muted">${p.date}${p.team?' · командный':''}</span>${p.fresh?'<span class="new-tag">Новое</span>':''}</div><h3 style="font-size:16px;margin-top:2px">${p.title}</h3></div><span class="pill">${ic('star')}${p.score}</span></div>
-     <div><div class="label" style="margin-bottom:8px">Результат</div><div class="grid-3" style="gap:8px">${p.metrics.map(m=>`<div class="metric"><b>${m[0]}</b><span class="xs muted">${m[1]}</span></div>`).join('')}</div></div>
-     <div><div class="label" style="margin-bottom:8px">Подтверждённые навыки</div><div class="chips">${p.skills.map(s=>`<span class="pill ok">${ic('shield')}${s}</span>`).join('')}</div></div>
-     ${p.review?`<div class="quote">${p.review}<div class="xs muted" style="margin-top:6px">${p.who}</div></div>`:''}
-    </article>`).join('')}
-   </section>
-  </div>
-  <div class="stack">
-   <section class="card col g12"><h2>Навыки</h2><div class="chips">${conf.map(s=>`<span class="pill ok">${ic('shield')}${s.name}</span>`).join('')}${skAll().filter(s=>s.st!=='ok'&&has(s)).map(s=>`<span class="pill">${s.name}</span>`).join('')}</div><div class="xs muted">Зелёные — подтверждены проектами, тестами или ментором</div></section>
-   <section class="card col g12"><h2>Образование</h2><div><div class="b">НИУ ВШЭ</div><div class="sm muted">Бизнес-информатика, бакалавриат · 2023–2027</div></div><div><div class="b">${ACAD}</div><div class="sm muted">Трек ${t.goal} · 2026</div></div></section>
-   <section class="card col g12"><h2>Сертификаты</h2>${[['Яндекс Практикум','SQL для анализа данных','Август 2026'],[ACAD,'Основы продуктовой аналитики','Июнь 2026'],['Stepik','Customer Development на практике','Апрель 2026'],...Object.keys(S.tests).filter(k=>S.tests[k].passed).map(k=>[ACAD,'Тест: '+SK[k].name+' · '+S.tests[k].score+' из 5',S.tests[k].date])].map(c=>`<div class="row g12" style="flex-wrap:nowrap">${logo(c[0],'sm')}<div><div class="b sm">${c[1]}</div><div class="xs muted">${c[0]} · ${c[2]}</div></div></div>`).join('')}</section>
-   <section class="card col g12"><h2>Стажировки</h2>${acc?`<div class="row g12" style="flex-wrap:nowrap">${logo(P(acc).company,'sm')}<div><div class="b sm">${P(acc).invitePos} · интервью</div><div class="xs muted">${S.inv[acc].slot}</div></div></div>`:doneProjects().length?`<div class="row g12" style="flex-wrap:nowrap">${logo(P(doneProjects()[0]).company,'sm')}<div><div class="b sm">Приглашение на интервью</div><div class="xs muted">${P(doneProjects()[0]).invitePos} · ожидает ответа</div></div></div>`:''}<div class="row g12" style="flex-wrap:nowrap">${logo('НИУ ВШЭ','sm')}<div><div class="b sm">Студенческий продуктовый клуб ВШЭ</div><div class="xs muted">Организатор кейс-чемпионата · 2025</div></div></div></section>
-   ${Object.keys(S.recs||{}).length?`<section class="card col g12"><h2>Рекомендации менторов</h2>${Object.entries(S.recs).map(([pid,r])=>`<div class="quote sm">${md(r)}</div><button class="btn btn-s btn-sm" data-act="recToCv" data-id="${pid}" style="align-self:flex-start">${ic('plus')}Добавить в резюме</button>`).join('')}</section>`:''}
-   <section class="card col g12"><h2>Отзывы</h2><div class="quote sm">«Алексей быстро разбирается в данных и умеет объяснить вывод простыми словами».<div class="xs muted" style="margin-top:6px">Ольга Сафина, ментор</div></div></section>
-  </div>
+  <div class="stack"><section class="card col g16"><div class="row between"><h2>Проекты</h2><span class="sm muted">${PF.length}</span></div>${pfProjects(PF)}</section></div>
+  <div class="stack">${pfSide(false)}</div>
  </div>`};
+/* public page: what employers see by the link, without signing in */
+VIEWS.u=()=>{const t=T(),pr=PROF();
+ const head=`<header class="lp-nav"><div class="lp-in"><div class="brand" style="padding:0" data-go="welcome">${LOGO}<span>${BRAND}</span></div><div class="row g8" style="margin-left:auto">${S.authed?`<button class="btn btn-s btn-sm" data-go="portfolio">${ic('arL')}Вернуться в кабинет</button>`:`<button class="btn btn-p btn-sm" data-go="auth-student">Создать свой профиль</button>`}</div></div></header>`;
+ if(!VIS().show)return `<div class="lp">${head}<div class="lp-in" style="padding-block:64px"><section class="card empty col g12" style="align-items:center"><span class="logo lg" style="background:var(--surface-2);color:var(--muted)">${ic('lock',24)}</span><h2>Профиль скрыт</h2><p class="sm muted">Владелец закрыл публичный доступ к портфолио.</p></section></div></div>`;
+ return `<div class="lp">${head}<div class="lp-in" style="padding-block:28px 64px">
+  <section class="card" style="padding:28px;margin-bottom:20px"><div class="pf-head"><div class="pf-av">АИ</div><div class="grow col g6" style="min-width:220px"><span class="label">Портфолио · ${BRAND}</span><h1>Алексей Иванов</h1><div class="b t2" style="font-size:16px">${t.junior}</div><div class="meta"><span>${ic('cap')}НИУ ВШЭ · ${esc(pr.prog)}</span><span>${ic('pin')}${esc(pr.city)}</span><span>${ic('briefcase')}${esc(pr.format)} · ${esc(pr.start.toLowerCase())}</span></div><p class="sm t2" style="max-width:620px">${esc(pr.about)}</p></div>
+   <div class="col g8">${VIS().inv?`<div class="pill ok" style="height:auto;padding:8px 12px">${ic('mail')}Открыт к приглашениям</div>`:''}<div class="xs muted">Навыки подтверждены проектами компаний, тестами, курсами и менторами ${BRAND}</div></div></div></section>
+  <div class="split"><div class="stack"><section class="card col g16"><h2>Проекты</h2>${pfProjects(portfolioItems())}</section></div><div class="stack">${pfSide(true)}</div></div></div></div>`};
 
 /* ================= profile ================= */
-VIEWS.profile=()=>{const l=level();return `
- <div class="page-h"><div><span class="label">Настройки</span><h1 style="margin-top:4px">Профиль</h1><p>Эти данные видят работодатели в поиске кандидатов вместе с вашим Skill Passport.</p></div></div>
+VIEWS.profile=()=>{const l=level(),pr=PROF(),vis=VIS();const opt=(arr,v)=>arr.map(x=>`<option ${x===v?'selected':''}>${x}</option>`).join('');return `
+ <div class="page-h"><div><span class="label">Настройки</span><h1 style="margin-top:4px">Профиль</h1><p>Эти данные видят работодатели в поиске кандидатов и на вашей публичной странице вместе со Skill Passport.</p></div><button class="btn btn-s" data-go="u">${ic('eye')}Как видят другие</button></div>
  <section class="card col g16" style="margin-bottom:20px">
   <div class="row g16"><span class="lvl" style="width:64px;height:64px;font-size:26px">${l.n}</span><div class="grow col g6" style="min-width:220px"><div class="row g8"><h2>Уровень ${l.n} · ${l.name}</h2><span class="streak">${ic('flame',14)}Серия ${streak()} ${plural(streak(),'день','дня','дней')}</span></div>${bar(l.pct)}<span class="sm muted">${fmt(l.xp)} XP${l.nextName?` · до уровня «${l.nextName}» ${fmt(l.next-l.xp)} XP`:''}</span></div></div>
   <div class="bdg-grid">${BADGES.map(b=>`<div class="bdg ${b.ok()?'':'off'}"><span class="bi">${ic(b.ic,20)}</span><span class="b sm">${b.n}</span><span class="xs muted">${b.d}</span></div>`).join('')}</div>
@@ -2239,26 +2266,27 @@ VIEWS.profile=()=>{const l=level();return `
  <div class="split">
   <form class="card col g16" id="profileForm">
    <div class="form-grid">
-    <label class="field"><span>Имя и фамилия</span><input class="inp" id="pr-name" value="Алексей Иванов"></label>
-    <label class="field"><span>Город</span><input class="inp" id="pr-city" value="Москва"></label>
-    <label class="field"><span>Университет</span><input class="inp" id="pr-uni" value="НИУ ВШЭ"></label>
-    <label class="field"><span>Программа и курс</span><input class="inp" id="pr-prog" value="Бизнес-информатика, 3 курс"></label>
+    <label class="field"><span>Имя и фамилия ${ic('lock',12)}</span><input class="inp" id="pr-name" value="Алексей Иванов" readonly aria-describedby="pr-lock"></label>
+    <label class="field"><span>Город</span><input class="inp" id="pr-city" value="${esc(pr.city)}" required maxlength="60"></label>
+    <label class="field"><span>Университет ${ic('lock',12)}</span><input class="inp" id="pr-uni" value="НИУ ВШЭ" readonly></label>
+    <label class="field"><span>Программа и курс</span><input class="inp" id="pr-prog" value="${esc(pr.prog)}" required maxlength="80"></label>
     <label class="field"><span>Карьерная цель</span><select class="sel" id="pr-goal">${Object.values(TRACKS).map(t=>`<option value="${t.id}" ${t.id===S.goal?'selected':''}>${t.goal}</option>`).join('')}</select></label>
-    <label class="field"><span>Формат работы</span><select class="sel" id="pr-format"><option>Гибрид</option><option>Удалённо</option><option>Офис</option></select></label>
-    <label class="field full"><span>О себе</span><textarea class="inp" id="pr-about" rows="3">Студент 3 курса бизнес-информатики. Интересуюсь продуктовой аналитикой и EdTech. Провёл 14 интервью с пользователями и довёл учебный продукт до прототипа.</textarea></label>
-    <label class="field"><span>Telegram</span><input class="inp" id="pr-tg" value="@a_ivanov_pm"></label>
-    <label class="field"><span>Готов выйти на стажировку</span><select class="sel" id="pr-start"><option>С октября 2026</option><option>С января 2027</option><option>Летом 2027</option></select></label>
+    <label class="field"><span>Формат работы</span><select class="sel" id="pr-format">${opt(['Гибрид','Удалённо','Офис'],pr.format)}</select></label>
+    <label class="field full"><span>О себе</span><textarea class="inp" id="pr-about" rows="3" maxlength="600">${esc(pr.about)}</textarea></label>
+    <label class="field"><span>Telegram</span><input class="inp" id="pr-tg" value="${esc(pr.tg)}" pattern="@[A-Za-z0-9_]{4,32}" title="Например, @a_ivanov_pm"></label>
+    <label class="field"><span>Готов выйти на стажировку</span><select class="sel" id="pr-start">${opt(['С октября 2026','С января 2027','Летом 2027'],pr.start)}</select></label>
    </div>
+   <p class="xs muted" id="pr-lock">${ic('lock',11)} Имя и вуз подтверждены при регистрации: навыки привязаны к личности, поэтому их меняют через поддержку.</p>
    <div class="row g8"><button class="btn btn-p" type="submit">Сохранить изменения</button></div>
   </form>
   <aside class="stack">
    <section class="card col g12"><h2>Видимость</h2>
-    <label class="check"><input type="checkbox" id="pr-vis" checked>Показывать профиль работодателям</label>
-    <label class="check"><input type="checkbox" id="pr-inv" checked>Разрешить приглашения на интервью</label>
-    <label class="check"><input type="checkbox" id="pr-uni-share" checked>Делиться прогрессом с центром карьеры вуза</label>
-    <label class="check"><input type="checkbox" id="pr-dig">Еженедельная подборка стажировок</label>
+    <label class="check"><input type="checkbox" id="pr-vis" ${vis.show?'checked':''}>Показывать профиль работодателям</label>
+    <label class="check"><input type="checkbox" id="pr-inv" ${vis.inv?'checked':''} ${vis.show?'':'disabled'}>Разрешить приглашения на интервью</label>
+    <label class="check"><input type="checkbox" id="pr-uni-share" ${vis.uni?'checked':''}>Делиться прогрессом с центром карьеры вуза</label>
+    <p class="xs muted">Изменения применяются сразу: скрытый профиль пропадает из поиска кандидатов и публичной страницы.</p>
    </section>
-   <section class="card col g12"><h2>Резюме</h2>${S.resume?`<div class="fileln" style="cursor:default"><span class="fi" style="background:#FBE9E9;color:#D14343">PDF</span><span class="grow"><div class="b" style="font-size:13.5px">Иванов_резюме.pdf</div><div class="xs muted">Распознано 13 навыков</div></div></div>`:`<p class="sm muted">Загрузите резюме — платформа найдёт навыки и обновит карьерный путь.</p>`}<button class="btn btn-s btn-sm" data-act="resumeAgain" style="align-self:flex-start">${ic('upload')}${S.resume?'Обновить резюме':'Загрузить резюме'}</button></section>
+   <section class="card col g12"><h2>Резюме</h2>${S.resumeFile?`<button class="fileln" ${S.resumeFile.demo?'':'data-act="openStored" data-id="resume"'} style="${S.resumeFile.demo?'cursor:default':''}"><span class="fi" style="background:#FBE9E9;color:#D14343">${esc(extOf(S.resumeFile.name).toUpperCase())}</span><span class="grow"><div class="b" style="font-size:13.5px">${esc(S.resumeFile.name)}</div><div class="xs muted">${(S.resumeSkills||[]).length} ${plural((S.resumeSkills||[]).length,'навык','навыка','навыков')} в профиле${S.resumeFile.demo?' · демо-резюме':''}</div></span>${S.resumeFile.demo?'':`<span class="muted">${ic('eye')}</span>`}</button>`:`<p class="sm muted">Загрузите резюме — платформа найдёт навыки и обновит карьерный путь.</p>`}<button class="btn btn-s btn-sm" data-act="resumeAgain" style="align-self:flex-start">${ic('upload')}${S.resumeFile?'Обновить резюме':'Загрузить резюме'}</button><button class="btn btn-g btn-sm" data-go="resume" style="align-self:flex-start">${ic('pen')}Конструктор резюме</button></section>
   </aside>
  </div>`};
 
@@ -2269,7 +2297,8 @@ VIEWS.try=()=>`
 
 /* ================= messages ================= */
 function chatView(id,side){
- const mine=side==='student'?Object.values(S.chats):Object.values(S.chats).filter(c=>c.kind==='inv'&&c.co===emp().company);
+ const mine=side==='student'?Object.values(S.chats).filter(c=>c.kind!=='cand'):Object.values(S.chats).filter(c=>(c.kind==='inv'||c.kind==='cand')&&c.co===emp().company);
+ const who=c=>{if(c.kind==='cand'){const k=CANDS.find(x=>x.id===c.cand)||{};return {name:k.name||'Кандидат',ini:initials(k.name||'К К'),color:k.color||'#8A90B0',sub:`${k.prof||''} · ${k.uni||''}`,id:c.cand}}return {name:'Алексей Иванов',ini:'АИ',color:'#3B47E0',sub:'НИУ ВШЭ · '+P(c.pid).short+' · '+(S.scores[c.pid]||P(c.pid).score),id:'c2'}};
  const route=side==='student'?'messages':'empmessages';
  const th=id&&S.chats[id]&&mine.includes(S.chats[id])?S.chats[id]:(window.innerWidth>720?mine[0]:null);
  if(th){if(side==='student')th.unreadS=0;else th.unreadE=0;save()}
@@ -2280,12 +2309,12 @@ function chatView(id,side){
   const me=(m.f==='me')===(side==='student');
   return `<div class="bub ${me?'me':'them'}">${!me&&m.who?`<span class="who">${esc(m.who)}</span>`:''}${esc(m.t)}<span class="tm">${m.tm||''}</span></div>`};
  const typing=th&&UI.typing[th.id]?`<div class="bub them typing" style="padding:12px 14px"><i></i><i></i><i></i></div>`:'';
- const head=th?(side==='student'?(th.kind==='team'?`<span class="members">${S.teams[th.pid].members.slice(0,3).map(m=>av(m[1],m[2])).join('')}</span>`:logo(th.co,'sm')):av('АИ','#3B47E0',32)):'';
+ const head=th?(side==='student'?(th.kind==='team'?`<span class="members">${S.teams[th.pid].members.slice(0,3).map(m=>av(m[1],m[2])).join('')||av('АИ','#3B47E0')}</span>`:logo(th.co,'sm')):av(who(th).ini,who(th).color,32)):'';
  return `
  <div class="page-h"><div><span class="label">${side==='student'?'Студент':e.company}</span><h1 style="margin-top:4px">Сообщения</h1></div></div>
  ${mine.length?`<div class="chat ${id&&th?'open':''}">
-  <div class="threads">${mine.map(c=>{const un=side==='student'?c.unreadS:c.unreadE;const last=[...c.msgs].reverse().find(m=>m.t);return `<button class="th ${th&&th.id===c.id?'on':''}" data-go="${route}-${c.id}">${side==='student'?(c.kind==='team'?`<span class="logo sm" style="background:var(--accent-soft);color:var(--accent-ink)">${ic('users',16)}</span>`:logo(c.co,'sm')):av('АИ','#3B47E0',32)}<span class="grow" style="min-width:0"><div class="row between" style="flex-wrap:nowrap"><b style="font-size:13.5px">${esc(side==='student'?c.title:'Алексей Иванов')}</b>${un?`<span class="un">${un}</span>`:''}</div><div class="xs muted" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(last?last.t:'')}</div></span></button>`}).join('')}</div>
-  <div class="thread">${th?`<div class="thread-h"><button class="icon-btn back-m" data-go="${route}" aria-label="Назад">${ic('arL',16)}</button>${head}<div class="grow"><div class="b">${esc(side==='student'?th.title:'Алексей Иванов')}</div><div class="xs muted">${esc(side==='student'?th.sub:'НИУ ВШЭ · '+P(th.pid).short+' · '+(S.scores[th.pid]||P(th.pid).score))}</div></div>${side==='employer'?`<button class="btn btn-s btn-sm" data-act="candProfile" data-id="c2">Профиль</button>`:th.kind==='inv'?`<button class="btn btn-s btn-sm hide-m" data-go="complete-${th.pid}">Проект</button>`:''}</div>
+  <div class="threads">${mine.map(c=>{const un=side==='student'?c.unreadS:c.unreadE;const last=[...c.msgs].reverse().find(m=>m.t);return `<button class="th ${th&&th.id===c.id?'on':''}" data-go="${route}-${c.id}">${side==='student'?(c.kind==='team'?`<span class="logo sm" style="background:var(--accent-soft);color:var(--accent-ink)">${ic('users',16)}</span>`:logo(c.co,'sm')):av(who(c).ini,who(c).color,32)}<span class="grow" style="min-width:0"><div class="row between" style="flex-wrap:nowrap"><b style="font-size:13.5px">${esc(side==='student'?c.title:who(c).name)}</b>${un?`<span class="un">${un}</span>`:''}</div><div class="xs muted" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(last?last.t:'')}</div></span></button>`}).join('')}</div>
+  <div class="thread">${th?`<div class="thread-h"><button class="icon-btn back-m" data-go="${route}" aria-label="Назад">${ic('arL',16)}</button>${head}<div class="grow"><div class="b">${esc(side==='student'?th.title:who(th).name)}</div><div class="xs muted">${esc(side==='student'?th.sub:who(th).sub)}</div></div>${side==='employer'?`<button class="btn btn-s btn-sm" data-act="candProfile" data-id="${who(th).id}">Профиль</button>`:th.kind==='inv'?`<button class="btn btn-s btn-sm hide-m" data-go="complete-${th.pid}">Проект</button>`:''}</div>
    <div class="thread-b" id="threadB">${th.msgs.map(bub).join('')}${typing}</div>
    <form class="thread-f" id="chatForm"><input type="hidden" id="chat-id" value="${th.id}"><input type="hidden" id="chat-side" value="${side}"><input id="chat-in" placeholder="Напишите сообщение" autocomplete="off" aria-label="Сообщение"><button class="btn btn-p" type="submit" aria-label="Отправить" style="width:42px;height:42px;padding:0">${ic('send')}</button></form>`:`<div class="empty" style="margin:auto">Выберите диалог</div>`}</div>
  </div>`:`<section class="card empty col g12" style="align-items:center"><span class="logo lg" style="background:var(--accent-soft);color:var(--accent-ink)">${ic('msg',24)}</span><h2>Пока нет сообщений</h2><p class="sm muted" style="max-width:420px">${side==='student'?'Здесь появятся диалоги с компаниями после приглашения на интервью и чаты команд в командных проектах.':'Здесь появятся диалоги с кандидатами, которых вы пригласили на интервью.'}</p>${side==='student'?`<div class="row g8"><button class="btn btn-p btn-sm" data-go="project-${T().main}">Выполнить проект</button><button class="btn btn-s btn-sm" data-go="project-p5">Командный проект</button></div>`:''}</section>`}`}
@@ -2626,14 +2655,14 @@ function cvHH(){const c=cv(),st=task('hhParse'),parsed=UI.hhParsed;
 const hhFields=()=>{const c=cv();return [c.title,c.skills,c.about,c.exp.map(e=>`${e.period}\n${e.org}\n${e.role}\n${e.bullets.map(b=>'— '+b).join('\n')}`).join('\n\n'),c.projects.map(p=>`${p.title} — ${p.org}\n${p.bullets.map(b=>'— '+b).join('\n')}`).join('\n\n'),c.edu.map(e=>`${e.period} · ${e.org}, ${e.prog}`).join('\n')]};
 
 /* people review */
-const HR_REV=[{id:'h1',name:'Ксения Лаврова',pos:'HR BP, 8 лет в IT-найме',ini:'КЛ',color:'#BE185D',price:990,eta:'24 часа'},{id:'h2',name:'Павел Гринёв',pos:'Руководитель программы стажировок',ini:'ПГ',color:'#0E7490',price:1490,eta:'12 часов'}];
+const CV_REVIEWERS=()=>MENTORS.filter(m=>['m1','m2','m4','m6','m7'].includes(m.id));
 const PEER={name:'Студент, 4 курс · цель Data Analyst',about:'Люблю данные и ищу первую работу аналитиком.',bullets:['Делал отчёты в Excel для кафедры','Участвовал в хакатоне по анализу данных','Сделал дашборд в Power BI по продажам магазина']};
 function cvPeople(){const hr=S.hrReview,a=analyzeCv(cv(),cvTargetJob());
  return `<div class="grid-2" style="align-items:start">
-  <section class="card col g12"><h2>Проверка живым HR</h2><p class="sm t2">Практикующий рекрутер прочитает резюме глазами работодателя и оставит комментарии к каждому блоку.</p>
-   ${hr?`<div class="card col g12" style="padding:14px;background:var(--surface-2)"><div class="row g12" style="flex-wrap:nowrap">${av(HR_REV.find(h=>h.id===hr.who).ini,HR_REV.find(h=>h.id===hr.who).color,40)}<div class="grow"><div class="b">${HR_REV.find(h=>h.id===hr.who).name}</div><div class="xs muted">${hr.st==='done'?'Проверка готова':'В работе · ответ в течение '+HR_REV.find(h=>h.id===hr.who).eta}</div></div>${hr.st==='done'?'<span class="pill ok">Готово</span>':'<span class="pill pr">В работе</span>'}</div>
-    ${hr.st==='done'?`<div class="col g8">${[['Заголовок и контакты',cvTargetJob().title===cv().title?'Позиция точно совпадает с вакансией — отлично.':'Назовите позицию так же, как в вакансии: я ищу резюме по точному названию.'],['Опыт',a.cats[1][1]>=70?'Результаты в цифрах читаются сразу. Оставьте 3–4 самых сильных пункта на место.':'Сейчас описаны обязанности. Я бы задала на интервью вопрос «и что получилось?» — ответьте на него в резюме.'],['Проекты',cv().projects.some(p=>p.company)?'Проект компании с оценкой — главный аргумент. Поднимите его выше опыта.':'Не хватает проектов с реальными компаниями — это сильнее учебных работ.'],['Общее впечатление',a.score>=75?'Я бы пригласила на интервью.':'Потенциал есть, но за 6 секунд я пока не вижу, чем вы сильнее других стажёров.']].map(r=>`<div class="quote sm"><b>${r[0]}.</b> ${r[1]}</div>`).join('')}</div>`:`<button class="btn btn-s btn-sm" data-act="hrDone" style="align-self:flex-start">Показать пример ответа (демо)</button>`}</div>`
-    :HR_REV.map(h=>`<div class="conf-opt" style="cursor:default">${av(h.ini,h.color,40)}<span class="grow"><div class="b">${h.name}</div><div class="sm muted">${h.pos} · ответ за ${h.eta}</div></span><button class="btn btn-p btn-sm" data-act="hrOrder" data-id="${h.id}">${rub(h.price)}</button></div>`).join('')+`<p class="xs muted">Оплата картой после подтверждения. В демо заказ оформляется без оплаты.</p>`}</section>
+  <section class="card col g12"><h2>Разбор ментором</h2><p class="sm t2">Ментор платформы прочитает резюме глазами работодателя и оставит комментарии. В пилоте — бесплатно, один разбор на студента.</p>
+   ${hr?(()=>{const m=MENTORS.find(x=>x.id===hr.who)||MENTORS[0];return `<div class="card col g12" style="padding:14px;background:var(--surface-2)"><div class="row g12" style="flex-wrap:nowrap">${av(m.ini,m.color,40)}<div class="grow"><div class="b">${esc(m.name)}</div><div class="xs muted">${esc(m.pos)} · ${hr.st==='done'?'разбор готов '+esc(hr.doneAt||''):'заявка от '+esc(hr.date||'')+' · ждёт ментора'}</div></div>${hr.st==='done'?'<span class="pill ok">Готово</span>':'<span class="pill pr">В очереди</span>'}</div>
+    ${hr.st==='done'?`<div class="quote sm" style="white-space:pre-wrap">${esc(hr.text)}</div>`:`<div class="row g8"><button class="btn btn-s btn-sm" data-act="role" data-role="mentor" data-then="mentor">Открыть кабинет ментора</button><button class="btn btn-g btn-sm" data-act="hrCancel">Отменить заявку</button></div>`}</div>`})()
+    :CV_REVIEWERS().map(m=>`<div class="conf-opt" style="cursor:default">${av(m.ini,m.color,40)}<span class="grow"><div class="b">${esc(m.name)}</div><div class="sm muted">${esc(m.pos)} · ★ ${m.rating}</div></span><button class="btn btn-p btn-sm" data-act="hrOrder" data-id="${m.id}">Отправить резюме</button></div>`).join('')}</section>
   <section class="card col g12"><div class="row between"><h2>Взаимное ревью</h2><span class="pill">${ic('star')}+50 XP за отзыв</span></div><p class="sm t2">Проверьте резюме другого студента — и ваше получит отзывы в ответ. Резюме анонимны.</p>
    <div class="card col g8" style="padding:14px;background:var(--surface-2)"><div class="b sm">${PEER.name}</div><div class="sm t2">${PEER.about}</div><ul class="ul sm">${PEER.bullets.map(b=>`<li>${ic('chev',12)}<span>${b}</span></li>`).join('')}</ul></div>
    ${['Есть цифры и результаты','Понятна цель','Навыки подтверждены примерами'].map((q,i)=>`<label class="check sm"><input type="checkbox" id="peer-c${i}">${q}</label>`).join('')}
@@ -2755,8 +2784,8 @@ function ivPitch(){const t=S.pitch||PITCH_SEED,w=t.split(/\s+/).filter(Boolean).
   <textarea class="inp" id="pitch-in" rows="7">${esc(t)}</textarea>
   <div class="row between"><span class="sm muted" id="pitch-meta">${w} слов · ≈ ${sec} сек</span><button class="btn btn-p" data-act="pitchRun" ${st.status==='loading'?'disabled':''}>${ic('spark')}Оценить сценарий</button></div>${taskUI('pitch',{loadingText:'Claude слушает вашу визитку…'})}
   ${r?`<div class="card col g12" style="padding:16px;background:var(--surface-2)"><div class="row g12"><span class="pill ${r.score>=7?'ok':'pr'}" style="height:30px;font-size:14px">${r.score} / 10</span>${srcNote(st)}</div><div class="grid-2" style="gap:12px"><div class="col g6"><span class="label" style="color:var(--green)">Получилось</span>${(r.strengths||[]).map(x=>`<div class="sm">✓ ${esc(x)}</div>`).join('')||'<span class="sm muted">—</span>'}</div><div class="col g6"><span class="label" style="color:var(--orange)">Усилить</span>${(r.improve||[]).map(x=>`<div class="sm">→ ${esc(x)}</div>`).join('')}</div></div>${r.improved?`<div class="quote sm"><b>Улучшенный вариант:</b> ${esc(r.improved)}</div><button class="btn btn-s btn-sm" data-act="pitchUse" style="align-self:flex-start">${ic('check')}Взять этот вариант</button>`:''}</div>`:''}</section>
-  <aside class="card col g12"><h2>Видео</h2><label class="drop" for="pitch-video" style="cursor:pointer">${ic('video',24)}<span class="b">${S.pitchVideo?esc(S.pitchVideo):'Прикрепить видео'}</span><span class="xs muted">MP4 или MOV до 200 МБ</span><input type="file" id="pitch-video" hidden accept="video/*"></label>
-   <p class="xs muted">Запись с камеры прямо в браузере здесь недоступна — снимите на телефон. Анализ речи по видео появится в следующей версии, сейчас ИИ оценивает сценарий.</p>
+  <aside class="card col g12"><h2>Видео</h2>${S.pitchVideo?`<button class="fileln" data-act="openStored" data-id="pitch"><span class="fi" style="background:var(--accent-soft);color:var(--accent-ink)">${ic('video',16)}</span><span class="grow"><div class="b" style="font-size:13.5px">${esc(S.pitchVideo.name||S.pitchVideo)}</div><div class="xs muted">${S.pitchVideo.size?fmtSize(S.pitchVideo.size)+' · ':''}смотреть</div></span><span class="muted">${ic('play')}</span></button><label class="btn btn-s btn-sm" for="pitch-video" style="align-self:flex-start;cursor:pointer">${ic('refresh')}Заменить видео<input type="file" id="pitch-video" hidden accept="video/*"></label>`:`<label class="drop" for="pitch-video" style="cursor:pointer">${ic('video',24)}<span class="b">Прикрепить видео</span><span class="xs muted">MP4, MOV или WEBM до 200 МБ</span><input type="file" id="pitch-video" hidden accept="video/*"></label>`}
+   <p class="xs muted">Снимите визитку на телефон по сценарию слева и прикрепите файл — он сохранится в профиле, и его можно посмотреть здесь. ИИ оценивает текст сценария.</p>
    <div class="divider" style="margin:0"></div><h3>Структура за минуту</h3><ol class="ol sm"><li>Кто вы и кем хотите работать — 10 сек</li><li>Главное доказательство с цифрой — 20 сек</li><li>Подтверждённые навыки — 15 сек</li><li>Что ищете и призыв — 15 сек</li></ol></aside></div>`}
 
 const LET_TYPES=[['cover','Сопроводительное'],['after','После интервью'],['followup','Фоллоу-ап'],['offer','Ответ на оффер']];
@@ -2832,9 +2861,9 @@ function appSalary(){const f=UI.sal||(UI.sal={prof:T().goal,level:'Стажёр'
 const REC_T=pid=>{const p=P(pid),mm=mentorOf(pid);return `Рекомендую Алексея Иванова на позицию ${p.invitePos}. Я проверял(а) его решение по проекту «${p.short}» для ${p.company}. ${p.review} Работу сдал в срок, на замечания реагировал быстро и по делу. Сильные стороны — структура мышления и умение опираться на данные.\n\n${mm.name}, ${mm.pos}, ментор ${BRAND}`};
 /* ================= employer ================= */
 function alexCand(){const e=emp(),d=pst(e.main)==='done';return {id:'c2',name:'Алексей Иванов',prof:T().goal,uni:'НИУ ВШЭ · Бизнес-информатика, 3 курс',match:e.match[d?1:0],skills:confAll().map(s=>s.name),projects:projCount(),city:'Москва',color:'#3B47E0',fresh:d,score:d?(S.scores[e.main]||P(e.main).score):null}}
-const cands=()=>[alexCand(),...CANDS].sort((a,b)=>b.match-a.match);
+const cands=()=>[...(VIS().show?[alexCand()]:[]),...CANDS].sort((a,b)=>b.match-a.match);
 function candStatus(c){const e=emp();if(c.id==='c2'){const inv=S.inv[e.main];if(inv&&inv.st==='accepted')return `<span class="pill ok">${ic('cal')}Интервью ${inv.slot.split(' · ')[0]}</span>`;if(inv)return `<span class="pill ac">${ic('mail')}Приглашён</span>`}if(S.empInvited[e.id+c.id])return `<span class="pill ac">${ic('mail')}Приглашён</span>`;return ''}
-const empVac=()=>[...emp().vac,...S.extraVac.map(v=>({title:v.title,type:v.type,resp:0,fresh:0,format:v.format}))];
+const empVac=()=>[...emp().vac,...S.extraVac.map((v,i)=>({title:v.title,type:v.type,resp:S.applied['x'+i]?1:0,fresh:S.applied['x'+i]?1:0,format:v.format}))];
 VIEWS.empdash=()=>{
  const e=emp(),mp=P(e.main),d=pst(e.main)==='done',rev=pst(e.main)==='review';
  const top=[...e.top.map(([id,s])=>({c:CANDS.find(x=>x.id===id),s})),...(d?[{c:alexCand(),s:Number(String(S.scores[e.main]||mp.score).replace(',','.'))}]:[])].sort((a,b)=>b.s-a.s);
@@ -2858,7 +2887,7 @@ VIEWS.empdash=()=>{
    <section class="card"><div class="card-h"><h2>Воронка найма через проекты</h2></div>
     ${hbars([['Просмотры проектов',1240],['Участники',55],['Отправили решения',27+(d?1:0)],['Приглашены',6+(d?1:0)],['Наняты',2]])}
     <p class="xs muted" style="margin-top:10px">Кандидаты из проектов проходят интервью в 2,4 раза чаще, чем из обычных откликов.</p></section>
-   <section class="card col g12"><h2>Ваш тариф: Команда</h2><p class="sm muted">Использовано 2 из 5 проектов и 11 из 30 приглашений в этом месяце.</p>${bar(37,'thin')}<button class="btn btn-s btn-sm" data-go="pricing" style="align-self:flex-start">${ic('calc')}Тарифы и калькулятор экономии</button></section>
+   <section class="card col g12"><h2>Ваш тариф: ${esc(curTier())}</h2><p class="sm muted">Использовано 2 из 5 проектов и 11 из 30 приглашений в этом месяце.</p>${bar(37,'thin')}<button class="btn btn-s btn-sm" data-go="pricing" style="align-self:flex-start">${ic('calc')}Тарифы и калькулятор экономии</button></section>
   </aside>
  </div>`};
 VIEWS.candidates=()=>{
@@ -2882,7 +2911,7 @@ function renderCandList(){
 }
 VIEWS.empjobs=()=>{
  const e=emp(),mp=P(e.main);
- const projs=[{title:mp.title,people:mp.people,sub:(mp.id==='p1'?21:34)+(pst(e.main)==='done'?1:0),dl:mp.deadline,hiring:1},...e.extraProj,...S.published.map(p=>({title:p.title,people:0,sub:0,dl:p.deadline||'—',hiring:p.hiring}))];
+ const projs=[{title:mp.title,people:mp.people,sub:(mp.id==='p1'?21:34)+(pst(e.main)==='done'?1:0),dl:mp.deadline,hiring:1},...e.extraProj,...allProjects().filter(p=>p.isNew&&p.emp===e.id).map(p=>({title:p.title,people:['active','review','done'].includes(pst(p.id))?1:0,sub:['review','done'].includes(pst(p.id))?1:0,dl:p.deadline||'—',hiring:p.hiring}))];
  return `
  <div class="page-h"><div><span class="label">${e.company}</span><h1 style="margin-top:4px">Вакансии и проекты</h1></div><div class="row g8"><button class="btn btn-s" data-act="newVac" data-type="Вакансия">${ic('plus')}Вакансия</button><button class="btn btn-s" data-act="newVac" data-type="Стажировка">${ic('plus')}Стажировка</button><button class="btn btn-p" data-go="postproject">${ic('plus')}Проект</button></div></div>
  <section class="card" style="margin-bottom:20px"><div class="card-h"><h2>Вакансии и стажировки</h2><span class="sm muted">${empVac().length} активных</span></div><div class="tbl-wrap"><table class="tbl"><thead><tr><th>Позиция</th><th>Тип</th><th>Формат</th><th>Отклики</th><th>Статус</th></tr></thead><tbody>${empVac().map(v=>`<tr><td class="b">${esc(v.title)}</td><td>${v.type}</td><td>${esc(v.format)}</td><td><b>${v.resp}</b>${v.fresh?` <span class="xs" style="color:var(--green)">+${v.fresh}</span>`:''}</td><td><span class="pill ok">Активна</span></td></tr>`).join('')}</tbody></table></div></section>
@@ -2913,6 +2942,7 @@ VIEWS.postproject=()=>`
 VIEWS.empmessages=(id)=>chatView(id,'employer');
 
 /* ================= pricing ================= */
+const curTier=()=>S.tier||'Команда';
 const TIERS=[{n:'Старт',p:0,pl:'0 ₽',per:'навсегда',d:'Попробовать найм через проекты',f:['1 проект в квартал','1 активная вакансия','До 20 решений на проект','Приглашения на интервью']},
  {n:'Команда',p:39900,pl:'39 900 ₽',per:'в месяц',d:'Для регулярного найма стажёров',pop:1,f:['До 5 проектов одновременно','10 вакансий и стажировок','Поиск по подтверждённым навыкам','30 приглашений в месяц','Аналитика воронки найма']},
  {n:'Корпоративный',p:150000,pl:'от 150 000 ₽',per:'в месяц',d:'Для крупных стажёрских программ',f:['Без лимитов на проекты и вакансии','Брендированные кейс-чемпионаты','Интеграция с ATS','Выделенный менеджер','Отчёты для HR-бренда']}];
@@ -2927,7 +2957,9 @@ function calcOut(){const m=calcModel(),mx=Math.max(m.trad,m.plat);
   <p class="xs muted">Расчёт на допущениях демо-версии: с платформой позиция закрывается за 3 недели, а доля ранних уходов снижается до 12%, потому что кандидат уже показал себя на реальной задаче. Стоимость замены ушедшего стажёра равна стоимости найма.</p>`}
 VIEWS.pricing=()=>{const c=UI.calc;return `
  <div class="page-h"><div><span class="label">Бизнес-модель</span><h1 style="margin-top:4px">Тарифы и экономия на найме</h1><p>Компании платят за доступ к кандидатам с подтверждёнными навыками и за результат — нанятого стажёра. Для студентов платформа бесплатна.</p></div></div>
- <div class="tiers" style="margin-bottom:24px">${TIERS.map(t=>`<section class="card tier ${t.pop?'tier-pop':''}">${t.pop?'<span class="pill ac tag" style="background:var(--accent);color:var(--on-accent)">Ваш тариф · популярный</span>':''}<div><h2>${t.n}</h2><p class="sm muted">${t.d}</p></div><div class="price">${t.pl} <small>${t.per}</small></div><ul class="ul sm">${t.f.map(x=>`<li>${ic('check')}<span>${x}</span></li>`).join('')}</ul><button class="btn ${t.pop?'btn-s':'btn-p'} btn-block" style="margin-top:auto" data-act="tier" data-id="${t.n}" ${t.pop?'disabled':''}>${t.pop?'Текущий тариф':t.p?'Связаться с отделом продаж':'Перейти на тариф'}</button></section>`).join('')}</div>
+ ${S.tierNext?`<div class="banner" style="background:var(--orange-soft);margin-bottom:16px"><span class="ic" style="background:var(--orange)">${ic('cal',20)}</span><div class="grow"><div class="b">С ${esc(S.tierNext.from)} — тариф «${esc(S.tierNext.name)}»</div><div class="sm t2">До этой даты действует «${esc(curTier())}» со всеми лимитами.</div></div><button class="btn btn-s btn-sm" data-act="tierCancel">Отменить смену</button></div>`:''}
+ <div class="tiers" style="margin-bottom:24px">${TIERS.map(t=>{const cur=t.n===curTier();return `<section class="card tier ${cur?'tier-pop':''}">${cur?'<span class="pill ac tag" style="background:var(--accent);color:var(--on-accent)">Ваш тариф</span>':t.pop?'<span class="pill tag">Популярный</span>':''}<div><h2>${t.n}</h2><p class="sm muted">${t.d}</p></div><div class="price">${t.pl} <small>${t.per}</small></div><ul class="ul sm">${t.f.map(x=>`<li>${ic('check')}<span>${x}</span></li>`).join('')}</ul><button class="btn ${cur?'btn-s':'btn-p'} btn-block" style="margin-top:auto" data-act="tier" data-id="${t.n}" ${cur||(S.tierNext&&S.tierNext.name===t.n)?'disabled':''}>${cur?'Текущий тариф':S.tierNext&&S.tierNext.name===t.n?'Запланирован':t.n==='Корпоративный'?'Запросить предложение':'Перейти на тариф'}</button></section>`}).join('')}</div>
+ ${(S.salesReq||[]).length?`<section class="card col g8" style="margin-bottom:24px"><h2>Ваши запросы</h2>${S.salesReq.map(r=>`<div class="row between" style="padding:8px 0;border-top:1px solid var(--border)"><div><div class="b sm">Корпоративный тариф · ${r.hires} наймов в год</div><div class="xs muted">${esc(r.name)} · ${esc(r.contact)} · ${esc(r.date)}</div></div><span class="pill">Запрос №${r.n} · принят</span></div>`).join('')}</section>`:''}
  <div class="banner ac" style="margin-bottom:24px"><span class="ic">${ic('coin',20)}</span><div class="grow"><div class="b">Плата за результат: ${rub(FEE)} за каждого нанятого стажёра</div><div class="sm t2">Списывается только после выхода стажёра на работу. На корпоративном тарифе включена в подписку.</div></div></div>
  <section class="card"><div class="card-h"><div><h2>Калькулятор экономии</h2><div class="sm muted">Сравните текущий найм стажёров с наймом через проекты</div></div><span class="muted">${ic('calc',22)}</span></div>
   <div class="calc">
@@ -2946,7 +2978,7 @@ const CONS_OTHER=[{key:'o1',who:'Дарья Федорова',what:'Разбор
 const myReviewPids=()=>allProjects().filter(p=>['review','done'].includes(pst(p.id))).map(p=>p.id).sort((a,b)=>(pst(a)==='review'?0:1)-(pst(b)==='review'?0:1));
 VIEWS.mentor=()=>{
  const mm=mentorMe(),tab=UI.mentorTab,mine=myReviewPids(),waiting=mine.filter(x=>pst(x)==='review').length;
- const cons=[...Object.keys(S.mentorReq).map(k=>({key:'s-'+k,sk:k,who:'Алексей Иванов',what:'Оценка навыка «'+SK[k].name+'»',when:S.mentorReq[k].slot,me:1})),...CONS_OTHER];
+ const cons=[...(S.hrReview?[{key:'cv',cv:1,who:'Алексей Иванов',what:'Разбор резюме',when:'заявка от '+S.hrReview.date,me:1}]:[]),...Object.keys(S.mentorReq).map(k=>({key:'s-'+k,sk:k,who:'Алексей Иванов',what:'Оценка навыка «'+SK[k].name+'»',when:S.mentorReq[k].slot,me:1})),...CONS_OTHER];
  return `
  <div class="page-h"><div><span class="label">Кабинет ментора</span><h1 style="margin-top:4px">Добрый день, ${mm.name.split(' ')[0]}</h1><p>Вы проверяете решения студентов по критериям компаний и подтверждаете навыки. Ваша оценка — основание в Skill Passport, которое видят работодатели.</p></div></div>
  <div class="grid-4" style="margin-bottom:20px">
@@ -2957,7 +2989,7 @@ VIEWS.mentor=()=>{
   ${mine.map(pid=>{const p=P(pid),st=pst(pid);return `<tr><td><div class="row g12" style="flex-wrap:nowrap">${av('АИ','#3B47E0')}<div><div class="b">Алексей Иванов</div><div class="xs muted">НИУ ВШЭ · 3 курс${wsOf(pid).attempt>1?' · попытка '+wsOf(pid).attempt:''}</div></div></div></td><td>${esc(p.short)}<div class="xs muted">${esc(p.company)} · ментор ${esc(mentorOf(pid).name)}</div></td><td>${st==='review'?'<span class="pill pr">Ждёт проверки</span>':`<span class="pill ok">Проверено · ${S.scores[pid]||p.score}</span>`}</td><td style="text-align:right"><button class="btn ${st==='review'?'btn-p':'btn-s'} btn-sm" data-go="review-${pid}">${st==='review'?'Проверить':'Открыть'}</button></td></tr>`}).join('')}
   ${QUEUE.map((q,i)=>`<tr><td><div class="row g12" style="flex-wrap:nowrap">${av(initials(q.who),'#8A90B0')}<div><div class="b">${q.who}</div><div class="xs muted">Студент</div></div></div></td><td>${esc(P(q.pid).short)}<div class="xs muted">${esc(P(q.pid).company)}</div></td><td><span class="pill ok">Проверено · ${q.score}</span></td><td style="text-align:right"><button class="btn btn-g btn-sm" data-act="mentorOld" data-id="${i}">Открыть</button></td></tr>`).join('')}
   </tbody></table></div>${!mine.length?`<div class="empty sm" style="border-top:1px solid var(--border)">Новых решений нет. Когда студент отправит решение, оно появится здесь. <button class="linkish" data-act="role" data-role="student" data-then="projects">Открыть проекты глазами студента</button></div>`:''}</section>`
- :`<section class="card" style="padding:0">${cons.map(c=>{const st=S.consOk[c.key];return `<div class="row between" style="padding:14px 20px;border-bottom:1px solid var(--border)"><div class="row g12" style="flex-wrap:nowrap">${av(initials(c.who),c.me?'#3B47E0':'#8A90B0')}<div><div class="b">${c.who} ${c.me&&!st?'<span class="new-tag">Новая</span>':''}</div><div class="sm muted">${esc(c.what)}</div></div></div><div class="row g8"><span class="pill">${ic('cal')}${c.when}</span>${st==='assessed'?`<span class="pill ok">${ic('check')}Оценка проведена</span>`:st==='ok'?(c.sk?`<button class="btn btn-p btn-sm" data-act="consAssess" data-id="${c.sk}">Провести оценку</button>`:`<span class="pill ok">${ic('check')}Подтверждена</span>`):`<button class="btn btn-s btn-sm" data-act="mentorCons" data-id="${c.key}">Подтвердить</button>`}</div></div>`}).join('')}${!cons.length?'<div class="empty">Записей на консультации пока нет</div>':''}</section>`}`};
+ :`<section class="card" style="padding:0">${cons.map(c=>{const st=S.consOk[c.key];return `<div class="row between" style="padding:14px 20px;border-bottom:1px solid var(--border)"><div class="row g12" style="flex-wrap:nowrap">${av(initials(c.who),c.me?'#3B47E0':'#8A90B0')}<div><div class="b">${c.who} ${c.me&&!st?'<span class="new-tag">Новая</span>':''}</div><div class="sm muted">${esc(c.what)}</div></div></div><div class="row g8"><span class="pill">${ic('cal')}${c.when}</span>${c.cv?(S.hrReview.st==='done'?`<span class="pill ok">${ic('check')}Разбор отправлен</span>`:`<button class="btn btn-p btn-sm" data-act="hrWrite">Написать разбор</button>`):st==='assessed'?`<span class="pill ok">${ic('check')}Оценка проведена</span>`:st==='ok'?(c.sk?`<button class="btn btn-p btn-sm" data-act="consAssess" data-id="${c.sk}">Провести оценку</button>`:`<span class="pill ok">${ic('check')}Подтверждена</span>`):`<button class="btn btn-s btn-sm" data-act="mentorCons" data-id="${c.key}">Подтвердить</button>`}</div></div>`}).join('')}${!cons.length?'<div class="empty">Записей на консультации пока нет</div>':''}</section>`}`};
 function slideHtml(p,s,i){const [title,kind,data]=s;let body='';
  if(kind==='text')body=`<p style="font-size:11px;color:var(--text-2);line-height:1.4">${esc(data)}</p>`;
  if(kind==='funnel')body=`<div class="mb">${[100,74,43,18,7].map((w,k)=>`<i class="${k===3||k===4?'o':''}" style="width:${Math.max(5,w)}%"></i>`).join('')}</div>`;
@@ -3009,6 +3041,7 @@ VIEWS.uni=()=>{
  <div class="grid-4" style="margin-bottom:20px">
   ${[['Студентов на платформе',fmt(1240),'users','+86 за месяц'],['Подтверждено навыков',fmt(3860+fresh),'shield',fresh?`+${fresh} сегодня`:'+455 за месяц'],['Проектов с компаниями',fmt(612+doneProjects().length),'folder','34 компании'],['Приглашений на интервью',fmt(184+inv),'mail','15% студентов']].map(k=>`<section class="card kpi"><div class="row between"><span class="sm muted">${k[0]}</span><span class="muted">${ic(k[2])}</span></div><span class="v">${k[1]}</span><span class="xs" style="color:var(--green)">${k[3]}</span></section>`).join('')}
  </div>
+ ${(S.uniCourses||[]).length?`<section class="card col g8" style="margin-bottom:20px"><h2>Проекты компаний в курсах</h2>${S.uniCourses.map((c,i)=>`<div class="row between" style="padding:8px 0;border-top:1px solid var(--border)"><div class="row g12" style="flex-wrap:nowrap">${logo(P(c.pid).company,'sm')}<div><div class="b sm">${esc(c.course)} ← «${esc(P(c.pid).short)}»</div><div class="xs muted">${c.students} студентов · с ${esc(c.date)}</div></div></div><button class="btn btn-g btn-sm" data-act="uniUnlink" data-id="${i}">Убрать</button></div>`).join('')}</section>`:''}
  <div class="split">
   <div class="stack">
    <section class="card"><div class="card-h"><div><h2>Подтверждённые навыки по месяцам</h2><div class="sm muted">Октябрь 2025 — сентябрь 2026</div></div></div>${barChart(UNI.months,vals,{hl:11})}</section>
@@ -3020,12 +3053,22 @@ VIEWS.uni=()=>{
     <div class="quote sm"><b>Рекомендация:</b> встроить проект Т-Банка «Дашборд удержания клиентов» в курс «Анализ данных» — он закрывает SQL, Python и BI для 200+ студентов.</div><button class="btn btn-p btn-sm" data-act="uniIntegrate" style="align-self:flex-start">${ic('plus')}Встроить проект в курс</button></section>
   </aside>
  </div>`};
+function uniReportHtml(){const fresh=skAll().filter(s=>s.fresh).length,inv=Object.values(S.inv).filter(i=>i.st==='accepted').length;
+ const row=r=>`<tr>${r.map(c=>`<td>${esc(String(c))}</td>`).join('')}</tr>`;
+ return `<!DOCTYPE html><html lang="ru"><head><meta charset="utf-8"><title>Отчёт центра карьеры НИУ ВШЭ</title><style>body{font:14px/1.55 system-ui,sans-serif;max-width:860px;margin:32px auto;padding:0 24px;color:#1B1F33}h1{font-size:22px}h2{font-size:16px;margin-top:26px;color:#3B47E0}table{border-collapse:collapse;width:100%}td,th{border-bottom:1px solid #E2E6F0;padding:6px 8px;text-align:left}th{font-size:12px;color:#6A7090}.k{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.k div{border:1px solid #E2E6F0;border-radius:10px;padding:10px}.k b{display:block;font-size:22px}</style></head><body>
+ <p style="color:#6A7090">НИУ ВШЭ · ${UNI.unit} · сформировано ${todayStr()} на платформе ${BRAND}</p><h1>Карьерная готовность студентов: осенний семестр 2026</h1>
+ <div class="k"><div><b>${fmt(1240)}</b>студентов на платформе</div><div><b>${fmt(3860+fresh)}</b>подтверждённых навыков</div><div><b>${fmt(612+doneProjects().length)}</b>проектов с компаниями</div><div><b>${fmt(184+inv)}</b>приглашений на интервью</div></div>
+ <h2>Образовательные программы</h2><table><tr><th>Программа</th><th>Студентов</th><th>Средняя готовность</th><th>Стажировки</th></tr>${UNI.programs.map(r=>row([r[0],r[1],r[2]+'%',r[3]])).join('')}</table>
+ <h2>Каких навыков не хватает</h2><table><tr><th>Навык</th><th>Доля студентов без подтверждения</th></tr>${UNI.gaps.map(g=>row([g[0],g[1]+'%'])).join('')}</table>
+ <h2>Кто приглашает студентов</h2><table><tr><th>Компания</th><th>Приглашений</th></tr>${UNI.hiring.map(h=>row(h)).join('')}</table>
+ ${(S.uniCourses||[]).length?`<h2>Проекты компаний в курсах</h2><table><tr><th>Курс</th><th>Проект</th><th>Студентов</th></tr>${S.uniCourses.map(c=>row([c.course,P(c.pid).company+' · '+P(c.pid).short,c.students])).join('')}</table>`:''}
+ <p style="color:#6A7090;font-size:12px;margin-top:28px">Данные студентов, разрешивших делиться прогрессом с вузом. Демо-показатели платформы.</p></body></html>`}
 VIEWS.unistudents=()=>`
  <div class="page-h"><div><span class="label">${UNI.unit} · НИУ ВШЭ</span><h1 style="margin-top:4px">Студенты</h1><p>Карьерная готовность, подтверждённые навыки и статус трудоустройства студентов вуза.</p></div></div>
  <div class="filters"><div class="search" style="max-width:280px;flex:1 1 220px">${ic('search')}<input class="inp" id="uf-q" placeholder="Имя студента" value="${esc(UI.uni.q)}" style="width:100%;padding-left:38px"></div>${select('uf-prog','Все программы',UNI.programs.map(p=>p[0]),UI.uni.prog)}</div>
  <div id="uniList"></div>`;
 function renderUniList(){const el=$('#uniList');if(!el)return;const f=UI.uni;
- const rows=[uniAlex(),...UNI.students].filter(r=>(!f.q||r[0].toLowerCase().includes(f.q.toLowerCase()))&&(!f.prog||r[1].startsWith(f.prog)));
+ const rows=[...(VIS().uni?[uniAlex()]:[]),...UNI.students].filter(r=>(!f.q||r[0].toLowerCase().includes(f.q.toLowerCase()))&&(!f.prog||r[1].startsWith(f.prog)));
  el.innerHTML=`<section class="card" style="padding:0"><div class="tbl-wrap"><table class="tbl"><thead><tr><th>Студент</th><th>Цель</th><th>Готовность</th><th>Навыки</th><th>Проекты</th><th>Статус</th></tr></thead><tbody>${rows.map(r=>`<tr ${r[7]?'style="background:var(--accent-soft)"':''}><td><div class="row g12" style="flex-wrap:nowrap">${av(initials(r[0]),r[7]?'#3B47E0':'#8A90B0')}<div><div class="b">${r[0]}</div><div class="xs muted">${r[1]}</div></div></div></td><td>${r[2]}</td><td><div class="row g8" style="flex-wrap:nowrap"><div style="width:70px">${bar(r[3],'o thin')}</div><b>${r[3]}%</b></div></td><td>${r[4]}</td><td>${r[5]}</td><td><span class="pill ${/Оффер|Стажировка|Интервью/.test(r[6])?'ok':/Приглашение|Отклик/.test(r[6])?'ac':''}">${r[6]}</span></td></tr>`).join('')||'<tr><td colspan="6" class="empty">Никого не нашлось</td></tr>'}</tbody></table></div></section>`}
 
 /* ================= metrics ================= */
@@ -3118,15 +3161,13 @@ VIEWS.auth=(role)=>{role=AUTH[role]?role:'student';const a=AUTH[role];const logi
    <button type="button" class="crumb" data-go="welcome" style="margin:0">${ic('arL',16)}На главную</button>
    <div class="seg" style="align-self:flex-start">${[['student','Студент'],['employer','Компания'],['uni','Вуз']].map(([k,l])=>`<button type="button" class="${k===role?'on':''}" data-go="auth-${k}">${l}</button>`).join('')}</div>
    <h1>${login?'Вход':a.t}</h1>
-   <div class="sso"><button type="button" class="btn btn-s" data-act="sso">${ic('key')}Войти через VK ID</button><button type="button" class="btn btn-s" data-act="sso">${ic('shield')}${role==='student'?'Через Госуслуги':'Через Яндекс ID'}</button></div>
-   <div class="or">или по почте</div>
    ${(login?fields.filter(f=>f[0]==='au-email'):fields).map(f=>`<label class="field"><span>${f[1]}</span><input class="inp" id="${f[0]}" value="${esc(f[2])}" required></label>`).join('')}
    <label class="field"><span>Пароль</span><input class="inp" id="au-pass" type="password" value="demo-password" required></label>
    ${login?'':`<label class="check sm"><input type="checkbox" id="au-agree" checked>Согласен на обработку персональных данных и с условиями сервиса</label>`}
    <p class="sm" id="au-err" style="color:var(--red)" hidden>Нужно согласие на обработку персональных данных.</p>
    <button class="btn btn-p btn-lg btn-block" type="submit" id="au-submit">${login?'Войти':'Создать аккаунт'}</button>
    <p class="sm muted" style="text-align:center">${login?'Нет аккаунта?':'Уже есть аккаунт?'} <button type="button" class="linkish" data-act="toggleLogin">${login?'Зарегистрироваться':'Войти'}</button></p>
-   <p class="xs muted" style="text-align:center">Демо-версия: поля заполнены примером, регистрация имитируется.</p>
+   <p class="xs muted" style="text-align:center">Демо-версия: аккаунт создаётся в этом браузере, данные никуда не отправляются.</p>
   </form></div></div>`};
 /* ================= modals ================= */
 function openModal(html,cls=''){$('#modalRoot').innerHTML=`<div class="scrim" data-act="closeModalScrim"><div class="modal ${cls}" role="dialog" aria-modal="true">${html}</div></div>`}
@@ -3142,20 +3183,26 @@ function renderOnb(){const o=UI.onb;const idx={resume:0,parsing:0,skills:1,goal:
   <div class="col g8 steps">${['Резюме и навыки','Цель и карьерная готовность','Проекты от VK, Ozon, Т-Банка и стартапов','Стажировки по подтверждённым навыкам'].map((s,i)=>`<div class="step"><i>${i+1}</i>${s}</div>`).join('')}</div></div>`;
  let right='';
  if(o.step==='resume')right=`<div class="onb-step"><div class="stepper"><i class="on"></i><i></i><i></i></div><div><span class="label">Шаг 1 из 3</span><h2 style="margin-top:4px">Загрузите резюме</h2><p class="sm muted" style="margin-top:4px">Платформа найдёт в нём навыки и опыт и сразу построит карьерный путь. Это займёт несколько секунд.</p></div>
-  <label class="drop" for="resumeFile" style="cursor:pointer;padding:28px">${ic('upload',26)}<span class="b">Перетащите файл или выберите на компьютере</span><span class="xs muted">PDF, DOCX до 10 МБ</span><input type="file" id="resumeFile" hidden accept=".pdf,.doc,.docx,.txt"></label>
+  <label class="drop" for="resumeFile" style="cursor:pointer;padding:28px">${ic('upload',26)}<span class="b">Перетащите файл или выберите на компьютере</span><span class="xs muted">PDF, DOCX или TXT до 10 МБ</span><input type="file" id="resumeFile" hidden accept=".pdf,.docx,.txt"></label>
   <button class="btn btn-p btn-lg btn-block" data-act="resumeDemo">${ic('file')}Использовать демо-резюме</button>
   <button class="btn btn-g btn-block" data-act="onbGoal">Пропустить и выбрать цель</button></div>`;
- if(o.step==='parsing')right=`<div class="onb-step"><div class="stepper"><i class="on"></i><i></i><i></i></div><div><span class="label">Шаг 1 из 3</span><h2 style="margin-top:4px">Анализируем резюме</h2><p class="sm muted" style="margin-top:4px">${esc(o.file||'Иванов_резюме.pdf')}</p></div><div id="parse">${['Читаем документ','Находим навыки и опыт','Сопоставляем с требованиями 140+ стажировок'].map((s,i)=>`<div class="review-step" data-i="${i}"><span class="mk"></span><span>${s}</span></div>`).join('')}</div></div>`;
- if(o.step==='skills')right=`<div class="onb-step"><div class="stepper"><i class="on"></i><i class="on"></i><i></i></div><div><span class="label">Шаг 2 из 3</span><h2 style="margin-top:4px">Нашли ${RESUME.length} навыков</h2><p class="sm muted" style="margin-top:4px">Проверьте, всё ли верно. Навыки из резюме отмечены как «указаны» — подтвердить их можно проектами и тестами.${o.file&&o.file!=='Иванов_резюме.pdf'?' В демо-версии распознавание имитируется.':''}</p></div>
-  <div class="recog">${RESUME.map((r,i)=>`<span class="pill ${['Product Thinking','Customer Development','Презентация выводов'].includes(r[0])?'ok':''}" style="animation-delay:${i*40}ms">${ic('check')}${r[0]} <span class="muted" style="font-weight:400">· ${r[1]}</span></span>`).join('')}</div>
-  <div class="grid-2" style="gap:10px"><div class="stat"><div class="v">3</div><div class="sm muted">проекта найдено</div></div><div class="stat"><div class="v">3 курс</div><div class="sm muted">НИУ ВШЭ, бизнес-информатика</div></div></div>
-  <button class="btn btn-p btn-lg btn-block" data-act="onbGoal">Дальше: выбрать цель${ic('arR')}</button></div>`;
+ if(o.step==='parsing')right=`<div class="onb-step"><div class="stepper"><i class="on"></i><i></i><i></i></div><div><span class="label">Шаг 1 из 3</span><h2 style="margin-top:4px">Анализируем резюме</h2><p class="sm muted" style="margin-top:4px">${esc(o.file||'')}</p></div><div id="parse">${['Читаем документ','Находим навыки и опыт','Сопоставляем с требованиями 140+ стажировок'].map((s,i)=>`<div class="review-step" data-i="${i}"><span class="mk"></span><span>${s}</span></div>`).join('')}</div></div>`;
+ if(o.step==='skills'){const sel=o.sel||[],others=Object.keys(SK).filter(id=>!sel.includes(id)).sort((a,b)=>SK[a].name.localeCompare(SK[b].name));
+  right=`<div class="onb-step"><div class="stepper"><i class="on"></i><i class="on"></i><i></i></div><div><span class="label">Шаг 2 из 3</span><h2 style="margin-top:4px">${o.found&&o.found.length?`Нашли ${o.found.length} ${plural(o.found.length,'навык','навыка','навыков')}`:'Навыки не распознаны'}</h2><p class="sm muted" style="margin-top:4px">${o.err?esc(o.err)+' ':''}${o.found&&o.found.length?'Снимите лишнее и добавьте недостающее. Навыки из резюме отмечаются как «указаны» — подтвердить их можно проектами, тестами, курсами и ментором.':'Отметьте свои навыки вручную — это займёт минуту.'}</p></div>
+  <div class="recog">${sel.map(id=>`<button class="pill ok" data-act="onbSk" data-id="${id}" aria-pressed="true" style="cursor:pointer">${ic('check')}${esc(SK[id].name)}${ic('x',12)}</button>`).join('')||'<span class="sm muted">Пока ничего не выбрано</span>'}</div>
+  <div class="row g8"><select class="sel grow" id="onb-add" aria-label="Добавить навык"><option value="">Добавить навык…</option>${others.map(id=>`<option value="${id}">${esc(SK[id].name)}</option>`).join('')}</select></div>
+  ${o.words?`<div class="grid-2" style="gap:10px"><div class="stat"><div class="v">${fmt(o.words)}</div><div class="sm muted">слов прочитано</div></div><div class="stat"><div class="v">${o.found.length}</div><div class="sm muted">${plural(o.found.length,'навык найден','навыка найдено','навыков найдено')} автоматически</div></div></div>`:''}
+  <button class="btn btn-p btn-lg btn-block" data-act="onbSkillsOk">Дальше: выбрать цель${ic('arR')}</button></div>`}
  if(o.step==='goal'){const sel=TRACKS[o.goal]||TRACKS.pm;right=`<div class="onb-step"><div class="stepper"><i class="on"></i><i class="on"></i><i class="on"></i></div><div><span class="label">Шаг 3 из 3</span><h2 style="margin-top:4px">Кем вы хотите работать?</h2><p class="sm muted" style="margin-top:4px">Готовность рассчитана по вашему профилю: навыки, проекты и курсы.</p></div>
   <div class="grid-2" style="gap:10px">${Object.values(TRACKS).map(t=>`<button class="goal ${t.id===o.goal?'on':''}" data-act="pickGoal" data-id="${t.id}"><div class="row between" style="flex-wrap:nowrap"><span class="row g8 b" style="flex-wrap:nowrap">${ic(t.icon)}${t.goal}</span>${t.id==='pm'?'<span class="pill ac" style="height:20px;font-size:11px">рекомендуем</span>':''}</div><div class="row g8" style="flex-wrap:nowrap"><div class="grow"><div class="bar thin"><i style="width:${readinessOf(t.id)}%"></i></div></div><span class="xs b">${readinessOf(t.id)}%</span></div></button>`).join('')}
-  ${GOALS_SOON.map(([g,p,i])=>`<button class="goal soon" data-act="soonGoal" data-id="${g}"><div class="row between" style="flex-wrap:nowrap"><span class="row g8 b" style="flex-wrap:nowrap">${ic(i)}${g}</span><span class="pill" style="height:20px;font-size:11px">скоро</span></div><div class="row g8" style="flex-wrap:nowrap"><div class="grow"><div class="bar thin"><i style="width:${p}%;background:var(--muted)"></i></div></div><span class="xs b">${p}%</span></div></button>`).join('')}</div>
+  ${GOALS_SOON.map(([g,p,i])=>`<button class="goal soon ${S.waitlist[g]?'on':''}" data-act="soonGoal" data-id="${g}" aria-pressed="${!!S.waitlist[g]}"><div class="row between" style="flex-wrap:nowrap"><span class="row g8 b" style="flex-wrap:nowrap">${ic(i)}${g}</span><span class="pill ${S.waitlist[g]?'ok':''}" style="height:20px;font-size:11px">${S.waitlist[g]?'жду трек':'трек в разработке'}</span></div><div class="row g8" style="flex-wrap:nowrap"><div class="grow"><div class="bar thin"><i style="width:${p}%;background:var(--muted)"></i></div></div><span class="xs b">${p}%</span></div></button>`).join('')}</div>
   <button class="btn btn-p btn-lg btn-block" data-act="startGoal">Выбрать ${sel.goal} и продолжить${ic('arR')}</button></div>`}
  openModal(`${left}<div class="onb-r">${right}</div>`,'onb');
- if(o.step==='parsing'){let i=0;const tick=()=>{const el=$(`#parse .review-step[data-i="${i}"]`);if(!el){S.resume=true;save();o.step='skills';renderOnb();return}el.classList.add('on');el.querySelector('.mk').innerHTML=ic('check');i++;setTimeout(tick,650)};setTimeout(tick,400)}
+ if(o.step==='parsing'&&!o.running){o.running=1;const mark=i=>{const el=$(`#parse .review-step[data-i="${i}"]`);if(el){el.classList.add('on');el.querySelector('.mk').innerHTML=ic('check')}};const wait=ms=>new Promise(r=>setTimeout(r,ms));
+  (async()=>{let text='';try{text=o.fileObj?await extractText(o.fileObj):RESUME_TEXT}catch(e){o.err=e.message==='format'?'Этот формат не читается — нужен PDF, DOCX или TXT.':'Не удалось прочитать файл: возможно, это скан без текстового слоя.'}
+   mark(0);await wait(350);const found=text?detectSkills(text):[];o.found=found;o.sel=[...found];o.words=text.split(/\s+/).filter(Boolean).length;mark(1);await wait(350);mark(2);await wait(300);
+   if(o.fileObj){await storeUpload('resume',o.fileObj);S.resumeFile={name:o.fileObj.name,size:o.fileObj.size}}else S.resumeFile={name:'Иванов_резюме.txt',size:RESUME_TEXT.length,demo:1};save();
+   o.running=0;if(UI.onb===o){o.step='skills';renderOnb()}})()}
 }
 
 function howConfirm(id){
@@ -3246,6 +3293,29 @@ function fileModal(arg){
  if(['XLS','CSV'].includes(f[0])&&p.data){openModal(mh(name,f[2])+`<div class="modal-b col g12">${dataTable(p.data)}</div>`,'wide');return}
  openModal(mh(name,f[2])+`<div class="modal-b col g12"><div class="quote sm">${esc(f[2])}. ${f[0]==='FIG'?'Макеты доступны участникам проекта по ссылке компании после старта.':'Документ приложен компанией к проекту.'}</div><ul class="ul sm">${p.steps.slice(0,3).map(x=>`<li>${ic('check')}<span>Пригодится для шага: ${esc(x)}</span></li>`).join('')}</ul></div>`)}
 
+/* ================= AI ================= */
+function aiOpen(q){UI.ai=true;$('#fab').hidden=true;if(!UI.aiLog.length)UI.aiLog.push({me:0,html:`Привет, Алексей! Я карьерный AI-помощник ${BRAND}. Знаю ваш Skill Passport, проекты и цель — ${T().goal}. Чем помочь?`});renderAI();if(q)aiSend(q)}
+function renderAI(){if(!UI.ai){$('#aiRoot').innerHTML='';return}
+ $('#aiRoot').innerHTML=`<section class="ai" aria-label="AI-помощник"><div class="ai-h"><span class="ai-ic">${ic('spark',18)}</span><div class="grow"><div class="b">AI Career Assistant</div><div class="xs muted">Отвечает на основе вашего профиля</div></div><button class="x" data-act="aiClose" aria-label="Закрыть">${ic('x',16)}</button></div>
+ <div class="ai-body" id="aiBody">${UI.aiLog.map(m=>m.typing?`<div class="msg bot typing"><i></i><i></i><i></i></div>`:`<div class="msg ${m.me?'me':'bot'}">${m.html}${m.acts?`<div class="acts">${m.acts.map(a=>`<button class="btn btn-s btn-sm" ${btnAttr(a[1])}>${a[0]}</button>`).join('')}</div>`:''}</div>`).join('')}</div>
+ ${UI.aiLog.length<3?`<div class="sugg">${[`Что мне нужно сделать, чтобы получить стажировку ${T().goal}?`,'Как подтвердить SQL?','Помоги подготовиться к интервью'].map(s=>`<button data-act="aiAsk" data-q="${s}">${s}</button>`).join('')}</div>`:''}
+ <form class="ai-f" id="aiForm"><input id="aiInput" placeholder="Спросите о карьере, навыках, вакансиях" autocomplete="off" aria-label="Сообщение"><button class="btn btn-p" type="submit" aria-label="Отправить" style="width:42px;height:42px;padding:0">${ic('send')}</button></form></section>`;
+ const b=$('#aiBody');b.scrollTop=b.scrollHeight}
+function aiReply(q){
+ const t=q.toLowerCase(),tr=T(),r=readiness(),d=mainDone(tr.id),mp=P(tr.main),inv=S.inv[tr.main];
+ if(/стажир|что .*нужно|получить|шанс/.test(t))return d?{html:`Сейчас ваш профиль соответствует стажировкам ${tr.goal} примерно на <b>${r}%</b> — после проекта ${mp.company} вы прошли порог 75%.<br><br>Чтобы дойти до уровня Junior:<ol><li>Подтвердить A/B-тестирование — проект Ozon.</li><li>${tr.id==='pm'?'Разобраться с юнит-экономикой.':'Подтвердить статистику тестом.'}</li><li>${inv&&inv.st==='accepted'?`Хорошо пройти интервью в ${mp.company}.`:`Ответить на приглашение ${mp.company}.`}</li></ol>Уже сейчас вам доступно ${fitCount()} подходящих стажировок.`,acts:[['Проект Ozon','go:project-p6'],['Стажировки','go:internships']]}
+  :{html:`Сейчас ваш профиль соответствует стажировкам ${tr.goal} примерно на <b>${r}%</b>.<br><br>Рекомендую:<ol><li>Подтвердить навык SQL.</li><li>Выполнить ещё один реальный ${tr.id==='pm'?'продуктовый':'аналитический'} проект.</li><li>Добавить ${tr.id==='pm'?'продуктовые метрики':'дашборд с метриками'} в портфолио.</li></ol>После этого вам будут доступны ещё около 12 подходящих стажировок.`,acts:[['Найти проект','go:projects-sql'],['Посмотреть карьерный путь','go:career']]};
+ if(/sql/.test(t))return sk('sql').st==='ok'?{html:`SQL у вас уже подтверждён: ${esc(sk('sql').basis)}. Следующий уровень — оконные функции и когортный анализ: пригодятся в проекте Т-Банка по удержанию.`,acts:[['Проект Т-Банка','go:project-p4']]}:{html:`Сейчас SQL у вас на 70%. Есть два пути:<ol><li><b>Быстро:</b> тест из 5 вопросов, около 7 минут.</li><li><b>Сильнее всего:</b> проект ${mp.company} — вместе с SQL подтвердятся ещё ${confirmsOf(tr.main).length-1} навыка.</li></ol>`,acts:[['Пройти тест','act:test:sql'],['Проект '+mp.company,'go:project-'+tr.main]]};
+ if(/интервью|собесед/.test(t))return {html:`${inv?`Интервью в ${mp.company} проведёт ${empOfProj(tr.main).person}. `:''}Как подготовиться:<ol><li>Расскажите кейс по схеме: проблема → данные → вывод → гипотеза → метрика.</li><li>Подготовьте ответ на вопрос «Как бы вы приоритизировали гипотезы?» — используйте RICE.</li><li>Изучите продукт компании: пройдите путь пользователя до оплаты.</li></ol>Могу провести тренировочное интервью — напишите «давай потренируемся».`};
+ if(/потрен/.test(t))return {html:`Первый вопрос: <b>«${tr.id==='pm'?'Конверсия в оплату упала на 10%. Ваши первые три действия?':'Retention упал на 5 п.п. Как будете искать причину?'}»</b> Напишите ответ — я дам обратную связь.`};
+ if(/проект|подход/.test(t))return {html:`Под цель ${tr.goal} лучше всего подходят: «${mp.title}» от ${mp.company} (подтвердит ${confirmsOf(tr.main).length} навыков), «A/B-тест карточки товара» от Ozon и командный «Онбординг продавцов» от Avito.`,acts:[['Каталог проектов','go:projects'],['Проект '+mp.company,'go:project-'+tr.main]]};
+ if(/презентац|структур/.test(t))return {html:'Структура на 10 слайдов: 1) главный вывод, 2) контекст и данные, 3–5) анализ и проблемные места, 6–8) гипотезы с RICE, 9) что проверить первым, 10) ожидаемый эффект. Выводы пишите в заголовках слайдов.'};
+ if(/вакан|ozon|vk|яндекс|банк|avito|kaspersky|skillup/.test(t))return {html:'Совпадение считается по подтверждённым навыкам. Для этой позиции проверьте блок «Нужно улучшить»: один подтверждённый навык обычно даёт +3–8% совпадения. Перед откликом добавьте в портфолио проект с метриками.',acts:[['Мои навыки','go:skills']]};
+ if(/конверси|retention|причин|действи/.test(t))return {html:'Хороший ход мысли. Сильный ответ на интервью: 1) проверить, не сломался ли сбор данных, 2) разложить метрику по шагам и сегментам, 3) сопоставить с релизами и внешними событиями. Главное — сначала диагноз, потом решение.'};
+ return {html:`Понял вопрос. Пока я лучше всего помогаю с планом развития, подбором проектов и стажировок и подготовкой к интервью. Ваша текущая готовность — ${r}%.`,acts:[['Мой путь','go:career']]};
+}
+function aiSend(q){UI.aiLog.push({me:1,html:esc(q)},{typing:1});renderAI();setTimeout(()=>{UI.aiLog=UI.aiLog.filter(m=>!m.typing);UI.aiLog.push(aiReply(q));renderAI()},750)}
+
 function finishProject(pid,score,comment){const p=P(pid);
  S.flags['rb_'+pid]=readinessOf((trackOfProj(pid)||T()).id);S.flags['ub_'+pid]=newlyUnlocked().length;
  S.pstat[pid]='done';S.recs=S.recs||{};if(!S.recs[pid])S.recs[pid]=REC_T(pid);S.scores[pid]=score;S.flags['d_'+pid]=todayStr();
@@ -3264,7 +3334,6 @@ const A={
  logout(){S.authed=false;save();closePop();UI.ai=false;renderAI();go('welcome')},
  demoLogin(){S.authed=true;S.lastRole='student';save();go('dashboard')},
  toggleLogin(){UI.login=!UI.login;render()},
- sso(){const f=$('#authForm');if(f)f.requestSubmit()},
  scrollTo(e){const el=document.getElementById(e.dataset.id);if(el)el.scrollIntoView({behavior:'smooth',block:'start'})},
  ai(){aiOpen()},aiClose(){UI.ai=false;renderAI();$('#fab').hidden=curRole!=='student'},
  aiAsk(e){closeModal();aiOpen();aiSend(e.dataset.q)},
@@ -3272,10 +3341,12 @@ const A={
  closeModal(){closeModal()},
  closeModalScrim(e,ev){if(ev.target===e&&S.onboarded)closeModal()},
  /* onboarding */
- resumeDemo(){UI.onb.file='Иванов_резюме.pdf';UI.onb.step='parsing';renderOnb()},
+ resumeDemo(){Object.assign(UI.onb,{file:'Иванов_резюме.txt',fileObj:null,err:null,step:'parsing'});renderOnb()},
+ onbSk(e){const o=UI.onb;o.sel=o.sel.filter(x=>x!==e.dataset.id);renderOnb()},
+ onbSkillsOk(){const o=UI.onb;S.resumeSkills=[...o.sel];S.resume=true;save();o.step='goal';renderOnb();toast(`В профиль добавлено ${o.sel.length} ${plural(o.sel.length,'навык','навыка','навыков')} из резюме`,'file')},
  onbGoal(){UI.onb.step='goal';renderOnb()},
  pickGoal(e){UI.onb.goal=e.dataset.id;renderOnb()},
- soonGoal(e){toast(`Трек «${e.dataset.id}» появится в ближайшем обновлении. Сейчас доступны Product Manager и Data Analyst`,'clock')},
+ soonGoal(e){const g=e.dataset.id;S.waitlist[g]=!S.waitlist[g];save();renderOnb();const n=allProjects().filter(p=>p.prof===g).length;toast(S.waitlist[g]?`Отметили интерес к треку «${g}». ${n?`Проекты по профессии уже есть в каталоге: ${n}`:'Трек в разработке'}`:'Интерес снят',S.waitlist[g]?'check':'x')},
  startGoal(){const changed=S.onboarded&&S.goal!==UI.onb.goal;S.goal=UI.onb.goal;S.onboarded=true;UI.onb=null;save();closeModal();render();toast(`Цель выбрана: ${T().goal} · готовность ${readiness()}%`,'target');if(changed&&curRole==='student')go('dashboard')},
  changeGoal(){UI.onb={step:'goal',goal:S.goal};renderOnb()},
  resumeAgain(){UI.onb={step:'resume',goal:S.goal};renderOnb()},
@@ -3331,7 +3402,7 @@ const A={
  confirmSlot(e){const pid=e.dataset.id;S.inv[pid]={st:'accepted',slot:UI.slotSel};ensureInviteChat(pid);const c=S.chats['inv-'+pid];c.msgs.push({f:'sys',t:`Интервью назначено: ${UI.slotSel}`},{f:'them',t:'Отлично, до встречи! Ссылку на встречу пришлю за час. Подготовьте, пожалуйста, 5-минутный рассказ о решении.',tm:tnow()});c.unreadE=(c.unreadE||0)+1;S.acted=true;save();closeModal();render();toast('Интервью подтверждено: '+UI.slotSel,'cal')},
  apply(e){const j=jobById(e.dataset.id);S.applied[j.id]=1;save();render();toast(`Отклик отправлен в ${j.company}. Компания видит ваш Skill Passport`,'send')},
  boost(){const b=$('#boost');b.hidden=!b.hidden},
- copyLink(){const u=DOMAIN+'/@a.ivanov';const ok=()=>toast('Ссылка скопирована: '+u,'copy');try{navigator.clipboard.writeText('https://'+u).then(ok,ok)}catch(err){ok()}},
+ copyLink(){if(!VIS().show){toast('Профиль скрыт — включите видимость в профиле','lock');return}copyText(publicUrl(),'Ссылка на публичное портфолио скопирована')},
  sim(e){simModal(e.dataset.id)},
  simPick(e){const [k,qi,sc,i]=e.dataset.id.split('|');simModal(k,+qi,+sc,+i)},
  simNext(e){const [k,qi,sc]=e.dataset.id.split('|');simModal(k,+qi,+sc)},
@@ -3339,11 +3410,14 @@ const A={
  candSkill(e){const s=e.dataset.id,a=UI.cand.skills;UI.cand.skills=a.includes(s)?a.filter(x=>x!==s):[...a,s];e.classList.toggle('on');renderCandList()},
  resetCF(){UI.cand={skills:[],prof:'',min:0};render()},
  candProfile(e){candModal(e.dataset.id)},
- invite(e){const id=e.dataset.id;if(id==='c2'&&S.inv[emp().main]){toast('Алексей уже приглашён по итогам проекта','mail');return}inviteModal(id)},
+ invite(e){const id=e.dataset.id;if(id==='c2'&&S.inv[emp().main]){toast('Алексей уже приглашён — продолжите разговор в сообщениях','mail');return}if(id==='c2'&&!VIS().inv){toast('Кандидат закрыл приглашения в настройках профиля','lock');return}inviteModal(id)},
  newVac(e){vacModal(e.dataset.type)},
  ppFormat(e){$$('[data-act="ppFormat"]').forEach(b=>b.classList.toggle('on',b===e))},
  ppDemo(){$('#pp-title').value='Анализ оттока учеников после пробного урока';$('#pp-desc').value='После бесплатного пробного урока только 18% учеников покупают курс. Предоставим выгрузку посещений и оплат за 3 месяца. Ждём анализ причин оттока, 3–5 гипотез и план эксперимента.'},
- tier(e){toast(e.dataset.id==='Старт'?'Тариф можно сменить в конце расчётного периода':'Заявка отправлена — менеджер свяжется в течение дня','coin')},
+ tier(e){const n=e.dataset.id;if(n==='Корпоративный'){openModal(mh('Корпоративный тариф','Подберём условия под вашу программу стажировок')+`<form class="modal-b col g12" id="salesForm"><div class="form-grid"><label class="field"><span>Контактное лицо</span><input class="inp" id="sf-name" value="${esc(emp().person)}" required></label><label class="field"><span>Почта или телефон</span><input class="inp" id="sf-contact" required placeholder="name@company.ru"></label><label class="field"><span>Наймов стажёров в год</span><input class="inp" id="sf-hires" type="number" min="1" value="30" required></label><label class="field"><span>Нужна интеграция с ATS</span><select class="sel" id="sf-ats"><option>Нет</option><option>Хантфлоу</option><option>Talantix</option><option>Другая</option></select></label><label class="field full"><span>Комментарий</span><textarea class="inp" id="sf-comment" rows="3" placeholder="Какие направления, сроки, брендированные чемпионаты"></textarea></label></div><div class="row g8" style="justify-content:flex-end"><button class="btn btn-s" type="button" data-act="closeModal">Отмена</button><button class="btn btn-p" type="submit">Отправить запрос</button></div></form>`);return}
+  openModal(mh(`Перейти на тариф «${n}»?`,'Смена вступит в силу с начала следующего расчётного периода')+`<div class="modal-b col g12"><ul class="ul sm">${TIERS.find(t=>t.n===n).f.map(x=>`<li>${ic('check')}<span>${x}</span></li>`).join('')}</ul><div class="quote sm">До 1 ноября сохраняются лимиты «${esc(curTier())}». Активные проекты и вакансии сверх лимитов нового тарифа будут переведены в черновики.</div><div class="row g8" style="justify-content:flex-end"><button class="btn btn-s" data-act="closeModal">Оставить «${esc(curTier())}»</button><button class="btn btn-p" data-act="tierConfirm" data-id="${n}">Перейти с 1 ноября</button></div></div>`)},
+ tierConfirm(e){S.tierNext={name:e.dataset.id,from:'1 ноября'};save();closeModal();render();toast(`Тариф «${e.dataset.id}» начнёт действовать с 1 ноября`,'coin')},
+ tierCancel(){S.tierNext=null;save();render();toast('Смена тарифа отменена','refresh')},
  /* mentor */
  mTab(e){UI.mentorTab=e.dataset.id;render()},
  mentorOld(e){const q=QUEUE[+e.dataset.id],p=P(q.pid);openModal(mh(`${q.who} · ${p.short}`,`${p.company} · проверено ${q.date}`)+`<div class="modal-b col g12"><div class="row between"><span class="label">Итоговая оценка</span><span class="price" style="font-size:24px">${q.score}</span></div><div>${p.criteria.map((c,i)=>`<div class="rub"><span class="sm">${esc(c)}</span><span class="stars">${[1,2,3,4,5].map(n=>`<span style="color:${n<=q.stars[i]?'var(--star)':'var(--track)'};line-height:0">${ic('star')}</span>`).join('')}</span></div>`).join('')}</div><div class="quote sm">«${esc(q.comment)}»</div><div class="chips">${p.confirms.map(id=>`<span class="pill ok">${ic('shield')}${esc(SK[id].name)}</span>`).join('')}</div><button class="btn btn-p" data-act="closeModal" style="align-self:flex-end">Закрыть</button></div>`)},
@@ -3361,8 +3435,10 @@ const A={
   rv.comment=$('#rv-comment').value.trim();if(rv.comment.length<20){toast('Напишите отзыв для студента и компании','x');return}S.sel[pid]=rv.sel;const score=dec((rv.stars.reduce((a,b)=>a+b,0)/rv.stars.length).toFixed(1));finishProject(pid,score,rv.comment);render();
   openModal(mh('Проверка завершена',`Оценка ${score} · подтверждено ${rv.sel.length} ${plural(rv.sel.length,'навык','навыка','навыков')}`)+`<div class="modal-b col g12"><p class="t2">Студент получил подтверждение навыков, а ${esc(P(pid).company)} — результат с вашим отзывом.${P(pid).hiring?' Компания сразу отправила приглашение на интервью.':''}</p><div class="chips">${rv.sel.map(id=>`<span class="pill ok">${ic('shield')}${SK[id].name}</span>`).join('')}</div><div class="col g8"><button class="btn btn-p btn-lg btn-block" data-act="role" data-role="student" data-then="complete-${pid}">Посмотреть глазами студента</button>${EMPLOYERS[P(pid).emp]?`<button class="btn btn-s btn-block" data-act="role" data-role="employer" data-then="empdash">Посмотреть глазами компании</button>`:''}</div></div>`)},
  /* uni */
- uniReport(){toast('Отчёт за семестр сформирован и отправлен на почту центра карьеры','file')},
- uniIntegrate(){toast('Заявка на интеграцию проекта отправлена Т-Банку и руководителю курса','send')},
+ uniReport(){const html=uniReportHtml();openModal(mh('Отчёт для ректората','Осенний семестр 2026 · данные на '+todayStr())+`<div class="modal-b col g12"><iframe srcdoc="${esc(html)}" sandbox="" title="Отчёт" style="width:100%;height:60vh;border:1px solid var(--border);border-radius:10px;background:#fff"></iframe><div class="row g8" style="justify-content:flex-end"><button class="btn btn-s" data-act="closeModal">Закрыть</button><button class="btn btn-p" data-act="uniReportDl">${ic('download')}Скачать</button></div></div>`,'wide')},
+ uniReportDl(){saveFile(`НИУ_ВШЭ_отчёт_${todayStr().replace(/\s/g,'_')}.html`,uniReportHtml())},
+ uniIntegrate(){openModal(mh('Встроить проект в курс','Студенты курса получат проект компании как практическое задание')+`<form class="modal-b col g12" id="uniForm"><label class="field"><span>Курс</span><select class="sel" id="uf-course">${['Анализ данных','Продуктовый менеджмент','Бизнес-аналитика','Маркетинг','Проектирование интерфейсов'].map(x=>`<option>${x}</option>`).join('')}</select></label><label class="field"><span>Проект компании</span><select class="sel" id="uf-proj">${allProjects().map(p=>`<option value="${p.id}" ${p.id==='p4'?'selected':''}>${esc(p.company)} · ${esc(p.short)}</option>`).join('')}</select></label><label class="field"><span>Студентов в потоке</span><input class="inp" id="uf-n" type="number" min="5" max="400" value="42" required></label><div class="row g8" style="justify-content:flex-end"><button class="btn btn-s" type="button" data-act="closeModal">Отмена</button><button class="btn btn-p" type="submit">Встроить</button></div></form>`)},
+ uniUnlink(e){S.uniCourses.splice(+e.dataset.id,1);save();render();toast('Проект убран из курса','x')},
 };
 
 /* ================= events ================= */
@@ -3396,8 +3472,10 @@ document.addEventListener('change',e=>{
  if(id==='cf-prof'){UI.cand.prof=v;renderCandList()}
  if(id==='uf-prog'){UI.uni.prog=v;renderUniList()}
  if(e.target.dataset.sk){const pid=parse().id;const rv=UI.rv[pid];if(rv)rv.sel=$$('[data-sk]').filter(x=>x.checked).map(x=>x.dataset.sk)}
+ if(['pr-vis','pr-inv','pr-uni-share'].includes(id)){S.vis={show:$('#pr-vis').checked,inv:$('#pr-inv').checked&&$('#pr-vis').checked,uni:$('#pr-uni-share').checked};save();render();toast(id==='pr-vis'?(S.vis.show?'Профиль снова виден работодателям':'Профиль скрыт от работодателей'):'Настройки видимости сохранены','eye');return}
  if(id==='upl'&&e.target.files[0]){const f=e.target.files[0],pid=e.target.dataset.id;if(f.size>50*1048576){toast('Файл больше 50 МБ — сожмите его или загрузите ссылкой в итоге решения','x');return}storeUpload('ws-'+pid,f).then(rec=>{Object.assign(wsOf(pid),{file:f.name,fileSize:f.size,fileDemo:false});save();render();toast('Файл загружен: '+f.name,'upload')})}
- if(id==='resumeFile'&&e.target.files[0]){UI.onb.file=e.target.files[0].name;UI.onb.step='parsing';renderOnb()}
+ if(id==='resumeFile'&&e.target.files[0]){const f=e.target.files[0];if(f.size>10*1048576){toast('Файл больше 10 МБ','x');return}Object.assign(UI.onb,{file:f.name,fileObj:f,err:null,step:'parsing'});renderOnb()}
+ if(id==='onb-add'&&e.target.value){UI.onb.sel=[...(UI.onb.sel||[]),e.target.value];renderOnb()}
 });
 document.addEventListener('submit',e=>{
  e.preventDefault();const id=e.target.id;
@@ -3405,13 +3483,20 @@ document.addEventListener('submit',e=>{
  if(id==='chatForm'){const inp=$('#chat-in'),txt=inp.value.trim();if(!txt)return;const th=S.chats[$('#chat-id').value],side=$('#chat-side').value;
   th.msgs.push({f:side==='student'?'me':'them',t:txt,tm:tnow()});if(side==='employer')th.unreadS=(th.unreadS||0)+1;else th.unreadE=(th.unreadE||0)+1;save();render();
   if(side==='student'&&chatReply(th,txt)!==null){UI.typing[th.id]=1;render();setTimeout(()=>{UI.typing[th.id]=0;const who=th.kind==='team'?S.teams[th.pid].members[0][0]:null;th.msgs.push({f:'them',who,t:chatReply(th,txt),tm:tnow()});save();if(parse().n==='messages'&&parse().id===th.id)render();else{th.unreadS=(th.unreadS||0)+1;save();renderShell(parse())}},1100)}
-  else if(side==='employer'){setTimeout(()=>{th.msgs.push({f:'me',t:'Спасибо! Всё понял, буду готов.',tm:tnow()});th.unreadE=0;save();if(parse().n==='empmessages')render()},1400)}
+  else if(side==='employer'){setTimeout(()=>{th.msgs.push({f:'me',t:th.kind==='cand'?'Спасибо, договорились! Жду ссылку на встречу.':'Спасибо! Всё понял, буду готов.',tm:tnow()});th.unreadE=0;save();if(parse().n==='empmessages')render()},1400)}
   return}
  if(id==='authForm'){const role=e.target.dataset.role;const ag=$('#au-agree');if(ag&&!ag.checked){$('#au-err').hidden=false;return}
   const b=$('#au-submit');b.disabled=true;b.innerHTML='<span class="spin" style="border-top-color:#fff"></span>'+(UI.login?'Входим…':'Создаём аккаунт…');
   setTimeout(()=>{S.authed=true;S.lastRole=role;save();toast(UI.login?'С возвращением!':'Аккаунт создан','check');go(HOME[role])},800);return}
- if(id==='profileForm'){const g=$('#pr-goal').value;const ch=g!==S.goal;S.goal=g;save();render();toast(ch?`Цель изменена: ${T().goal}`:'Профиль сохранён');return}
- if(id==='inviteForm'){const c=$('#inv-id').value;S.empInvited[emp().id+c]=1;save();closeModal();render();toast('Приглашение отправлено','send');return}
+ if(id==='profileForm'){const f=e.target;if(!f.reportValidity())return;const g=$('#pr-goal').value;const ch=g!==S.goal;S.goal=g;S.profile={city:$('#pr-city').value.trim(),prog:$('#pr-prog').value.trim(),about:$('#pr-about').value.trim(),tg:$('#pr-tg').value.trim(),format:$('#pr-format').value,start:$('#pr-start').value};save();render();toast(ch?`Профиль сохранён · цель: ${T().goal}`:'Профиль сохранён');return}
+ if(id==='salesForm'){if(!e.target.reportValidity())return;S.salesReq=[...(S.salesReq||[]),{n:(S.salesReq||[]).length+101,name:$('#sf-name').value.trim(),contact:$('#sf-contact').value.trim(),hires:+$('#sf-hires').value,ats:$('#sf-ats').value,comment:$('#sf-comment').value.trim(),date:todayStr()}];save();closeModal();render();toast('Запрос на корпоративный тариф сохранён','send');return}
+ if(id==='uniForm'){if(!e.target.reportValidity())return;S.uniCourses=[...(S.uniCourses||[]),{course:$('#uf-course').value,pid:$('#uf-proj').value,students:+$('#uf-n').value,date:todayStr()}];save();closeModal();render();toast('Проект встроен в курс — студенты увидят его в каталоге','check');return}
+ if(id==='inviteForm'){const c=$('#inv-id').value,pos=$('#inv-pos').value,msg=$('#inv-msg').value.trim();if(msg.length<10){toast('Напишите сообщение кандидату','x');return}
+  if(c==='c2'){const e=emp();if(!VIS().inv){toast('Кандидат закрыл приглашения в настройках профиля','lock');closeModal();return}S.inv[e.main]=S.inv[e.main]||{st:'new',direct:1};ensureInviteChat(e.main,msg);save();closeModal();go('empmessages','inv-'+e.main);toast('Приглашение отправлено Алексею Иванову','send');return}
+  const e=emp(),k=CANDS.find(x=>x.id===c),cid='cand-'+e.id+'-'+c;S.empInvited[e.id+c]={pos,date:todayStr()};
+  S.chats[cid]={id:cid,kind:'cand',co:e.company,cand:c,title:k.name,sub:pos,unreadS:0,unreadE:0,msgs:[{f:'them',t:msg,tm:tnow()},{f:'sys',t:`Приглашение на позицию «${pos}» отправлено`}]};
+  save();closeModal();go('empmessages',cid);toast('Приглашение отправлено '+k.name,'send');
+  setTimeout(()=>{const th=S.chats[cid];if(!th)return;th.msgs.push({f:'me',t:`Здравствуйте! Спасибо за приглашение на позицию «${pos}». С удовольствием пообщаюсь — удобно в любой будний день после 16:00.`,tm:tnow()});th.unreadE=(th.unreadE||0)+1;save();if(parse().n==='empmessages')render();else renderShell(parse())},1600);return}
  if(id==='vacForm'){const v={type:$('#v-type').value,title:$('#v-title').value.trim()||'Новая позиция',prof:$('#v-prof').value,format:$('#v-format').value,city:$('#v-city').value,salary:$('#v-sal').value?$('#v-sal').value+(/₽/.test($('#v-sal').value)?'':' ₽'):'',paid:$('#v-paid').checked,skills:$('#v-skills').value.split(',').map(s=>s.trim()).filter(Boolean)};S.extraVac.push(v);save();closeModal();render();toast(`${v.type} «${v.title}» опубликована · подобрано 14 кандидатов`,'briefcase');return}
  if(id==='projForm'){const t=$('#pp-title').value.trim(),d=$('#pp-desc').value.trim();if(!t||!d){$('#pp-err').hidden=false;return}
   const fmtv=$('[data-act="ppFormat"].on')?.dataset.id||'Индивидуальный';
@@ -3668,8 +3753,11 @@ Object.assign(A,{
   if(e.dataset.id==='replace'){if(!p.edu.length)p.edu=base.edu;S.cv=p}else{base.exp=[...base.exp,...p.exp];base.skills=[base.skills,p.skills].filter(Boolean).join(', ')}
   UI.hhParsed=null;UI.tasks.hhParse={status:'idle'};UI.tasks.cvAI={status:'idle'};save();go('resume','build');toast('Резюме обновлено — посмотрите советы','upload')},
  hhCopy(e){copyText(hhFields()[+e.dataset.id]||'','Поле скопировано — вставьте его на hh.ru')},
- hrOrder(e){S.hrReview={who:e.dataset.id,st:'pending'};S.acted=true;save();render();toast('Заявка на проверку отправлена','send')},
- hrDone(){S.hrReview.st='done';save();render()},
+ hrOrder(e){S.hrReview={who:e.dataset.id,st:'pending',date:todayStr()};S.acted=true;save();render();toast('Резюме отправлено ментору на разбор','send')},
+ hrCancel(){S.hrReview=null;save();render();toast('Заявка на разбор отменена','x')},
+ hrWrite(){const a=analyzeCv(cv(),cvTargetJob());const draft=a.issues.slice(0,4).map((x,i)=>`${i+1}. ${x.title}. ${x.text}`).join('\n');
+  openModal(mh('Разбор резюме · Алексей Иванов',`Под вакансию «${cvTargetJob().title}» · экспресс-оценка ${a.score}`)+`<div class="modal-b col g12"><div class="paper-wrap" style="max-height:40vh">${cvPaper(cv(),{tpl:S.cvTpl||'modern'})}</div><label class="field"><span>Ваш разбор</span><textarea class="inp" id="hr-text" rows="7">${esc(draft)}</textarea></label><p class="xs muted">Черновик собран из автоматического анализа — отредактируйте его своими словами.</p><div class="row g8" style="justify-content:flex-end"><button class="btn btn-s" data-act="closeModal">Отмена</button><button class="btn btn-p" data-act="hrSend">Отправить студенту</button></div></div>`,'wide')},
+ hrSend(){const t=($('#hr-text').value||'').trim();if(t.length<40){toast('Разбор слишком короткий','x');return}Object.assign(S.hrReview,{st:'done',text:t,doneAt:todayStr()});save();closeModal();render();toast('Разбор отправлен студенту','send')},
  peerSend(){const c=$('#peer-comment').value.trim();if(c.length<10){toast('Напишите хотя бы один конкретный совет','x');return}S.peerDone=(S.peerDone||0)+1;S.acted=true;save();render();toast('Отзыв отправлен · +50 XP','star')},
  /* interview */
  ivType(e){UI.iv.type=e.dataset.id;render()},
@@ -3719,7 +3807,7 @@ document.addEventListener('change',e=>{const t=e.target,id=t.id;
  if(id==='let-job'&&UI.let){UI.let.job=t.value;UI.tasks.letter={status:'idle'};render()}
  if(id==='dec-job'&&UI.dec)UI.dec.job=t.value;
  if(id==='ver-job')UI.verJob=t.value;
- if(id==='pitch-video'&&t.files[0]){S.pitchVideo=t.files[0].name;save();render();toast('Видео прикреплено','video')}
+ if(id==='pitch-video'&&t.files[0]){const f=t.files[0];if(f.size>200*1048576){toast('Видео больше 200 МБ — сожмите его','x');return}storeUpload('pitch',f).then(()=>{S.pitchVideo={name:f.name,size:f.size};save();render();toast('Видео прикреплено','video')})}
  if(/^sal-/.test(id)){UI.sal[id.slice(4)]=t.value;render()}
  if(t.dataset&&t.dataset.off){const [oid,k]=t.dataset.off.split(':');const o=offers().find(x=>x.id===oid);o.sc[k]=+t.value;save();render()}
  if(/^w-/.test(id)){weights()[id.slice(2)]=+t.value;save();render()}
