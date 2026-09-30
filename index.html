@@ -1447,6 +1447,118 @@ const UNI={name:'НИУ ВШЭ',unit:'Центр карьеры',person:'Еле�
 const MET={months:['Окт','Ноя','Дек','Янв','Фев','Мар','Апр','Май','Июн','Июл','Авг','Сен'],mau:[2.1,2.9,3.6,4.8,6.0,7.4,8.9,10.6,11.8,13.9,15.9,18.4],mrr:[0.3,0.4,0.6,0.8,1.0,1.3,1.6,1.9,2.2,2.5,2.8,3.1],
  funnel:[['Участвовали в проектах',9800],['Отправили решение',5400],['Подтвердили навыки',4100],['Приглашены на интервью',1190],['Получили оффер',490]],
  rev:[['Подписки компаний',64,'var(--accent)'],['Плата за найм',28,'var(--green)'],['Контракты с вузами',8,'var(--orange)']]};
+/* ================= projects: full data for every project ================= */
+/* Extra skills that company projects confirm */
+Object.assign(SK,{
+ ux:{name:'UX-исследования',st:'gap'},heur:{name:'Эвристический анализ',st:'gap'},comp:{name:'Конкурентный анализ',st:'gap'},pos:{name:'Позиционирование',st:'gap'},
+ api:{name:'REST API',st:'gap'},bpmn:{name:'BPMN',st:'gap'},uml:{name:'UML',st:'gap'},html:{name:'HTML/CSS',st:'gap'},js:{name:'JavaScript',st:'gap'},resp:{name:'Адаптивная вёрстка',st:'gap'},
+ mkt:{name:'Маркетинговая стратегия',st:'gap'},campa:{name:'Аналитика кампаний',st:'gap'}});
+
+/* Mentors for every profession */
+MENTORS.push(
+ {id:'m4',name:'Дарья Лебедь',pos:'Lead Product Designer',ini:'ДЛ',color:'#DB2777',track:'ux',rating:'4,8',reviews:71,skills:['ux','figma','heur','cjm']},
+ {id:'m5',name:'Максим Орехов',pos:'Senior Frontend Developer',ini:'МО',color:'#1D4ED8',track:'dev',rating:'4,9',reviews:88,skills:['html','js','resp']},
+ {id:'m6',name:'Вера Соколова',pos:'Head of Marketing',ini:'ВС',color:'#B45309',track:'mkt',rating:'4,7',reviews:54,skills:['mkt','campa','cjm','comp','pos']},
+ {id:'m7',name:'Роман Гусев',pos:'Lead System Analyst',ini:'РГ',color:'#475569',track:'sa',rating:'4,8',reviews:63,skills:['api','bpmn','uml','xl','cd']});
+const MENTOR_BY_PROF={'Product Manager':'m1','Data Analyst':'m2','UX/UI Designer':'m4','Frontend Developer':'m5','Backend Developer':'m5','Marketing Manager':'m6','System Analyst':'m7','Business Analyst':'m7'};
+function mentorOf(pid){const p=P(pid)||{};if(pid==='p4')return MENTORS[1];if(pid==='p6')return MENTORS[2];return MENTORS.find(m=>m.id===MENTOR_BY_PROF[p.prof])||MENTORS[0]}
+
+/* Company contacts (who reviews and invites) */
+const CONTACTS={'Копилка':['Анна Белова','продакт-дизайнер'],'Флоу':['Сергей Никитин','CEO'],'Avito':['Павел Егоров','руководитель роста продавцов'],'Ozon':['Мария Гончарова','лид команды карточки товара'],
+ 'Альфа-Банк':['Илья Ремизов','лид системного анализа'],'Kaspersky':['Денис Воронов','тимлид веб-разработки'],'VK':['Ксения Орлова','маркетинг-лид VK Клипов'],'ФудБокс':['Артём Шубин','сооснователь'],'Яндекс':['Елена Кравец','руководитель операционной аналитики']};
+
+const brief=(co,pages)=>["PDF",`brief_${co}.pdf`,`Бриф от компании, ${pages} стр.`];
+const PX={
+ p2:{intro:'Вам доступны записи 8 пользовательских сессий и воронка онбординга за август. Нужно:',
+  steps:['Пройти онбординг и описать путь до первой цели','Провести эвристический анализ по 10 принципам Нильсена','Найти 5 главных барьеров и оценить их критичность','Предложить редизайн ключевого экрана в Figma'],
+  provide:[brief('kopilka',3),['XLS','onboarding_funnel.xlsx','Воронка онбординга за август'],['FIG','kopilka_screens.fig','Макеты текущих экранов, 14 штук']],
+  data:{head:['Шаг онбординга','Пользователи','Доля'],rows:[['Установка','40 000','100%'],['Регистрация','31 200','78%'],['Экран выбора цели','19 800','50%'],['Цель создана','16 000','40%']],note:'Самая большая потеря — между регистрацией и экраном выбора цели.'},
+  criteria:['Полнота описания пути пользователя','Обоснованность найденных проблем','Приоритизация по критичности','Качество предложенного редизайна'],rubric:[5,4,5,4],
+  wsTasks:[['Пройти онбординг','Запишите каждый шаг и время до создания первой цели.'],['Эвристический анализ','Оцените экраны по 10 эвристикам Нильсена, отметьте нарушения.'],['Найти главные барьеры','Выберите 5 проблем и оцените критичность от 1 до 4.'],['Редизайн экрана','Соберите в Figma новую версию экрана создания цели.']],
+  confirms:['ux','figma','heur'],mentorTip:'В записях сессий люди чаще всего останавливаются на выборе суммы цели — начните с этого экрана.',
+  review:'Алексей нашёл неочевидный барьер на выборе суммы цели и предложил понятный редизайн.',metrics:[['5','барьеров найдено'],['23','нарушения эвристик'],['−2','шага в онбординге']],pfSkills:['UX-исследования','Figma','Эвристический анализ'],score:'4,5',rank:'одно из пяти лучших решений из 24'},
+ p3:{intro:'Команда из 3–4 человек сравнивает «Флоу» с конкурентами и предлагает позиционирование. Нужно:',
+  steps:['Выбрать 5 конкурентов и собрать их функции, цены и сегменты','Составить сравнительную таблицу','Найти незанятые сегменты и сильные стороны «Флоу»','Предложить позиционирование и слоган'],
+  provide:[brief('flow',4),['XLS','competitors_template.xlsx','Шаблон сравнительной таблицы'],['PDF','flow_customers.pdf','Интервью с 6 клиентами «Флоу»']],
+  data:{head:['Сервис','Цена за пользователя','Сегмент'],rows:[['Флоу','290 ₽','команды до 50 человек'],['Конкурент A','450 ₽','средний бизнес'],['Конкурент B','0–350 ₽','фрилансеры и студии'],['Конкурент C','520 ₽','крупные компании']],note:'Заполните таблицу до 5 конкурентов и добавьте функции.'},
+  criteria:['Полнота сравнения конкурентов','Опора на данные и интервью','Чёткость позиционирования','Качество командной работы'],rubric:[4,4,5,4],
+  wsTasks:[['Собрать конкурентов','5 сервисов: функции, цены, целевые сегменты.'],['Сравнительная таблица','Сведите всё в шаблон, отметьте сильные и слабые стороны.'],['Найти незанятую нишу','Где «Флоу» может выиграть и почему.'],['Позиционирование','Одна фраза позиционирования и слоган для лендинга.']],
+  confirms:['comp','pt','pos'],mentorTip:'Прочитайте интервью клиентов до таблицы: причины выбора «Флоу» подскажут, в чём он сильнее.',
+  review:'Команда нашла понятную нишу — небольшие студии без собственного IT — и сформулировала сильное позиционирование.',metrics:[['5','конкурентов сравнено'],['12','критериев сравнения'],['2','сценария позиционирования']],pfSkills:['Конкурентный анализ','Позиционирование'],score:'4,4',rank:'второе место из 11 команд'},
+ p5:{intro:'Команда проектирует путь нового продавца от первого объявления до второго. Нужно:',
+  steps:['Провести 5 интервью с новыми продавцами','Построить CJM нового продавца','Сформулировать гипотезы и приоритизировать их по RICE','Спроектировать онбординг и метрики успеха'],
+  provide:[brief('avito',5),['XLS','sellers_cohorts.xlsx','Доля продавцов со вторым объявлением по неделям'],['PDF','cjm_template.pdf','Шаблон CJM']],
+  data:{head:['Неделя после регистрации','Опубликовали второе объявление'],rows:[['1-я','18%'],['2-я','27%'],['3-я','31%'],['4-я','33%']],note:'Две трети новых продавцов так и не публикуют второе объявление.'},
+  criteria:['Качество интервью и инсайтов','Полнота CJM','Обоснованность приоритизации','Измеримость предложенного онбординга'],rubric:[5,4,5,5],
+  wsTasks:[['Интервью с продавцами','5 интервью по гайду: что мешает опубликовать второе объявление.'],['CJM','Этапы, действия, эмоции и боли нового продавца.'],['Гипотезы по RICE','Не меньше 5 гипотез с оценкой охвата, влияния, уверенности и затрат.'],['Онбординг','Экраны или сценарий и метрика успеха.']],
+  confirms:['cjm','cd','prio'],invitePos:'Стажёр-продакт',inviteJob:'j6',inviteHook:'Особенно понравился вывод из интервью про страх низкой цены — хотим обсудить его с командой.',
+  mentorTip:'Спросите в интервью, что продавец делал между первым и вторым объявлением, — там обычно прячется главная боль.',
+  review:'Команда провела сильные интервью и построила онбординг, который измеряется одной понятной метрикой.',metrics:[['5','интервью проведено'],['7','гипотез по RICE'],['+9%','ожидаемый рост доли вторых объявлений']],pfSkills:['CJM','Customer Development','Приоритизация (RICE)'],score:'4,7',rank:'лучший результат из 9 команд'},
+ p6:{intro:'Команда карточки товара хочет проверить новый блок отзывов. Нужно:',
+  steps:['Сформулировать гипотезу и выбрать метрики','Рассчитать размер выборки и длительность теста','Проанализировать результаты пилота на SQL','Принять решение о раскатке и описать риски'],
+  provide:[brief('ozon',4),['CSV','pilot_results.csv','Результаты пилота: 2 группы по 50 000 пользователей'],['SQL','schema_ozon.sql','Схема таблиц событий']],
+  data:{head:['Группа','Пользователи','Конверсия в корзину','Выручка на пользователя'],rows:[['A (контроль)','50 112','8,4%','412 ₽'],['B (новый блок)','49 876','8,9%','405 ₽']],note:'Конверсия выросла, а выручка на пользователя немного снизилась — нужна защитная метрика.'},
+  criteria:['Корректность постановки гипотезы','Правильный расчёт выборки','Корректность анализа результатов','Обоснованность решения'],rubric:[5,5,4,5],
+  wsTasks:[['Гипотеза и метрики','Целевая метрика, защитные метрики и ожидаемый эффект.'],['Размер выборки','Расчёт для мощности 80% и уровня значимости 5%.'],['Анализ пилота','SQL-запросы, проверка значимости и равенства групп.'],['Решение','Раскатывать или нет, риски и что проверить дальше.']],
+  confirms:['ab','sql','pa'],invitePos:'Стажёр Product Manager',inviteJob:'j4',inviteHook:'Нам понравилось, что вы заметили падение выручки на пользователя и не стали раскатывать сразу.',
+  mentorTip:'Сначала проверьте, что группы одинакового размера и состава, — без этого выводы по пилоту ничего не стоят.',
+  review:'Алексей корректно рассчитал выборку и принял взвешенное решение с учётом защитной метрики.',metrics:[['+0,5 п.п.','рост конверсии'],['−1,7%','выручка на пользователя'],['2','защитные метрики']],pfSkills:['A/B-тестирование','SQL','Product Analytics'],score:'4,8',rank:'одно из трёх лучших решений из 46'},
+ p7:{intro:'Нужно описать сервис push-уведомлений о платежах так, чтобы по документу могла работать разработка. Нужно:',
+  steps:['Описать бизнес-процесс уведомления в BPMN','Составить требования и сценарии','Спроектировать контракт REST API','Нарисовать диаграмму последовательности в UML'],
+  provide:[brief('alfa',3),['PDF','notify_current.pdf','Как уведомления работают сейчас'],['SQL','payments_schema.sql','Схема таблиц платежей']],
+  data:{head:['Тип события','Сейчас','Нужно'],rows:[['Списание','SMS через 1–5 минут','push за 3 секунды'],['Поступление','SMS','push + в ленте'],['Отказ платежа','нет','push с причиной']],note:'Главное требование — push о списании быстрее 3 секунд.'},
+  criteria:['Полнота требований','Корректность BPMN','Качество контракта API','Понятность документа для разработки'],rubric:[5,4,5,5],
+  wsTasks:[['Процесс в BPMN','От события платежа до показа уведомления, с ошибками.'],['Требования','Функциональные и нефункциональные требования, сценарии.'],['Контракт API','Методы, поля, коды ответов, примеры запросов.'],['Диаграмма последовательности','Взаимодействие сервисов при списании.']],
+  confirms:['api','bpmn','uml'],invitePos:'Стажёр System Analyst',inviteJob:'j15',inviteHook:'Контракт API получился таким, что по нему уже можно начинать разработку.',
+  mentorTip:'Опишите, что будет, если уведомление не доставлено: повторы и дедупликация — частые вопросы на ревью.',
+  review:'Требования полные и однозначные, а контракт API продуман вплоть до обработки ошибок.',metrics:[['14','требований описано'],['6','методов API'],['3','диаграммы']],pfSkills:['REST API','BPMN','UML'],score:'4,7',rank:'лучшее решение из 19'},
+ p8:{intro:'Нужно сверстать адаптивный лендинг по макету с формой заявки. Нужно:',
+  steps:['Сверстать лендинг по макету','Сделать адаптив для телефона и планшета','Реализовать форму заявки с проверкой полей','Проверить доступность и скорость загрузки'],
+  provide:[brief('kaspersky',2),['FIG','landing_b2b.fig','Макет лендинга: десктоп и мобильная версия'],['PDF','brand_guide.pdf','Гайд по цветам и шрифтам']],
+  data:{head:['Проверка','Целевое значение'],rows:[['Lighthouse Performance','≥ 90'],['Lighthouse Accessibility','≥ 95'],['Первая отрисовка','< 1,5 с'],['Ширина экрана','от 360 px']],note:'Эти значения проверяются при приёмке.'},
+  criteria:['Точность вёрстки по макету','Качество адаптива','Работа формы и проверка полей','Доступность и скорость'],rubric:[5,5,4,4],
+  wsTasks:[['Вёрстка','Семантичная разметка по макету, без фреймворков.'],['Адаптив','360, 768 и 1280 px без горизонтальной прокрутки.'],['Форма заявки','Проверка почты и телефона, понятные ошибки.'],['Доступность и скорость','Lighthouse не ниже целевых значений.']],
+  confirms:['html','js','resp'],mentorTip:'Проверьте форму с клавиатуры и экранным диктором: за доступность часто снимают больше всего баллов.',
+  review:'Вёрстка точная, форма удобная и доступная, лендинг быстро грузится на телефоне.',metrics:[['96','баллов Lighthouse'],['3','брейкпоинта'],['1,1 с','первая отрисовка']],pfSkills:['HTML/CSS','JavaScript','Адаптивная вёрстка'],score:'4,6',rank:'одно из пяти лучших решений из 28'},
+ p9:{intro:'Команда готовит стратегию студенческого челленджа VK Клипов. Нужно:',
+  steps:['Описать аудиторию и её путь (CJM)','Предложить механику челленджа','Распределить бюджет по каналам','Задать метрики успеха и план замеров'],
+  provide:[brief('vk',4),['XLS','clips_audience.xlsx','Аудитория VK Клипов 18–24 по городам'],['PDF','budget_rules.pdf','Правила и лимиты бюджета']],
+  data:{head:['Канал','Стоимость охвата 1 000','Ожидаемый охват'],rows:[['Студенческие медиа','180 ₽','400 000'],['Блогеры 50–300 тыс.','320 ₽','900 000'],['Реклама в VK','140 ₽','1 500 000']],note:'Бюджет — 3 млн ₽, половина — на тестирование каналов.'},
+  criteria:['Понимание аудитории','Сила механики','Обоснованность бюджета','Измеримость результата'],rubric:[4,5,4,5],
+  wsTasks:[['Аудитория и CJM','Кто участвует и что его мотивирует.'],['Механика','Правила челленджа, призы, вирусность.'],['Бюджет','Распределение по каналам и план тестов.'],['Метрики','Целевые показатели и как их измерить.']],
+  confirms:['mkt','cjm','campa'],invitePos:'Marketing Manager Intern',inviteJob:'j17',inviteHook:'Механика с командами вузов — именно то, что мы искали для осеннего запуска.',
+  mentorTip:'Заложите тест каналов на первую неделю и перераспределение бюджета после — так стратегия выглядит зрелее.',
+  review:'Команда предложила вирусную механику с соревнованием вузов и чёткий план измерений.',metrics:[['3','канала протестировано'],['2,8 млн','ожидаемый охват'],['12%','целевая вовлечённость']],pfSkills:['Маркетинговая стратегия','CJM','Аналитика кампаний'],score:'4,6',rank:'второе место из 14 команд'},
+ p10:{intro:'Сервис доставляет 3 000 обедов в день и работает в минус. Нужно:',
+  steps:['Посчитать экономику одного заказа','Найти статьи, которые съедают маржу','Предложить три рычага выхода в плюс','Оценить эффект каждого рычага'],
+  provide:[brief('foodbox',2),['XLS','orders_economics.xlsx','Данные по заказам и затратам за месяц']],
+  data:{head:['Статья на заказ','Сумма'],rows:[['Средний чек','620 ₽'],['Себестоимость еды','290 ₽'],['Курьер','210 ₽'],['Упаковка и эквайринг','58 ₽'],['Маркетинг (CAC на заказ)','95 ₽']],note:'Сейчас заказ приносит −33 ₽.'},
+  criteria:['Корректность расчёта','Понимание структуры затрат','Реалистичность рычагов','Оценка эффекта'],rubric:[5,5,4,4],
+  wsTasks:[['Экономика заказа','Выручка и все затраты на один заказ.'],['Узкие места','Какие статьи сильнее всего бьют по марже.'],['Три рычага','Средний чек, логистика, повторные заказы — или ваши.'],['Эффект','Сколько даёт каждый рычаг в рублях на заказ.']],
+  confirms:['ue','xl'],mentorTip:'Посчитайте, как изменится маржа при объединении двух заказов в одну доставку, — курьер самая большая статья.',
+  review:'Расчёт точный, а рычаги реалистичные: объединение доставок и допродажа напитков выводят заказ в плюс.',metrics:[['−33 → +41 ₽','маржа на заказ'],['3','рычага'],['+74 ₽','эффект на заказ']],pfSkills:['Юнит-экономика','Excel'],score:'4,5',rank:'одно из пяти лучших решений из 31'},
+ p11:{intro:'Команда описывает, как сейчас возвращают товар, и предлагает, как вернуть деньги быстрее. Нужно:',
+  steps:['Провести интервью с сотрудниками пунктов выдачи и поддержки','Описать текущий процесс в BPMN','Найти узкие места и посчитать задержки','Предложить целевой процесс'],
+  provide:[brief('yandex',4),['XLS','returns_timeline.xlsx','Время этапов возврата по 2 000 заказам'],['PDF','returns_policy.pdf','Текущие правила возврата']],
+  data:{head:['Этап возврата','Среднее время'],rows:[['Приёмка в пункте выдачи','1 день'],['Доставка на склад','4 дня'],['Проверка товара','3 дня'],['Возврат денег','2 дня']],note:'Сейчас деньги возвращаются в среднем за 10 дней.'},
+  criteria:['Качество исследования','Корректность BPMN','Обоснованность узких мест','Реалистичность целевого процесса'],rubric:[5,4,5,4],
+  wsTasks:[['Интервью','Поговорите с 3 сотрудниками разных этапов.'],['Процесс как есть','BPMN с участниками и передачами.'],['Узкие места','Где теряется время и почему.'],['Целевой процесс','Как вернуть деньги за 3 дня и что для этого нужно.']],
+  confirms:['bpmn','xl','cd'],invitePos:'Стажёр бизнес-аналитик',inviteJob:'j2',inviteHook:'Идея возвращать деньги до проверки для надёжных покупателей — сильная, хотим её посчитать вместе.',
+  mentorTip:'Разделите товары на категории: для недорогих вещей проверку можно делать выборочно.',
+  review:'Команда нашла главное узкое место — доставку на склад — и предложила реалистичный процесс возврата за 3 дня.',metrics:[['10 → 3','дня на возврат денег'],['4','узких места'],['3','интервью']],pfSkills:['BPMN','Excel','Customer Development'],score:'4,7',rank:'лучший результат из 12 команд'}};
+PROJECTS.forEach(p=>{if(PX[p.id])Object.assign(p,PX[p.id])});
+PROJECTS.forEach(p=>{if(!p.wsFile)p.wsFile=`Иванов_${p.short.replace(/[^\wА-Яа-яЁё]+/g,'_').slice(0,32)}.pdf`});
+
+/* Projects published by employers get the same structure */
+function enrichProject(p){
+ if(p.wsTasks)return p;
+ const ids=p.skills.map(n=>{let id=Object.keys(SK).find(k=>SK[k].name.toLowerCase()===n.toLowerCase());if(!id){id='x'+Math.abs([...n].reduce((a,c)=>a*31+c.charCodeAt(0)|0,7));SK[id]={name:n,st:'gap'}}return id});
+ return Object.assign(p,{intro:'Что нужно сделать:',steps:['Изучить задачу и материалы компании','Провести анализ и собрать выводы','Подготовить решение','Оформить результат для команды компании'],
+  provide:[['PDF','brief.pdf','Бриф от компании']],criteria:['Понимание задачи','Качество анализа','Практическая применимость','Ясность изложения'],rubric:[5,4,4,5],
+  wsTasks:[['Разобраться в задаче','Сформулируйте, какую проблему решает компания и как поймёт успех.'],['Анализ','Соберите факты и данные, на которые опирается решение.'],['Решение','Предложите решение и объясните выбор.'],['Итоговый документ','Оформите результат так, чтобы его можно было отдать команде.']],
+  confirms:ids,invitePos:p.hiring?'Стажёр':null,review:'Решение аккуратное и применимое, выводы опираются на данные.',metrics:[['4','этапа выполнено'],['1','итоговый документ'],['—','метрика будет после внедрения']],
+  pfSkills:p.skills,score:'4,5',rank:'одно из лучших решений',mentorTip:'Начните с того, как компания поймёт, что задача решена, — от этого зависит всё решение.',
+  wsFile:`Иванов_${p.title.replace(/[^\wА-Яа-яЁё]+/g,'_').slice(0,28)}.pdf`,contact:[emp().person,emp().pos]})}
 /* ================= helpers ================= */
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const $=(s,el=document)=>el.querySelector(s);
@@ -1468,7 +1580,7 @@ const btnAttr=spec=>{const [k,a,b]=spec.split(':');return k==='go'?`data-go="${a
 
 /* ================= state ================= */
 const KEY='delom-demo-v2';
-const fresh=()=>({authed:false,onboarded:false,resume:false,goal:'pm',pstat:{},ws:{},scores:{},sel:{},portfolio:{},inv:{},tests:{},courses:{},mentorReq:{},teams:{},chats:{},applied:{},projApplied:{},visited:{},flags:{},notifSeen:0,empInvited:{},published:[],extraVac:[],badgesSeen:null,acted:false,empCo:null,lastRole:'student',cv:null,cvTpl:'modern',cvTarget:null,cvBest:0,cvVersions:[],stories:[],interviews:[],apps:{},appsExtra:[],offers:null,offW:null,hrReview:null,peerDone:0,pitch:null,pitchVideo:null,recs:{}});
+const fresh=()=>({authed:false,onboarded:false,resume:false,goal:'pm',pstat:{},ws:{},scores:{},sel:{},portfolio:{},inv:{},tests:{},courses:{},mentorReq:{},teams:{},chats:{},applied:{},projApplied:{},visited:{},flags:{},notifSeen:0,empInvited:{},published:[],extraVac:[],badgesSeen:null,acted:false,empCo:null,lastRole:'student',cv:null,cvTpl:'modern',cvTarget:null,cvBest:0,cvVersions:[],stories:[],interviews:[],apps:{},appsExtra:[],offers:null,offW:null,hrReview:null,peerDone:0,pitch:null,pitchVideo:null,recs:{},reviews:{},mentorConf:{},courseDone:{},waitlist:{},tier:null,salesReq:[],consOk:{},uniCourses:[],hrAt:0,profile:null,vis:null});
 let S=fresh();
 try{const raw=localStorage.getItem(KEY);if(raw)S=Object.assign(fresh(),JSON.parse(raw))}catch(e){}
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
@@ -1476,13 +1588,14 @@ const UI={cvLeft:'tips',jobs:{prof:'',company:'',format:'',level:'',skill:'',pai
 
 /* ================= computed ================= */
 const T=()=>TRACKS[S.goal]||TRACKS.pm;
-const allProjects=()=>[...S.published.map((p,i)=>({...p,id:'n'+i,company:emp().company,ind:emp().ind,isNew:1,people:0,durK:'2',reward:p.skills.length,short:p.title})),...PROJECTS];
+const PUB_CACHE={};
+const allProjects=()=>[...S.published.map((p,i)=>{const k=p.pid||'n'+i;return PUB_CACHE[k]&&PUB_CACHE[k].title===p.title?PUB_CACHE[k]:(PUB_CACHE[k]=enrichProject({...p,id:k,company:p.company||emp().company,ind:p.ind||emp().ind,emp:p.emp||emp().id,isNew:1,people:0,durK:'2',reward:p.skills.length,short:p.title}))}),...PROJECTS];
 const P=id=>allProjects().find(p=>p.id===id);
 const pst=id=>S.pstat[id]||'none';
 const mainDone=t=>!!TRACKS[t]&&pst(TRACKS[t].main)==='done';
 const trackOfProj=pid=>Object.values(TRACKS).find(t=>t.main===pid);
 const confirmsOf=pid=>S.sel[pid]||(P(pid)&&P(pid).confirms)||[];
-const empOfProj=pid=>EMPLOYERS[(P(pid)||{}).emp]||EMPLOYERS.su;
+function empOfProj(pid){const p=P(pid)||{};if(EMPLOYERS[p.emp])return EMPLOYERS[p.emp];const c=CONTACTS[p.company]||p.contact||['Команда найма','рекрутер'];return {id:'co-'+p.company,company:p.company,person:c[0],first:c[0].split(' ')[0],pos:c[1],ini:initials(c[0]),color:(COMP[p.company]||{}).bg||'#475569'}}
 const emp=()=>EMPLOYERS[S.empCo||(S.goal==='da'?'tb':'su')];
 const mentorMe=()=>S.goal==='da'?MENTORS[1]:MENTORS[0];
 function sk(id){
@@ -1490,8 +1603,10 @@ function sk(id){
  const o={id,name:b.name,st:b.st,pct:b.pct||0,basis:b.basis,src:b.src,date:b.date,baseOk:b.st==='ok'};
  const pid=Object.keys(S.pstat).find(k=>S.pstat[k]==='done'&&confirmsOf(k).includes(id));
  if(pid){const p=P(pid);Object.assign(o,{st:'ok',basis:`Проект «${p.short}»`,src:`${p.company} · оценка ${S.scores[pid]||p.score} из 5`,date:S.flags['d_'+pid]||todayStr(),fresh:!o.baseOk,via:'project',pid})}
+ else if(S.mentorConf&&S.mentorConf[id]&&S.mentorConf[id].passed&&o.st!=='ok'){const m=S.mentorConf[id];Object.assign(o,{st:'ok',basis:`Оценка ментора · ${m.stars} из 5`,src:m.by,date:m.date,fresh:1,via:'mentor'})}
+ else if(S.courseDone[id]&&o.st!=='ok'){const c=S.courseDone[id];Object.assign(o,{st:'ok',basis:`Курс «${c.title}» · итоговое задание ${c.score}`,src:c.provider,date:c.date,fresh:1,via:'course'})}
  else if(S.tests[id]&&S.tests[id].passed&&o.st!=='ok')Object.assign(o,{st:'ok',basis:`Тест ${BRAND} · ${S.tests[id].score} из 5`,src:'Проверка знаний с таймером',date:S.tests[id].date,fresh:1,via:'test'});
- if(o.st!=='ok'){if(S.courses[id])o.plan='course';if(S.mentorReq[id])o.plan='mentor'}
+ if(o.st!=='ok'){if(S.courses&&S.courses[id])o.plan='course';if(S.mentorReq[id]&&!(S.mentorConf[id]))o.plan='mentor'}
  return o}
 const skIds=Object.keys(SK);
 const skAll=()=>skIds.map(sk);
@@ -1516,7 +1631,7 @@ const newlyUnlocked=()=>allJobs().filter(j=>isFit(j)&&j.min>0&&unlocked(j));
 const stLabel=s=>s.st==='ok'?'Подтверждено':s.st==='progress'?'В процессе':'Не подтверждено';
 const stPill=s=>s.st==='ok'?`<span class="pill ok">${ic('shield')}Подтверждено</span>`:s.st==='progress'?`<span class="pill pr">В процессе · ${s.pct}%</span>`:`<span class="pill no">Не подтверждено</span>`;
 const planPill=s=>s.plan==='course'?`<span class="pill ac">${ic('book')}Курс в плане</span>`:s.plan==='mentor'?`<span class="pill ac">${ic('users')}Встреча с ментором</span>`:'';
-const wsOf=pid=>S.ws[pid]||(S.ws[pid]={tasks:[0,0,0,0],file:null});
+const wsOf=pid=>{const w=S.ws[pid]||(S.ws[pid]={tasks:[0,0,0,0],file:null});if(!w.attempt)w.attempt=1;if(w.summary==null)w.summary='';return w};
 
 /* gamification */
 const LEVELS=[[0,'Новичок'],[500,'Исследователь'],[1000,'Практик'],[2000,'Профи'],[3500,'Эксперт'],[6000,'Мастер']];
@@ -1549,13 +1664,14 @@ function ensureInviteChat(pid){const id='inv-'+pid;if(S.chats[id])return;const p
   {f:'them',t:'Выберите, пожалуйста, удобное время. Интервью займёт 45 минут, онлайн.',tm:tnow()}]}}
 const TEAMMATES=[['Екатерина Волкова','ЕВ','#C2410C'],['Никита Орлов','НО','#1D4ED8'],['Полина Смирнова','ПС','#BE185D'],['Тимур Ахметов','ТА','#0E7490'],['Мария Кузнецова','МК','#DB2777'],['Илья Морозов','ИМ','#7C3AED']];
 function ensureTeamChat(pid){const id='team-'+pid;if(S.chats[id])return;const p=P(pid),t=S.teams[pid];
- S.chats[id]={id,kind:'team',co:p.company,title:`Команда «${t.name}»`,sub:`${p.short} · ${t.members.length+1} участника`,pid,unreadS:2,unreadE:0,msgs:[
+ S.chats[id]={id,kind:'team',co:p.company,title:`Команда «${t.name}»`,sub:`${p.short} · ${t.members.length+1} ${plural(t.members.length+1,'участник','участника','участников')}`,pid,unreadS:2,unreadE:0,msgs:[
   {f:'sys',t:`Алексей присоединился к команде как ${t.role}`},
-  {f:'them',who:t.members[0][0],t:`Привет, Алексей! Рады, что ты с нами. Предлагаю созвониться в понедельник в 19:00 и распределить задачи по брифу ${p.company}.`,tm:tnow()},
-  {f:'them',who:(t.members[1]||t.members[0])[0],t:'Я уже разобрала бриф и выписала вопросы к компании. Скину в документ команды до вечера.',tm:tnow()}]}}
+  ...(t.members.length?[{f:'them',who:t.members[0][0],t:`Привет, Алексей! Рады, что ты с нами. Предлагаю созвониться в понедельник в 19:00 и распределить задачи по брифу ${p.company}.`,tm:tnow()},
+  {f:'them',who:(t.members[1]||t.members[0])[0],t:'Я уже разобрала бриф и выписала вопросы к компании. Скину в документ команды до вечера.',tm:tnow()}]:[{f:'sys',t:'Команда создана. Пригласите участников по ссылке из карточки команды — их сообщения появятся здесь.'}])]};if(!t.members.length)S.chats[id].unreadS=0}
 function chatReply(th,text){const t=text.toLowerCase();
+ if(th.kind==='team'){const t=S.teams[th.pid];if(!t||!t.members.length)return null}
  if(th.kind==='team')return /созвон|понедельник|время|ок|давай/.test(t)?'Отлично, тогда в понедельник в 19:00. Ссылку на звонок кину сюда.':'Принято! Добавила это в наш план в документе команды.';
- if(/зарплат|оплат|деньг|сколько/.test(t))return 'Стажировка оплачиваемая: 60 000 ₽ в месяц, 30 часов в неделю, можно совмещать с учёбой.';
+ if(/зарплат|оплат|деньг|сколько/.test(t)){const j=jobById((P(th.pid)||{}).inviteJob);return j&&j.salary?`По позиции «${j.title}» оплата ${j.salary}${j.type==='intern'?' в месяц, график обсудим — можно совмещать с учёбой':''}.`:'Условия обсудим на интервью.'}
  if(/формат|как пройд|как проход|этап/.test(t))return 'Интервью в два этапа: 15 минут о вас и 30 минут — разбор вашего решения по проекту. Тестовых заданий больше не будет.';
  if(/подготов|что взять|нужно ли/.test(t))return 'Подготовьте 5-минутный рассказ о решении и пару вопросов к команде. Остальное мы уже видели в проекте.';
  if(/спасибо|благодар/.test(t))return 'Вам спасибо! До встречи.';
@@ -1713,6 +1829,32 @@ function doSearch(q){const el=$('#searchPop');q=q.trim().toLowerCase();if(!q){el
  el.innerHTML=`<div class="pop" style="left:0;right:auto;width:100%;min-width:0">${res.length?res.map(x=>`<button class="pop-item" data-go="${x.go}"><span class="muted">${ic(x.ic)}</span><span class="grow"><div class="b" style="font-size:13.5px">${esc(x.t)}</div><div class="xs muted">${esc(x.s)}</div></span></button>`).join(''):`<div class="empty sm">Ничего не нашлось по запросу «${esc(q)}»</div>`}</div>`}
 
 function toast(t,icn='check'){const w=$('#toasts');while(w.children.length>=3)w.firstChild.remove();const el=document.createElement('div');el.className='toast';el.innerHTML=ic(icn)+`<span>${t}</span>`;$('#toasts').appendChild(el);setTimeout(()=>el.remove(),3400)}
+/* ================= file store: real uploads kept in the browser ================= */
+const FS={db:null,mem:new Map(),
+ open(){if(this.db!==null)return Promise.resolve(this.db);return new Promise(res=>{try{const r=indexedDB.open('delom-files',1);r.onupgradeneeded=()=>r.result.createObjectStore('f');r.onsuccess=()=>{this.db=r.result;res(this.db)};r.onerror=()=>{this.db=false;res(false)}}catch(e){this.db=false;res(false)}})},
+ async put(key,rec){this.mem.set(key,rec);const db=await this.open();if(!db)return;try{await new Promise((ok,no)=>{const t=db.transaction('f','readwrite');t.objectStore('f').put(rec,key);t.oncomplete=ok;t.onerror=no})}catch(e){}},
+ async get(key){if(this.mem.has(key))return this.mem.get(key);const db=await this.open();if(!db)return null;try{return await new Promise(ok=>{const q=db.transaction('f').objectStore('f').get(key);q.onsuccess=()=>{if(q.result)this.mem.set(key,q.result);ok(q.result||null)};q.onerror=()=>ok(null)})}catch(e){return null}},
+ async del(key){this.mem.delete(key);const db=await this.open();if(!db)return;try{db.transaction('f','readwrite').objectStore('f').delete(key)}catch(e){}}};
+const fmtSize=b=>b<1024?b+' Б':b<1048576?Math.round(b/1024)+' КБ':(b/1048576).toFixed(1).replace('.',',')+' МБ';
+const extOf=n=>(n.split('.').pop()||'').toLowerCase();
+async function storeUpload(key,file){const rec={name:file.name,type:file.type||'',size:file.size,blob:file,at:Date.now()};await FS.put(key,rec);return rec}
+async function storeGenerated(key,name,html){const blob=new Blob([html],{type:'text/html'});const rec={name,type:'text/html',size:blob.size,blob,at:Date.now(),generated:1};await FS.put(key,rec);return rec}
+/* preview a stored file in a sheet: pdf, images, video, html, text */
+async function openStored(key){const rec=await FS.get(key);
+ if(!rec){toast('Файл не найден в этом браузере — загрузите его ещё раз','x');return}
+ const url=URL.createObjectURL(rec.blob),ext=extOf(rec.name);let body;
+ if(/^image\//.test(rec.type)||['png','jpg','jpeg','webp','gif'].includes(ext))body=`<img src="${url}" alt="${esc(rec.name)}" style="max-width:100%;border-radius:10px">`;
+ else if(/^video\//.test(rec.type)||['mp4','mov','webm'].includes(ext))body=`<video src="${url}" controls playsinline style="width:100%;border-radius:10px;background:#000"></video>`;
+ else if(ext==='pdf'||rec.type==='application/pdf')body=`<iframe src="${url}" title="${esc(rec.name)}" style="width:100%;height:70vh;border:1px solid var(--border);border-radius:10px"></iframe>`;
+ else if(ext==='html'||ext==='htm'){const t=await rec.blob.text();body=`<iframe srcdoc="${esc(t)}" sandbox="" title="${esc(rec.name)}" style="width:100%;height:70vh;border:1px solid var(--border);border-radius:10px;background:#fff"></iframe>`}
+ else if(['txt','md','csv','json','sql'].includes(ext)){const t=await rec.blob.text();body=`<pre class="code" style="max-height:65vh;overflow:auto;margin:0">${esc(t.slice(0,60000))}</pre>`}
+ else body=`<div class="empty col g8" style="align-items:center"><span class="logo lg" style="background:var(--accent-soft);color:var(--accent-ink)">${ic('file',24)}</span><div>Предпросмотр для .${esc(ext)} недоступен в браузере — скачайте файл.</div></div>`;
+ openModal(mh(esc(rec.name),`${fmtSize(rec.size)} · загружен ${new Date(rec.at).toLocaleDateString('ru-RU')}`)+`<div class="modal-b col g12">${body}<div class="row g8" style="justify-content:flex-end"><button class="btn btn-s" data-act="dlStored" data-id="${esc(key)}">${ic('download')}Скачать</button><button class="btn btn-p" data-act="closeModal">Закрыть</button></div></div>`,'wide')}
+/* sample solution document generated from the student's own summary */
+function reportHtml(p,w){const t=esc(p.title);return `<!DOCTYPE html><html lang="ru"><head><meta charset="utf-8"><title>${t}</title><style>body{font:15px/1.6 system-ui,sans-serif;max-width:760px;margin:40px auto;padding:0 24px;color:#1B1F33}h1{font-size:24px}h2{font-size:17px;margin-top:28px;color:#3B47E0}li{margin:4px 0}.m{color:#6A7090;font-size:13px}</style></head><body>
+<p class="m">${esc(p.company)} · решение студента платформы ${BRAND}</p><h1>${t}</h1><h2>Задача</h2><p>${esc(p.task||'')}</p>
+<h2>Что сделано</h2><ol>${p.wsTasks.map((x,i)=>`<li><b>${esc(x[0])}</b>${w.tasks[i]?'':' — не завершено'}: ${esc(x[1])}</li>`).join('')}</ol>
+<h2>Итог решения</h2><p>${esc(w.summary||'').replace(/\n/g,'<br>')}</p>${p.metrics?`<h2>Ключевые результаты</h2><ul>${p.metrics.map(m=>`<li><b>${esc(m[0])}</b> — ${esc(m[1])}</li>`).join('')}</ul>`:''}</body></html>`}
 /* ================= shared student bits ================= */
 const VIEWS={};
 function reqMarks(skills){return `<div class="req">${skills.map(n=>{const s=skByName(n);if(s&&(s.st==='ok'||s.st==='self'))return `<span class="y">${ic('check',14)}${esc(n)}</span>`;if(s&&s.st==='progress')return `<span class="t">△ ${esc(n)}</span>`;return `<span class="n">○ ${esc(n)}</span>`}).join('')}</div>`}
@@ -1852,7 +1994,7 @@ VIEWS.skills=()=>{
   <div><div class="b">${s.name}</div><div class="xs muted">${t.req.includes(s.id)?'Нужен для '+t.goal:'Дополнительный навык'}</div></div>
   <div class="basis sm">${s.st==='ok'?`<span class="muted">Основание:</span> <b>${esc(s.basis)}</b>`:s.st==='progress'?`<span class="muted">Прогресс:</span> <b>${s.pct}%</b> · курс и практика в процессе`:s.st==='self'?'<span class="muted">Указан в профиле, подтверждения пока нет</span>':'<span class="muted">Ещё не изучен</span>'}${s.plan?' '+planPill(s):''}</div>
   <div class="prog">${s.st==='progress'?bar(s.pct,'o thin'):stPill(s)}</div>
-  <div>${s.st==='ok'?`<button class="btn btn-g btn-sm" data-act="skillProof" data-id="${s.id}">${ic('eye')}Основание</button>`:`<button class="btn btn-s btn-sm" data-act="howConfirm" data-id="${s.id}">Как подтвердить</button>`}</div>
+  <div>${s.st==='ok'?`<button class="btn btn-g btn-sm" data-act="skillProof" data-id="${s.id}">${ic('eye')}Основание</button>`:s.plan==='course'?`<button class="btn btn-p btn-sm" data-act="courseFinal" data-id="${s.id}">Итоговое задание</button>`:`<button class="btn btn-s btn-sm" data-act="howConfirm" data-id="${s.id}">Как подтвердить</button>`}</div>
  </div>`).join('')||'<div class="empty">Здесь пока пусто</div>'}</section>`};
 
 /* ================= projects ================= */
@@ -1875,51 +2017,49 @@ function renderProjList(){
  l.sort((a,b)=>((b.id===T().main)-(a.id===T().main))||((b.prof===T().goal)-(a.prof===T().goal)));
  el.innerHTML=`<div class="sm muted" style="margin-bottom:12px">${l.length} ${plural(l.length,'проект','проекта','проектов')} · сначала подходящие под цель ${T().goal}</div>`+(l.length?`<div class="grid-2">${l.map(projCard).join('')}</div>`:`<div class="card empty">По этим фильтрам проектов нет. <button class="linkish" data-act="resetPF">Сбросить фильтры</button></div>`);
 }
-function fileRow(f){const c={CSV:['#E2F4EC','#11946A'],PDF:['#FBE9E9','#D14343'],PPT:['#FDF0E1','#E0730F'],XLS:['#E2F4EC','#11946A'],SQL:['#ECEEFE','#3B47E0']}[f[0]]||['#ECEEFE','#3B47E0'];return `<button class="fileln" data-act="openFile" data-id="${esc(f[1])}"><span class="fi" style="background:${c[0]};color:${c[1]}">${f[0]}</span><span class="grow"><div class="b" style="font-size:13.5px">${esc(f[1])}</div><div class="xs muted">${esc(f[2])}</div></span><span class="muted">${ic('eye')}</span></button>`}
-function teamBlock(pid){const t=S.teams[pid];if(!t)return '';
- return `<section class="card col g12"><div class="row between"><h2>Ваша команда «${esc(t.name)}»</h2><span class="pill ok">${ic('check')}Команда собрана</span></div>
-  <div class="col g8">${t.members.map(m=>`<div class="row g12" style="flex-wrap:nowrap">${av(m[1],m[2],32)}<div class="grow"><div class="b sm">${m[0]}</div><div class="xs muted">${m[3]}</div></div></div>`).join('')}<div class="row g12" style="flex-wrap:nowrap">${av('АИ','#3B47E0',32)}<div class="grow"><div class="b sm">Алексей Иванов (вы)</div><div class="xs muted">${t.role}</div></div></div></div>
-  <p class="sm muted">Старт проекта — 1 октября. Решение команда сдаёт одно, но навыки подтверждаются каждому по его роли.</p>
-  <button class="btn btn-s btn-sm" data-go="messages-team-${pid}" style="align-self:flex-start">${ic('msg')}Чат команды</button></section>`}
-VIEWS.project=(id)=>{
- const p=P(id)||PROJECTS[0];const hasWs=!!p.wsTasks;const st=hasWs?pst(p.id):(S.teams[p.id]?'team':S.projApplied[p.id]?'applied':'none');
- const steps=p.steps||['Изучить бриф и материалы компании','Провести анализ и собрать выводы','Подготовить решение','Представить результаты компании'];
- const provide=p.provide||[['PDF','brief.pdf','Бриф от компании'],['XLS','data.xlsx','Данные для анализа']];
- const team=p.format==='Командный';
- const cta=st==='done'?`<button class="btn btn-ok btn-lg btn-block" data-go="complete-${p.id}">${ic('check')}Проект завершён · результат</button>`
+function fileRow(f,pid){const c={CSV:['#E2F4EC','#11946A'],PDF:['#FBE9E9','#D14343'],PPT:['#FDF0E1','#E0730F'],XLS:['#E2F4EC','#11946A'],SQL:['#ECEEFE','#3B47E0'],FIG:['#F3E8FF','#7C3AED']}[f[0]]||['#ECEEFE','#3B47E0'];return `<button class="fileln" data-act="openFile" data-id="${esc((pid||'')+'|'+f[1])}"><span class="fi" style="background:${c[0]};color:${c[1]}">${f[0]}</span><span class="grow"><div class="b" style="font-size:13.5px">${esc(f[1])}</div><div class="xs muted">${esc(f[2])}</div></span><span class="muted">${ic('eye')}</span></button>`}
+function teamBlock(pid){const t=S.teams[pid];if(!t)return '';const open=t.own?Math.max(0,(t.size||3)-1-t.members.length):0;
+ return `<section class="card col g12"><div class="row between"><h2>Ваша команда «${esc(t.name)}»</h2>${open?`<span class="pill pr">Ищем ещё ${open}</span>`:`<span class="pill ok">${ic('check')}Команда собрана</span>`}</div>
+  <div class="col g8">${t.members.map(m=>`<div class="row g12" style="flex-wrap:nowrap">${av(m[1],m[2],32)}<div class="grow"><div class="b sm">${esc(m[0])}</div><div class="xs muted">${esc(m[3])}</div></div></div>`).join('')}<div class="row g12" style="flex-wrap:nowrap">${av('АИ','#3B47E0',32)}<div class="grow"><div class="b sm">Алексей Иванов (вы)</div><div class="xs muted">${esc(t.role)}${t.own?' · капитан':''}</div></div></div>
+  ${Array.from({length:open},()=>`<div class="row g12" style="flex-wrap:nowrap"><span class="avatar" style="background:var(--surface-2);color:var(--muted);border:1.5px dashed var(--border-strong)">${ic('plus',14)}</span><div class="grow xs muted">Свободное место</div></div>`).join('')}</div>
+  <p class="sm muted">Решение команда сдаёт одно, а навыки подтверждаются каждому участнику по его роли.</p>
+  <div class="row g8"><button class="btn btn-s btn-sm" data-go="messages-team-${pid}">${ic('msg')}Чат команды</button>${open?`<button class="btn btn-g btn-sm" data-act="teamLink" data-id="${pid}">${ic('copy')}Ссылка-приглашение</button>`:''}</div></section>`}
+function projCta(p,st){const team=p.format==='Командный';
+ return st==='done'?`<button class="btn btn-ok btn-lg btn-block" data-go="complete-${p.id}">${ic('check')}Проект завершён · результат</button>`
   :st==='active'?`<button class="btn btn-p btn-lg btn-block" data-go="workspace-${p.id}">Продолжить выполнение${ic('arR')}</button>`
   :st==='review'?`<button class="btn btn-s btn-lg btn-block" data-go="workspace-${p.id}">${ic('clock')}Решение на проверке</button>`
-  :st==='team'?`<button class="btn btn-s btn-lg btn-block" data-go="messages-team-${p.id}">${ic('users')}Открыть чат команды</button>`
-  :st==='applied'?`<button class="btn btn-s btn-lg btn-block" disabled>${ic('check')}Заявка отправлена</button>`
-  :`<button class="btn btn-p btn-lg btn-block" data-act="join" data-id="${p.id}">${team?ic('users')+'Найти команду':'Принять участие'}</button>`;
+  :`<button class="btn btn-p btn-lg btn-block" data-act="join" data-id="${p.id}">${team?ic('users')+'Найти команду':'Принять участие'}</button>`}
+VIEWS.project=(id)=>{
+ const p=P(id);if(!p)return `<div class="card empty">Проект не найден — возможно, компания его сняла. <button class="linkish" data-go="projects">В каталог</button></div>`;
+ const st=pst(p.id),team=p.format==='Командный';
  return `
  <button class="crumb" data-go="projects">${ic('arL',16)}Каталог проектов</button>
  <div class="split">
   <div class="stack">
    <section class="card">
     <div class="row g16" style="flex-wrap:nowrap;align-items:flex-start">${logo(p.company,'lg')}<div class="grow col g6"><div class="row g8"><span class="b t2">${esc(p.company)}</span><span class="xs muted">${esc(p.ind)}</span></div><h1>${esc(p.title)}</h1>
-    <div class="meta"><span>${ic('target')}${esc(p.dir)}</span><span>${ic('clock')}${p.dur}</span><span>${ic('layers')}${p.diff}</span><span>${ic(team?'users':'user')}${p.format}</span></div></div></div>
+    <div class="meta"><span>${ic('target')}${esc(p.dir)}</span><span>${ic('clock')}${esc(p.dur)}</span><span>${ic('layers')}${esc(p.diff)}</span><span>${ic(team?'users':'user')}${esc(p.format)}</span></div></div></div>
    </section>
    ${teamBlock(p.id)}
-   <section class="card col g12"><h2>О компании</h2><p class="t2">${esc(p.about||'Компания разместила проект на платформе, чтобы найти сильных стажёров через реальную задачу.')}</p></section>
-   <section class="card col g16"><h2>Задача</h2><div class="task-q">${esc(p.task||'')}</div>
-    <p class="t2">${esc(p.intro||'Что нужно сделать:')}</p>
-    <ol class="ol">${steps.map(s=>`<li>${esc(s)}</li>`).join('')}</ol></section>
-   <section class="card col g12"><h2>Материалы от компании</h2><div class="col g8">${provide.map(fileRow).join('')}</div></section>
-   ${p.criteria?`<section class="card col g12"><h2>Как оценивается</h2><ul class="ul">${p.criteria.map(c=>`<li>${ic('check')}<span>${c}</span></li>`).join('')}</ul><p class="sm muted">Решение проверяет ментор ${BRAND} вместе с командой компании. Средний срок проверки — 3 дня.</p></section>`:''}
+   <section class="card col g12"><h2>О компании</h2><p class="t2">${esc(p.about)}</p></section>
+   <section class="card col g16"><h2>Задача</h2><div class="task-q">${esc(p.task)}</div>
+    <p class="t2">${esc(p.intro)}</p>
+    <ol class="ol">${p.steps.map(s=>`<li>${esc(s)}</li>`).join('')}</ol></section>
+   <section class="card col g12"><h2>Материалы от компании</h2><div class="col g8">${p.provide.map(f=>fileRow(f,p.id)).join('')}</div></section>
+   <section class="card col g12"><h2>Как оценивается</h2><ul class="ul">${p.criteria.map(c=>`<li>${ic('check')}<span>${esc(c)}</span></li>`).join('')}</ul><p class="sm muted">Решение проверяет ментор ${BRAND} — ${esc(mentorOf(p.id).name)}, ${esc(mentorOf(p.id).pos)} — по критериям компании.</p></section>
   </div>
   <aside class="card sticky col g16">
    <h2>Что получит студент</h2>
-   <ul class="ul">${['Проект в портфолио','Подтверждение навыков в Skill Passport','Отзыв компании','Возможность получить приглашение на интервью'].map(x=>`<li>${ic('check')}<span>${x}</span></li>`).join('')}</ul>
+   <ul class="ul">${['Проект в портфолио','Подтверждение навыков в Skill Passport','Отзыв компании',p.hiring?'Возможность получить приглашение на интервью':'Рекомендацию ментора'].map(x=>`<li>${ic('check')}<span>${x}</span></li>`).join('')}</ul>
    <div class="divider" style="margin:0"></div>
-   <div><div class="label" style="margin-bottom:8px">Подтвердит навыки</div><div class="chips">${p.skills.map(s=>`<span class="pill ok">${ic('shield')}${esc(s)}</span>`).join('')}</div></div>
+   <div><div class="label" style="margin-bottom:8px">Подтвердит навыки</div><div class="chips">${p.confirms.map(id=>`<span class="pill ok">${ic('shield')}${esc(SK[id].name)}</span>`).join('')}</div></div>
    <div class="col g8 sm">
-    <div class="row between"><span class="muted">Приём решений</span><b>до ${p.deadline}</b></div>
+    <div class="row between"><span class="muted">Приём решений</span><b>до ${esc(p.deadline)}</b></div>
     <div class="row between"><span class="muted">Участников</span><b>${p.people||'—'}</b></div>
     ${team?`<div class="row between"><span class="muted">Команда</span><b>3–4 человека</b></div>`:''}
-    <div class="row between"><span class="muted">Найм по итогам</span><b>${p.hiring?'Да'+(p.invitePos?', '+p.invitePos:''):'Нет'}</b></div>
+    <div class="row between"><span class="muted">Найм по итогам</span><b>${p.hiring?'Да'+(p.invitePos?', '+esc(p.invitePos):''):'Нет'}</b></div>
    </div>
-   ${cta}
+   ${projCta(p,st)}
    ${p.hiring?`<p class="xs muted" style="text-align:center">Лучшие участники получают приглашение на интервью</p>`:''}
   </aside>
  </div>`};
@@ -1929,52 +2069,62 @@ function funnelHtml(){const F=[['Регистрация',12400,null],['Запо�
  return `<div class="funnel">${F.map(f=>`<div class="fn-row ${f[2]!==null&&f[2]<45?'hot':''}"><span class="t2">${f[0]}</span><div class="fn-bar"><i style="width:${Math.max(4,f[1]/124)}%"></i></div><span><b>${fmt(f[1])}</b> <span class="cv muted">${f[2]===null?'':f[2]+'%'}</span></span></div>`).join('')}</div><div class="row g8 xs muted" style="margin-top:10px"><span style="width:10px;height:10px;border-radius:3px;background:var(--orange)"></span>Конверсия шага ниже 45% · сквозная конверсия 7,0%</div>`}
 const COH=[['Март',[100,71,62,58]],['Апрель',[100,69,60,55]],['Май',[100,72,63,57]],['Июнь',[100,58,44,39]],['Июль',[100,70,61,null]],['Август',[100,68,null,null]]];
 function cohortHtml(){return `<div class="tbl-wrap"><table class="heat"><thead><tr><th>Когорта</th><th>Месяц 0</th><th>Месяц 1</th><th>Месяц 2</th><th>Месяц 3</th></tr></thead><tbody>${COH.map(([n,v])=>`<tr><td>${n}</td>${v.map((x,i)=>x===null?'<td style="background:var(--surface-2);color:var(--muted)">—</td>':`<td class="${n==='Июнь'&&i>0?'hot':''}" style="background:color-mix(in srgb,var(--accent) ${Math.round(x*.7)}%,var(--surface));color:${x>=90?'#fff':'var(--text)'}">${x}%</td>`).join('')}</tr>`).join('')}</tbody></table></div><div class="row g8 xs muted" style="margin-top:10px"><span style="width:10px;height:10px;border-radius:3px;border:2px solid var(--orange)"></span>Июньская когорта теряет клиентов заметно быстрее остальных</div>`}
+function dataTable(d){return `<div class="tbl-wrap"><table class="tbl"><thead><tr>${d.head.map(h=>`<th>${esc(h)}</th>`).join('')}</tr></thead><tbody>${d.rows.map(r=>`<tr>${r.map((c,i)=>`<td ${i?'':'class="b"'}>${esc(c)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>${d.note?`<p class="sm t2">${esc(d.note)}</p>`:''}`}
+const SUM_MIN=150;
+const wsReady=w=>w.tasks.every(Boolean)&&!!w.file&&(w.summary||'').trim().length>=SUM_MIN;
+function wsHint(w){const miss=[];const n=w.tasks.filter(Boolean).length;if(n<w.tasks.length)miss.push(`отметьте задачи (${n} из ${w.tasks.length})`);if(!w.file)miss.push('загрузите файл решения');const l=(w.summary||'').trim().length;if(l<SUM_MIN)miss.push(`опишите итог (ещё ${SUM_MIN-l} знаков)`);return miss.length?'Осталось: '+miss.join(', ')+'.':'Всё готово к отправке.'}
 VIEWS.workspace=(id)=>{
- const p=P(id||T().main);if(!p||!p.wsTasks)return `<div class="card empty">Для этого проекта рабочее пространство откроется после старта. <button class="linkish" data-go="projects">В каталог</button></div>`;
+ const p=P(id||T().main);if(!p)return `<div class="card empty">Проект не найден. <button class="linkish" data-go="projects">В каталог</button></div>`;
  const st=pst(p.id);
- if(st==='none')return `<div class="card empty">Вы ещё не участвуете в проекте. <button class="linkish" data-go="project-${p.id}">Открыть проект ${p.company}</button></div>`;
+ if(st==='none')return `<div class="card empty">Вы ещё не участвуете в проекте. <button class="linkish" data-go="project-${p.id}">Открыть проект ${esc(p.company)}</button></div>`;
  if(st==='done')return VIEWS.complete(p.id);
- const w=wsOf(p.id),n=w.tasks.filter(Boolean).length,ready=n===4&&w.file,rev=st==='review',mm=p.id==='p4'?MENTORS[1]:MENTORS[0];
+ const w=wsOf(p.id),n=w.tasks.filter(Boolean).length,ready=wsReady(w),rev=st==='review',mm=mentorOf(p.id),L=w.tasks.length;
+ const data=p.wsData==='funnel'?funnelHtml():p.wsData==='cohort'?cohortHtml():p.data?dataTable(p.data):'';
  return `
  <button class="crumb" data-go="project-${p.id}">${ic('arL',16)}Описание проекта</button>
- <div class="page-h"><div class="row g16" style="flex-wrap:nowrap">${logo(p.company,'lg')}<div><div class="row g8">${rev?'<span class="pill ac">На проверке</span>':'<span class="pill pr">В работе</span>'}<span class="sm muted">Приём решений до ${p.deadline}</span></div><h1 style="margin-top:6px">${esc(p.short)}</h1></div></div>
- ${rev?'':`<button class="btn btn-g btn-sm" data-act="demoFill" data-id="${p.id}">${ic('bolt')}Заполнить демо-решение</button>`}</div>
- ${rev?`<div class="banner ac"><span class="ic">${ic('clock',20)}</span><div class="grow"><div class="b">Решение отправлено и ждёт проверки</div><div class="sm t2">Ментор ${mm.name} проверит его по критериям компании и подтвердит навыки. Обычно это занимает до трёх дней.</div></div><div class="row g8"><button class="btn btn-p btn-sm" data-go="review-${p.id}">Проверить как ментор</button><button class="btn btn-s btn-sm" data-act="skipReview" data-id="${p.id}">Пропустить проверку</button></div></div>`:''}
+ <div class="page-h"><div class="row g16" style="flex-wrap:nowrap">${logo(p.company,'lg')}<div><div class="row g8">${rev?'<span class="pill ac">На проверке</span>':'<span class="pill pr">В работе</span>'}${w.attempt>1?`<span class="pill">Попытка ${w.attempt}</span>`:''}<span class="sm muted">Приём решений до ${esc(p.deadline)}</span></div><h1 style="margin-top:6px">${esc(p.short)}</h1></div></div>
+ ${rev?'':`<button class="btn btn-g btn-sm" data-act="demoFill" data-id="${p.id}">${ic('bolt')}Заполнить пример решения</button>`}</div>
+ ${rev?`<div class="banner ac"><span class="ic">${ic('clock',20)}</span><div class="grow"><div class="b">Решение отправлено ${esc(w.sentAt||'')} и ждёт проверки</div><div class="sm t2">Ментор ${esc(mm.name)} проверит его по критериям компании и подтвердит навыки. Проверку можно пройти за ментора в режиме «Ментор».</div></div><div class="row g8"><button class="btn btn-p btn-sm" data-act="role" data-role="mentor" data-then="review-${p.id}">Проверить как ментор</button><button class="btn btn-s btn-sm" data-act="withdraw" data-id="${p.id}">Отозвать решение</button></div></div>`:''}
+ ${!rev&&w.returned?`<div class="banner" style="background:var(--orange-soft)"><span class="ic" style="background:var(--orange)">${ic('pen',20)}</span><div class="grow"><div class="b">Ментор вернул решение на доработку · ${esc(w.returned.date)}</div><div class="sm t2">«${esc(w.returned.comment)}» — ${esc(mm.name)}</div></div></div>`:''}
  <div class="split">
   <div class="stack">
-   <section class="card col g12"><div class="row between"><h2>Задачи</h2><span class="sm b">${n} из 4</span></div>${bar(n*25,'gr thin')}
-    <div class="col g8" style="margin-top:6px">${p.wsTasks.map((t,i)=>`<div class="task ${w.tasks[i]?'done':''}"><button class="tick" ${rev?'disabled':''} data-act="tick" data-id="${p.id}:${i}" aria-label="Отметить задачу">${ic('check')}</button><div class="grow"><div class="b">${i+1}. ${t[0]}</div><div class="sm muted">${t[1]}</div></div></div>`).join('')}</div></section>
-   <section class="card col g12"><div class="row between"><h2>Данные компании</h2><span class="xs muted">${p.provide[0][1]}</span></div>${p.wsData==='funnel'?funnelHtml():cohortHtml()}</section>
+   <section class="card col g12"><div class="row between"><h2>Задачи</h2><span class="sm b">${n} из ${L}</span></div>${bar(Math.round(n/L*100),'gr thin')}
+    <div class="col g8" style="margin-top:6px">${p.wsTasks.map((t,i)=>`<div class="task ${w.tasks[i]?'done':''}"><button class="tick" ${rev?'disabled':''} data-act="tick" data-id="${p.id}:${i}" aria-label="${w.tasks[i]?'Снять отметку':'Отметить задачу'}: ${esc(t[0])}" aria-pressed="${!!w.tasks[i]}">${ic('check')}</button><div class="grow"><div class="b">${i+1}. ${esc(t[0])}</div><div class="sm muted">${esc(t[1])}</div></div></div>`).join('')}</div></section>
+   ${data?`<section class="card col g12"><div class="row between"><h2>Данные компании</h2><span class="xs muted">${esc(p.provide[1]?p.provide[1][1]:p.provide[0][1])}</span></div>${data}</section>`:''}
+   <section class="card col g12"><h2>Материалы</h2><div class="col g8">${p.provide.map(f=>fileRow(f,p.id)).join('')}</div></section>
+   ${teamBlock(p.id)}
   </div>
   <aside class="stack sticky">
    <section class="card col g12"><h2>Решение</h2>
-    ${w.file?`<div class="fileln" style="cursor:default"><span class="fi" style="background:var(--orange-soft);color:var(--orange)">PDF</span><span class="grow"><div class="b" style="font-size:13.5px">${esc(w.file)}</div><div class="xs muted">Загружено</div></span>${rev?'':`<button class="x" data-act="rmFile" data-id="${p.id}" aria-label="Удалить файл">${ic('x',14)}</button>`}</div>`
-     :`<label class="drop" for="upl" style="cursor:pointer">${ic('upload',22)}<span class="b">Загрузите презентацию или отчёт</span><span class="xs muted">PDF или PPTX до 50 МБ</span><input type="file" id="upl" data-id="${p.id}" hidden accept=".pdf,.pptx,.ppt,.key"></label><button class="linkish" data-act="demoFile" data-id="${p.id}">Прикрепить демо-файл</button>`}
-    ${rev?'':`<button class="btn btn-p btn-lg btn-block" data-act="submit" data-id="${p.id}" ${ready?'':'disabled'}>${ic('send')}Отправить решение</button><p class="xs muted">${ready?'Всё готово к отправке.':'Отметьте все задачи и загрузите решение.'}</p>`}
+    <label class="field"><span>Итог решения <span class="xs muted" id="sumCount">${(w.summary||'').trim().length} / ${SUM_MIN}+ знаков</span></span><textarea class="inp" id="ws-sum" data-id="${p.id}" rows="6" ${rev?'disabled':''} placeholder="Главный вывод, что сделали и какой результат. Это прочитают ментор и компания.">${esc(w.summary||'')}</textarea></label>
+    ${w.file?`<div class="fileln"><span class="fi" style="background:var(--orange-soft);color:var(--orange)">${esc(extOf(w.file).toUpperCase().slice(0,4))}</span><span class="grow"><div class="b" style="font-size:13.5px">${esc(w.file)}</div><div class="xs muted">${w.fileSize?fmtSize(w.fileSize)+' · ':''}${w.fileDemo?'пример, собран из вашего итога':'загружено'}</div></span><button class="x" data-act="openStored" data-id="ws-${p.id}" aria-label="Открыть файл">${ic('eye',14)}</button>${rev?'':`<button class="x" data-act="rmFile" data-id="${p.id}" aria-label="Удалить файл">${ic('x',14)}</button>`}</div>`
+     :`<label class="drop" for="upl" style="cursor:pointer">${ic('upload',22)}<span class="b">Загрузите презентацию или отчёт</span><span class="xs muted">PDF, PPTX, DOCX, изображение или архив до 50 МБ</span><input type="file" id="upl" data-id="${p.id}" hidden accept=".pdf,.pptx,.ppt,.key,.docx,.doc,.png,.jpg,.jpeg,.zip,.html,.txt,.md"></label><button class="linkish" data-act="demoFile" data-id="${p.id}">Собрать отчёт из итога решения</button>`}
+    ${rev?'':`<button class="btn btn-p btn-lg btn-block" id="wsSubmit" data-act="submit" data-id="${p.id}" ${ready?'':'disabled'}>${ic('send')}${w.attempt>1||w.returned?'Отправить повторно':'Отправить решение'}</button><p class="xs muted" id="wsHint">${wsHint(w)}</p>`}
    </section>
-   <section class="card col g12"><div class="row g12" style="flex-wrap:nowrap">${av(mm.ini,mm.color,36)}<div><div class="b">${mm.name}</div><div class="xs muted">Ментор · ${mm.pos}</div></div></div><div class="quote sm">${p.mentorTip}</div><button class="btn btn-s btn-sm" data-act="aiAsk" data-q="Как лучше структурировать итоговую презентацию проекта?">${ic('msg')}Задать вопрос</button></section>
+   <section class="card col g12"><div class="row g12" style="flex-wrap:nowrap">${av(mm.ini,mm.color,36)}<div><div class="b">${esc(mm.name)}</div><div class="xs muted">Ментор · ${esc(mm.pos)}</div></div></div><div class="quote sm">${esc(p.mentorTip)}</div><button class="btn btn-s btn-sm" data-act="aiAsk" data-q="Я делаю проект «${esc(p.short)}» для ${esc(p.company)}. Как лучше структурировать итоговое решение?">${ic('msg')}Задать вопрос</button></section>
   </aside>
  </div>`};
 
 /* ================= complete ================= */
 VIEWS.complete=(id)=>{
- const pid=id||T().main,p=P(pid);if(pst(pid)!=='done')return VIEWS.workspace(pid);
- const tr=trackOfProj(pid)||T(),r=readinessOf(tr.id),newSk=confirmsOf(pid).map(sk),inv=S.inv[pid]||{st:'new'},e=empOfProj(pid);
+ const pid=id||T().main,p=P(pid);if(!p)return VIEWS.project(pid);if(pst(pid)!=='done')return VIEWS.workspace(pid);
+ const tr=trackOfProj(pid)||T(),r=readinessOf(tr.id),rb=S.flags['rb_'+pid]!=null?S.flags['rb_'+pid]:r,newSk=confirmsOf(pid).map(sk),inv=S.inv[pid],e=empOfProj(pid);
+ const unl=newlyUnlocked().length-(S.flags['ub_'+pid]||0),fresh=newSk.filter(s=>s.fresh).length;
  const conf=Array.from({length:22},(_,i)=>`<span class="conf" style="left:${(i*4.6+3)%100}%;background:${['#3B47E0','#11946A','#E0730F','#7B5CF0'][i%4]};animation-delay:${(i%7)*.12}s"></span>`).join('');
  return `
- <section class="celebrate">${conf}<div class="burst">${ic('check')}</div><h1>Проект успешно завершён!</h1><p class="t2" style="margin-top:8px">${p.company} оценила решение на <b>${S.scores[pid]||p.score} из 5</b> — ${p.rank}.</p>
-  <div class="row g8" style="justify-content:center;margin-top:16px"><span class="pill ok">${ic('shield')}+${newSk.length} ${plural(newSk.length,'подтверждённый навык','подтверждённых навыка','подтверждённых навыков')}</span><span class="pill pr">${ic('trend')}Готовность ${tr.base}% → ${r}%</span><span class="pill ac">${ic('cap')}+5 стажировок</span><span class="pill">${ic('star')}+${400+150*newSk.length} XP</span></div>
+ <section class="celebrate">${conf}<div class="burst">${ic('check')}</div><h1>Проект успешно завершён!</h1><p class="t2" style="margin-top:8px">${esc(p.company)} и ментор оценили решение на <b>${S.scores[pid]||p.score} из 5</b>${S.scores[pid]?'':` — ${esc(p.rank)}`}.</p>
+  <div class="row g8" style="justify-content:center;margin-top:16px"><span class="pill ok">${ic('shield')}${newSk.length} ${plural(newSk.length,'навык подтверждён','навыка подтверждено','навыков подтверждено')}</span>${r>rb?`<span class="pill pr">${ic('trend')}Готовность ${rb}% → ${r}%</span>`:''}${unl>0?`<span class="pill ac">${ic('cap')}+${unl} ${plural(unl,'стажировка','стажировки','стажировок')}</span>`:''}<span class="pill">${ic('star')}+${400+150*fresh} XP</span></div>
  </section>
- <section class="invite" style="margin-top:20px">
+ ${p.hiring&&inv?`<section class="invite" style="margin-top:20px">
   ${logo(p.company,'lg')}
-  <div class="grow col g8" style="min-width:240px"><span class="label" style="color:var(--accent-ink)">Компания заинтересовалась вашим результатом</span><h2 style="font-size:20px">Компания ${p.company} приглашает вас на интервью на позицию ${p.invitePos}.</h2><p class="t2">«${p.review} Хотим обсудить решение с командой».<br><span class="sm muted">— ${e.person}, ${e.pos}</span></p></div>
-  <div class="col g8" style="min-width:200px">${inv.st==='accepted'?`<span class="pill ok" style="height:auto;padding:8px 12px">${ic('cal')}Интервью: ${inv.slot}</span><button class="btn btn-s" data-go="messages-inv-${pid}">${ic('msg')}Открыть чат</button><button class="btn btn-g" data-act="aiInterview">Подготовиться с AI</button>`:`<button class="btn btn-p btn-lg" data-act="acceptInvite" data-id="${pid}">Принять приглашение</button><button class="btn btn-s" data-go="messages-inv-${pid}">${ic('msg')}Написать компании</button>`}</div>
- </section>
+  <div class="grow col g8" style="min-width:240px"><span class="label" style="color:var(--accent-ink)">Компания заинтересовалась вашим результатом</span><h2 style="font-size:20px">${esc(p.company)} приглашает вас на интервью на позицию ${esc(p.invitePos)}.</h2><p class="t2">«${esc((S.reviews&&S.reviews[pid]||{}).comment||p.review)} ${esc(p.inviteHook||'Хотим обсудить решение с командой.')}»<br><span class="sm muted">— ${esc(e.person)}, ${esc(e.pos)}</span></p></div>
+  <div class="col g8" style="min-width:200px">${inv.st==='accepted'?`<span class="pill ok" style="height:auto;padding:8px 12px">${ic('cal')}Интервью: ${esc(inv.slot)}</span><button class="btn btn-s" data-go="messages-inv-${pid}">${ic('msg')}Открыть чат</button><button class="btn btn-g" data-act="appPrep" data-id="${p.inviteJob||''}">Подготовиться к интервью</button>`:`<button class="btn btn-p btn-lg" data-act="acceptInvite" data-id="${pid}">Принять приглашение</button><button class="btn btn-s" data-go="messages-inv-${pid}">${ic('msg')}Написать компании</button>`}</div>
+ </section>`:`<section class="card col g8" style="margin-top:20px"><span class="label">Отзыв компании</span><p class="t2">«${esc((S.reviews&&S.reviews[pid]||{}).comment||p.review)}»</p><span class="sm muted">— ${esc(e.person)}, ${esc(e.pos)}, ${esc(p.company)}</span>${p.hiring?'':`<span class="xs muted">В этом проекте компания не нанимает — зато результат уже в вашем Skill Passport, а ментор оставит рекомендацию.</span>`}</section>`}
  <div class="grid-2" style="margin-top:20px">
-  <section class="card col g12"><h2>Новые подтверждённые навыки</h2>${newSk.map(s=>`<div class="newskill"><span class="mk ok">${ic('check')}</span><div class="grow"><div class="b">${s.name}</div><div class="xs muted">${s.basis}</div></div><span class="pill ok">Подтверждено</span></div>`).join('')}<button class="btn btn-g btn-sm" data-go="skills" style="align-self:flex-start">Открыть Skill Passport${ic('arR')}</button></section>
+  <section class="card col g12"><h2>Подтверждённые навыки</h2>${newSk.map(s=>`<div class="newskill"><span class="mk ok">${ic('check')}</span><div class="grow"><div class="b">${esc(s.name)}</div><div class="xs muted">${esc(s.basis||'')}</div></div><span class="pill ok">Подтверждено</span></div>`).join('')}<button class="btn btn-g btn-sm" data-go="skills" style="align-self:flex-start">Открыть Skill Passport${ic('arR')}</button></section>
   <div class="stack">
-   <section class="card col g12"><h2>Карьерная готовность · ${tr.goal}</h2><div class="row g8" style="align-items:baseline"><span class="big-num" style="font-size:38px">${r}%</span><span class="delta">+${r-tr.base}%</span></div>${bar(r,'o fat')}<p class="sm muted">${r>=75?'Порог 75% пройден. Открылись новые стажировки: '+newlyUnlocked().slice(0,4).map(j=>j.company).join(', ')+'.':'Ещё немного до порога 75%.'}</p><button class="btn btn-s btn-sm" data-go="internships" style="align-self:flex-start">Смотреть новые стажировки</button></section>
-   <section class="card col g12"><h2>Портфолио</h2>${S.portfolio[pid]?`<div class="row g8"><span class="pill ok">${ic('check')}Проект добавлен в портфолио</span></div><button class="btn btn-s btn-sm" data-go="portfolio" style="align-self:flex-start">Открыть портфолио</button>`:`<p class="sm t2">Добавьте проект с результатами и отзывом компании — работодатели увидят его первым.</p><button class="btn btn-p" data-act="addPortfolio" data-id="${pid}" style="align-self:flex-start">${ic('plus')}Добавить проект в портфолио</button>`}</section>
+   <section class="card col g12"><h2>Карьерная готовность · ${esc(tr.goal)}</h2><div class="row g8" style="align-items:baseline"><span class="big-num" style="font-size:38px">${r}%</span>${r>rb?`<span class="delta">+${r-rb}%</span>`:''}</div>${bar(r,'o fat')}<p class="sm muted">${r>rb?`Проект поднял готовность к цели «${esc(tr.goal)}».`:`Навыки этого проекта не входят в требования цели «${esc(tr.goal)}», но видны работодателям в Skill Passport.`}${unl>0?' Открылись новые стажировки: '+newlyUnlocked().slice(0,4).map(j=>esc(j.company)).join(', ')+'.':''}</p><button class="btn btn-s btn-sm" data-go="internships" style="align-self:flex-start">Смотреть стажировки</button></section>
+   <section class="card col g12"><h2>Портфолио</h2>${S.portfolio[pid]?`<div class="row g8"><span class="pill ok">${ic('check')}Проект добавлен в портфолио</span></div><button class="btn btn-s btn-sm" data-go="portfolio" style="align-self:flex-start">Открыть портфолио</button>`:`<p class="sm t2">Добавьте проект с результатами и отзывом — работодатели увидят его первым.</p><button class="btn btn-p" data-act="addPortfolio" data-id="${pid}" style="align-self:flex-start">${ic('plus')}Добавить проект в портфолио</button>`}</section>
   </div>
  </div>`};
 
@@ -2311,7 +2461,7 @@ mark.ph{background:#FDE7C8;color:#9A4A00;border-radius:3px;padding:0 2px}
 function cvDocHtml(c,tpl,lang){return `<!DOCTYPE html><html lang="${lang}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(c.name)} — ${lang==='en'?'CV':'резюме'}</title><style>body{margin:0;background:#EEF0F6;padding:24px}.paper{max-width:800px;margin:0 auto;box-shadow:0 4px 24px rgba(0,0,0,.08)}@media print{body{background:#fff;padding:0}.paper{box-shadow:none}}${PAPER_CSS}</style></head><body>${cvPaper(c,{tpl,lang})}</body></html>`}
 async function saveFile(filename,data){
  if(DLS){try{await DLS.save({filename,data});toast('Файл сохранён','download')}catch(e){if(e&&e.code!=='declined')toast('Не получилось сохранить файл в этом просмотре','x')}return}
- if(NO_RT){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([data],{type:'text/html;charset=utf-8'}));a.download=filename;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500);toast('Файл сохранён','download');return}
+ if(NO_RT){const a=document.createElement('a');a.href=URL.createObjectURL(data instanceof Blob?data:new Blob([data],{type:'text/html;charset=utf-8'}));a.download=filename;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500);toast('Файл сохранён','download');return}
  toast('Скачивание недоступно в этом просмотре — используйте «Копировать текст»','x')}
 const canSave=()=>!!DLS||NO_RT;
 function cvPlain(c){return [c.name,c.title,[c.city,c.email,c.phone,c.tg].filter(Boolean).join(' · '),'',RU_LBL.about.toUpperCase(),c.about,'',RU_LBL.exp.toUpperCase(),...c.exp.flatMap(e=>[`${e.role} — ${e.org} (${e.period})`,...e.bullets.map(b=>'• '+b),'']),RU_LBL.projects.toUpperCase(),...c.projects.flatMap(e=>[`${e.title} — ${e.org} (${e.period})`,...e.bullets.map(b=>'• '+b),'']),RU_LBL.edu.toUpperCase(),...c.edu.map(e=>`${e.org}, ${e.prog}, ${e.period}`),'',RU_LBL.skills.toUpperCase(),c.skills,'',c.extra].join('\n')}
@@ -2679,7 +2829,7 @@ function appSalary(){const f=UI.sal||(UI.sal={prof:T().goal,level:'Стажёр'
   <aside class="card col g12"><h2>Как торговаться стажёру</h2><ul class="ul sm">${['Называйте диапазон, нижняя граница — медиана рынка','Опирайтесь на подтверждённые навыки и проект, а не на «хочу больше»','Спросите про пересмотр оплаты через 3 месяца','Уточните, оплачиваются ли часы сверх графика'].map(x=>`<li>${ic('check')}<span>${x}</span></li>`).join('')}</ul></aside></div>`}
 
 /* ================= mentor recommendation ================= */
-const REC_T=pid=>{const p=P(pid),mm=pid==='p4'?MENTORS[1]:MENTORS[0];return `Рекомендую Алексея Иванова на позицию ${p.invitePos}. Я проверял(а) его решение по проекту «${p.short}» для ${p.company}. ${p.review} Работу сдал в срок, на замечания реагировал быстро и по делу. Сильные стороны — структура мышления и умение опираться на данные.\n\n${mm.name}, ${mm.pos}, ментор ${BRAND}`};
+const REC_T=pid=>{const p=P(pid),mm=mentorOf(pid);return `Рекомендую Алексея Иванова на позицию ${p.invitePos}. Я проверял(а) его решение по проекту «${p.short}» для ${p.company}. ${p.review} Работу сдал в срок, на замечания реагировал быстро и по делу. Сильные стороны — структура мышления и умение опираться на данные.\n\n${mm.name}, ${mm.pos}, ментор ${BRAND}`};
 /* ================= employer ================= */
 function alexCand(){const e=emp(),d=pst(e.main)==='done';return {id:'c2',name:'Алексей Иванов',prof:T().goal,uni:'НИУ ВШЭ · Бизнес-информатика, 3 курс',match:e.match[d?1:0],skills:confAll().map(s=>s.name),projects:projCount(),city:'Москва',color:'#3B47E0',fresh:d,score:d?(S.scores[e.main]||P(e.main).score):null}}
 const cands=()=>[alexCand(),...CANDS].sort((a,b)=>b.match-a.match);
@@ -2789,21 +2939,25 @@ VIEWS.pricing=()=>{const c=UI.calc;return `
   </div></section>`};
 
 /* ================= mentor ================= */
-const QUEUE=[['Мария Кузнецова','UX-аудит мобильного приложения','Копилка','4,5'],['Тимур Ахметов','Дашборд удержания клиентов','Т-Банк','4,6'],['Екатерина Волкова','Онбординг продавцов','Avito','4,9']];
+const QUEUE=[{who:'Мария Кузнецова',pid:'p2',score:'4,5',stars:[5,4,5,4],comment:'Сильный анализ онбординга, редизайн экрана цели можно упростить ещё на один шаг.',date:'22 сентября'},
+ {who:'Тимур Ахметов',pid:'p4',score:'4,6',stars:[5,4,5,4],comment:'Когорты собраны корректно, вывод про партнёрскую акцию подтверждён данными.',date:'19 сентября'},
+ {who:'Екатерина Волкова',pid:'p5',score:'4,9',stars:[5,5,5,5],comment:'Лучшие интервью в потоке и понятная метрика онбординга.',date:'16 сентября'}];
+const CONS_OTHER=[{key:'o1',who:'Дарья Федорова',what:'Разбор резюме аналитика',when:'Вт, 30 сентября · 20:00'},{key:'o2',who:'Глеб Андреев',what:'Оценка навыка «Roadmapping»',when:'Ср, 1 октября · 19:30'}];
+const myReviewPids=()=>allProjects().filter(p=>['review','done'].includes(pst(p.id))).map(p=>p.id).sort((a,b)=>(pst(a)==='review'?0:1)-(pst(b)==='review'?0:1));
 VIEWS.mentor=()=>{
- const mm=mentorMe(),m=T().main,p=P(m),st=pst(m),tab=UI.mentorTab;
- const cons=[...Object.keys(S.mentorReq).map(k=>({who:'Алексей Иванов',what:'Оценка навыка «'+SK[k].name+'»',when:S.mentorReq[k].slot,me:1})),{who:'Дарья Федорова',what:'Разбор резюме аналитика',when:'Вт, 30 сентября · 20:00'},{who:'Глеб Андреев',what:'Оценка навыка «Roadmapping»',when:'Ср, 1 октября · 19:30'}];
+ const mm=mentorMe(),tab=UI.mentorTab,mine=myReviewPids(),waiting=mine.filter(x=>pst(x)==='review').length;
+ const cons=[...Object.keys(S.mentorReq).map(k=>({key:'s-'+k,sk:k,who:'Алексей Иванов',what:'Оценка навыка «'+SK[k].name+'»',when:S.mentorReq[k].slot,me:1})),...CONS_OTHER];
  return `
  <div class="page-h"><div><span class="label">Кабинет ментора</span><h1 style="margin-top:4px">Добрый день, ${mm.name.split(' ')[0]}</h1><p>Вы проверяете решения студентов по критериям компаний и подтверждаете навыки. Ваша оценка — основание в Skill Passport, которое видят работодатели.</p></div></div>
  <div class="grid-4" style="margin-bottom:20px">
-  ${[['На проверке',st==='review'?1:0,'clock'],['Проверено за месяц',38+(st==='done'?1:0),'check'],['Средняя оценка решений','4,3','star'],['Консультации на неделе',cons.length,'cal']].map(k=>`<section class="card kpi"><div class="row between"><span class="sm muted">${k[0]}</span><span class="muted">${ic(k[2])}</span></div><span class="v">${k[1]}</span></section>`).join('')}
+  ${[['На проверке',waiting,'clock'],['Проверено за месяц',38+mine.filter(x=>pst(x)==='done').length,'check'],['Средняя оценка решений','4,3','star'],['Консультации на неделе',cons.length,'cal']].map(k=>`<section class="card kpi"><div class="row between"><span class="sm muted">${k[0]}</span><span class="muted">${ic(k[2])}</span></div><span class="v">${k[1]}</span></section>`).join('')}
  </div>
  <div class="tabs">${[['queue','Решения'],['cons','Консультации']].map(([k,l])=>`<button class="${tab===k?'on':''}" data-act="mTab" data-id="${k}">${l}</button>`).join('')}</div>
  ${tab==='queue'?`<section class="card" style="padding:0"><div class="tbl-wrap"><table class="tbl"><thead><tr><th>Студент</th><th>Проект</th><th>Статус</th><th></th></tr></thead><tbody>
-  ${st==='review'||st==='done'?`<tr><td><div class="row g12" style="flex-wrap:nowrap">${av('АИ','#3B47E0')}<div><div class="b">Алексей Иванов</div><div class="xs muted">НИУ ВШЭ · 3 курс</div></div></div></td><td>${p.short}<div class="xs muted">${p.company}</div></td><td>${st==='review'?'<span class="pill pr">Ждёт проверки</span>':`<span class="pill ok">Проверено · ${S.scores[m]||p.score}</span>`}</td><td style="text-align:right"><button class="btn ${st==='review'?'btn-p':'btn-s'} btn-sm" data-go="review-${m}">${st==='review'?'Проверить':'Открыть'}</button></td></tr>`:''}
-  ${QUEUE.map(q=>`<tr><td><div class="row g12" style="flex-wrap:nowrap">${av(initials(q[0]),'#8A90B0')}<div><div class="b">${q[0]}</div><div class="xs muted">Студент</div></div></div></td><td>${q[1]}<div class="xs muted">${q[2]}</div></td><td><span class="pill ok">Проверено · ${q[3]}</span></td><td style="text-align:right"><button class="btn btn-g btn-sm" data-act="mentorOld">Открыть</button></td></tr>`).join('')}
-  </tbody></table></div>${st==='none'||st==='active'?`<div class="empty sm" style="border-top:1px solid var(--border)">Новых решений нет. Отправьте решение из кабинета студента — оно появится здесь. <button class="linkish" data-go="${st==='none'?'project-'+m:'workspace-'+m}">Открыть проект студента</button></div>`:''}</section>`
- :`<section class="card" style="padding:0">${cons.map(c=>`<div class="row between" style="padding:14px 20px;border-bottom:1px solid var(--border)"><div class="row g12" style="flex-wrap:nowrap">${av(initials(c.who),c.me?'#3B47E0':'#8A90B0')}<div><div class="b">${c.who} ${c.me?'<span class="new-tag">Новая</span>':''}</div><div class="sm muted">${esc(c.what)}</div></div></div><div class="row g8"><span class="pill">${ic('cal')}${c.when}</span><button class="btn btn-s btn-sm" data-act="mentorCons">Подтвердить</button></div></div>`).join('')}</section>`}`};
+  ${mine.map(pid=>{const p=P(pid),st=pst(pid);return `<tr><td><div class="row g12" style="flex-wrap:nowrap">${av('АИ','#3B47E0')}<div><div class="b">Алексей Иванов</div><div class="xs muted">НИУ ВШЭ · 3 курс${wsOf(pid).attempt>1?' · попытка '+wsOf(pid).attempt:''}</div></div></div></td><td>${esc(p.short)}<div class="xs muted">${esc(p.company)} · ментор ${esc(mentorOf(pid).name)}</div></td><td>${st==='review'?'<span class="pill pr">Ждёт проверки</span>':`<span class="pill ok">Проверено · ${S.scores[pid]||p.score}</span>`}</td><td style="text-align:right"><button class="btn ${st==='review'?'btn-p':'btn-s'} btn-sm" data-go="review-${pid}">${st==='review'?'Проверить':'Открыть'}</button></td></tr>`}).join('')}
+  ${QUEUE.map((q,i)=>`<tr><td><div class="row g12" style="flex-wrap:nowrap">${av(initials(q.who),'#8A90B0')}<div><div class="b">${q.who}</div><div class="xs muted">Студент</div></div></div></td><td>${esc(P(q.pid).short)}<div class="xs muted">${esc(P(q.pid).company)}</div></td><td><span class="pill ok">Проверено · ${q.score}</span></td><td style="text-align:right"><button class="btn btn-g btn-sm" data-act="mentorOld" data-id="${i}">Открыть</button></td></tr>`).join('')}
+  </tbody></table></div>${!mine.length?`<div class="empty sm" style="border-top:1px solid var(--border)">Новых решений нет. Когда студент отправит решение, оно появится здесь. <button class="linkish" data-act="role" data-role="student" data-then="projects">Открыть проекты глазами студента</button></div>`:''}</section>`
+ :`<section class="card" style="padding:0">${cons.map(c=>{const st=S.consOk[c.key];return `<div class="row between" style="padding:14px 20px;border-bottom:1px solid var(--border)"><div class="row g12" style="flex-wrap:nowrap">${av(initials(c.who),c.me?'#3B47E0':'#8A90B0')}<div><div class="b">${c.who} ${c.me&&!st?'<span class="new-tag">Новая</span>':''}</div><div class="sm muted">${esc(c.what)}</div></div></div><div class="row g8"><span class="pill">${ic('cal')}${c.when}</span>${st==='assessed'?`<span class="pill ok">${ic('check')}Оценка проведена</span>`:st==='ok'?(c.sk?`<button class="btn btn-p btn-sm" data-act="consAssess" data-id="${c.sk}">Провести оценку</button>`:`<span class="pill ok">${ic('check')}Подтверждена</span>`):`<button class="btn btn-s btn-sm" data-act="mentorCons" data-id="${c.key}">Подтвердить</button>`}</div></div>`}).join('')}${!cons.length?'<div class="empty">Записей на консультации пока нет</div>':''}</section>`}`};
 function slideHtml(p,s,i){const [title,kind,data]=s;let body='';
  if(kind==='text')body=`<p style="font-size:11px;color:var(--text-2);line-height:1.4">${esc(data)}</p>`;
  if(kind==='funnel')body=`<div class="mb">${[100,74,43,18,7].map((w,k)=>`<i class="${k===3||k===4?'o':''}" style="width:${Math.max(5,w)}%"></i>`).join('')}</div>`;
@@ -2812,32 +2966,36 @@ function slideHtml(p,s,i){const [title,kind,data]=s;let body='';
  if(kind==='bars')body=`<div style="display:flex;align-items:flex-end;gap:4px;height:48px;margin-top:auto">${[40,62,55,78,70,88,64].map(h=>`<i style="flex:1;height:${h}%;background:var(--accent);border-radius:2px;opacity:.8"></i>`).join('')}</div>`;
  return `<div class="slide"><span class="sn">СЛАЙД ${i+1}</span><h4>${esc(title)}</h4>${body}</div>`}
 VIEWS.review=(id)=>{
- const pid=id||T().main,p=P(pid);if(!p||!p.criteria)return `<div class="card empty">Решение не найдено. <button class="linkish" data-go="mentor">К списку решений</button></div>`;
- const st=pst(pid),mm=pid==='p4'?MENTORS[1]:MENTORS[0];
- if(st==='none'||st==='active')return `<button class="crumb" data-go="mentor">${ic('arL',16)}Решения</button><section class="card empty col g12" style="align-items:center"><span class="logo lg" style="background:var(--accent-soft);color:var(--accent-ink)">${ic('clock',24)}</span><h2>Решение ещё не отправлено</h2><p class="sm muted" style="max-width:440px">Алексей Иванов пока выполняет проект «${p.short}». Когда он отправит решение, оно появится здесь на проверку.</p><button class="btn btn-p btn-sm" data-act="role" data-role="student" data-then="${st==='none'?'project-'+pid:'workspace-'+pid}">Открыть проект глазами студента</button></section>`;
- const rv=UI.rv[pid]||(UI.rv[pid]={stars:[...p.rubric],sel:[...p.confirms],comment:p.review});
+ const pid=id||T().main,p=P(pid);if(!p)return `<div class="card empty">Решение не найдено. <button class="linkish" data-go="mentor">К списку решений</button></div>`;
+ const st=pst(pid),mm=mentorOf(pid),w=wsOf(pid);
+ if(st==='none'||st==='active')return `<button class="crumb" data-go="mentor">${ic('arL',16)}Решения</button><section class="card empty col g12" style="align-items:center"><span class="logo lg" style="background:var(--accent-soft);color:var(--accent-ink)">${ic('clock',24)}</span><h2>${w.returned&&st==='active'?'Решение на доработке':'Решение ещё не отправлено'}</h2><p class="sm muted" style="max-width:440px">${w.returned&&st==='active'?`Вы вернули решение ${esc(w.returned.date)}. Когда студент отправит новую версию, она появится здесь.`:`Алексей Иванов пока выполняет проект «${esc(p.short)}». Когда он отправит решение, оно появится здесь на проверку.`}</p><button class="btn btn-p btn-sm" data-act="role" data-role="student" data-then="${st==='none'?'project-'+pid:'workspace-'+pid}">Открыть проект глазами студента</button></section>`;
+ const rv=UI.rv[pid]||(UI.rv[pid]={stars:[...p.rubric],sel:[...p.confirms],comment:(S.reviews[pid]||{}).comment||p.review});
  const score=(rv.stars.reduce((a,b)=>a+b,0)/rv.stars.length).toFixed(1);
  const done=st==='done';
  return `
  <button class="crumb" data-go="mentor">${ic('arL',16)}Решения</button>
- <div class="page-h"><div><span class="label">Проверка решения · ${p.company}</span><h1 style="margin-top:4px">${p.short}</h1></div>${done?`<span class="pill ok" style="height:32px;padding:0 12px">${ic('check')}Проверено · оценка ${S.scores[pid]||p.score}</span>`:'<span class="pill pr" style="height:32px;padding:0 12px">Ждёт проверки</span>'}</div>
+ <div class="page-h"><div><span class="label">Проверка решения · ${esc(p.company)}</span><h1 style="margin-top:4px">${esc(p.short)}</h1></div>${done?`<span class="pill ok" style="height:32px;padding:0 12px">${ic('check')}Проверено · оценка ${S.scores[pid]||p.score}</span>`:'<span class="pill pr" style="height:32px;padding:0 12px">Ждёт проверки</span>'}</div>
  <div class="split">
   <div class="stack">
-   <section class="card col g12"><div class="row g12" style="flex-wrap:nowrap">${av('АИ','#3B47E0',44)}<div class="grow"><div class="b">Алексей Иванов</div><div class="sm muted">НИУ ВШЭ · Бизнес-информатика, 3 курс · цель ${T().goal}</div></div><span class="xs muted">Отправлено ${todayStr()}</span></div>
-    <div class="fileln" style="cursor:default"><span class="fi" style="background:var(--orange-soft);color:var(--orange)">PDF</span><span class="grow"><div class="b" style="font-size:13.5px">${esc(wsOf(pid).file||p.wsFile)}</div><div class="xs muted">${p.slides.length} ключевых слайда из 11</div></span></div></section>
-   <section class="card col g12"><h2>Решение студента</h2><div class="slides">${p.slides.map((s,i)=>slideHtml(p,s,i)).join('')}</div></section>
+   <section class="card col g12"><div class="row g12" style="flex-wrap:nowrap">${av('АИ','#3B47E0',44)}<div class="grow"><div class="b">Алексей Иванов</div><div class="sm muted">НИУ ВШЭ · Бизнес-информатика, 3 курс${S.teams[pid]?` · команда «${esc(S.teams[pid].name)}»`:''}</div></div><span class="xs muted">Отправлено ${esc(w.sentAt||todayStr())}${w.attempt>1?` · попытка ${w.attempt}`:''}</span></div>
+    <div class="quote sm"><b>Итог решения.</b> ${esc(w.summary||'—')}</div>
+    ${w.file?`<button class="fileln" data-act="openStored" data-id="ws-${pid}"><span class="fi" style="background:var(--orange-soft);color:var(--orange)">${esc(extOf(w.file).toUpperCase().slice(0,4))}</span><span class="grow"><div class="b" style="font-size:13.5px">${esc(w.file)}</div><div class="xs muted">${w.fileSize?fmtSize(w.fileSize)+' · ':''}открыть решение</div></span><span class="muted">${ic('eye')}</span></button>`:''}
+    ${(w.history||[]).length?`<div class="col g6"><span class="label">История доработок</span>${w.history.map(h=>`<div class="sm t2">${esc(h.date)} — ${esc(h.comment)}</div>`).join('')}</div>`:''}</section>
+   ${p.slides&&w.fileDemo?`<section class="card col g12"><h2>Ключевые слайды</h2><div class="slides">${p.slides.map((s,i)=>slideHtml(p,s,i)).join('')}</div></section>`:''}
    <section class="card col g12"><h2>Задача компании</h2><div class="task-q">${esc(p.task)}</div><ol class="ol sm">${p.steps.map(s=>`<li>${esc(s)}</li>`).join('')}</ol></section>
   </div>
   <aside class="card sticky col g12">
-   <div class="row g12" style="flex-wrap:nowrap">${av(mm.ini,mm.color,36)}<div><div class="b">${mm.name}</div><div class="xs muted">Ментор · ${mm.pos}</div></div></div>
+   <div class="row g12" style="flex-wrap:nowrap">${av(mm.ini,mm.color,36)}<div><div class="b">${esc(mm.name)}</div><div class="xs muted">Ментор · ${esc(mm.pos)}</div></div></div>
    <div class="divider" style="margin:0"></div>
    <div class="label">Оценка по критериям компании</div>
-   <div>${p.criteria.map((c,i)=>`<div class="rub"><span class="sm">${c}</span><span class="stars">${[1,2,3,4,5].map(n=>`<button class="${n<=rv.stars[i]?'on':''}" ${done?'disabled':''} data-act="star" data-id="${pid}:${i}:${n}" aria-label="${n} из 5">${ic('star')}</button>`).join('')}</span></div>`).join('')}</div>
+   <div>${p.criteria.map((c,i)=>`<div class="rub"><span class="sm">${esc(c)}</span><span class="stars">${[1,2,3,4,5].map(n=>`<button class="${n<=rv.stars[i]?'on':''}" ${done?'disabled':''} data-act="star" data-id="${pid}:${i}:${n}" aria-label="${esc(c)}: ${n} из 5">${ic('star')}</button>`).join('')}</span></div>`).join('')}</div>
    <div class="row between"><span class="b">Итоговая оценка</span><span class="price" style="font-size:24px">${dec(score)}</span></div>
    <div class="label" style="margin-top:4px">Подтвердить навыки</div>
-   <div class="col g8">${p.confirms.map(id=>`<label class="check"><input type="checkbox" data-sk="${id}" ${rv.sel.includes(id)?'checked':''} ${done?'disabled':''} id="rv-${id}">${SK[id].name}</label>`).join('')}</div>
+   <div class="col g8">${p.confirms.map(id=>`<label class="check"><input type="checkbox" data-sk="${id}" ${rv.sel.includes(id)?'checked':''} ${done?'disabled':''} id="rv-${id}">${esc(SK[id].name)}</label>`).join('')}</div>
    <label class="field"><span>Отзыв для студента и компании</span><textarea class="inp" id="rv-comment" rows="4" ${done?'disabled':''}>${esc(rv.comment)}</textarea></label>
-   ${done?`<div class="divider" style="margin:4px 0"></div><div class="label">Рекомендательное письмо</div><textarea class="inp" id="rec-text" rows="8">${esc(S.recs[pid]||REC_T(pid))}</textarea>${taskUI('rec',{loadingText:'Claude пишет черновик…'})}<div class="row g8"><button class="btn btn-s btn-sm" data-act="recAI" data-id="${pid}">${ic('spark')}${aiOn()?'Черновик с ИИ':'Черновик по шаблону'}</button><button class="btn btn-p btn-sm" data-act="recSave" data-id="${pid}">Опубликовать у студента</button></div><button class="btn btn-s btn-block" data-act="role" data-role="student" data-then="complete-${pid}">Посмотреть глазами студента</button>`:`<button class="btn btn-ok btn-lg btn-block" data-act="finishReview" data-id="${pid}">${ic('shield')}Подтвердить навыки и завершить</button><button class="btn btn-g btn-block" data-act="returnReview">Вернуть на доработку</button>`}
+   ${done?`<div class="divider" style="margin:4px 0"></div><div class="label">Рекомендательное письмо</div><textarea class="inp" id="rec-text" rows="8">${esc(S.recs[pid]||REC_T(pid))}</textarea>${taskUI('rec',{loadingText:'Claude пишет черновик…'})}<div class="row g8"><button class="btn btn-s btn-sm" data-act="recAI" data-id="${pid}">${ic('spark')}${aiOn()?'Черновик с ИИ':'Черновик по шаблону'}</button><button class="btn btn-p btn-sm" data-act="recSave" data-id="${pid}">Опубликовать у студента</button></div><button class="btn btn-s btn-block" data-act="role" data-role="student" data-then="complete-${pid}">Посмотреть глазами студента</button>`
+   :`<button class="btn btn-ok btn-lg btn-block" data-act="finishReview" data-id="${pid}" ${score<3?'disabled title="При оценке ниже 3 решение стоит вернуть на доработку"':''}>${ic('shield')}Подтвердить навыки и завершить</button>${score<3?'<p class="xs muted">Оценка ниже 3 — навыки подтвердить нельзя, верните решение на доработку.</p>':''}
+    <label class="field"><span>Что доработать (для возврата)</span><textarea class="inp" id="rv-return" rows="3" placeholder="Конкретно: что исправить и зачем"></textarea></label><button class="btn btn-s btn-block" data-act="returnReview" data-id="${pid}">${ic('pen')}Вернуть на доработку</button>`}
   </aside>
  </div>`};
 
@@ -3025,23 +3183,32 @@ function testModal(){const u=UI.test,T0=TESTS[u.id],q=T0.q[u.i];
   ${q[1].map((o,i)=>`<button class="opt ${u.pick===i?'sel':''}" data-act="testPick" data-id="${i}"><span class="ol-l">${'АБВГ'[i]}</span><span style="${/SELECT|JOIN|pd\.|df\.|len\(|\[x/.test(o)?'font-family:ui-monospace,Menlo,monospace;font-size:13px':''}">${esc(o)}</span></button>`).join('')}
   <div class="row between"><span class="xs muted">${ic('clock',12)} Без ограничения по времени в демо</span><button class="btn btn-p" data-act="testNext" ${u.pick===undefined?'disabled':''}>${u.i===T0.q.length-1?'Завершить':'Дальше'}${ic('arR')}</button></div></div>`)}
 
-function courseModal(id){const s=sk(id);const C=[[ACAD,`${s.name} на практике`,'2 недели','Бесплатно','Итоговое задание с автопроверкой'],['Stepik',`${s.name}: интенсив для начинающих`,'3 недели','Бесплатно','Сертификат после финального теста'],['Яндекс Практикум',`${s.name} для аналитиков`,'4 недели','Вводная часть бесплатно','Ревью от наставника']];
- openModal(mh(`Курсы по навыку «${s.name}»`,'После итогового задания навык отмечается как подтверждённый курсом')+`<div class="modal-b col g8">${C.map((c,i)=>`<div class="conf-opt" style="cursor:default">${logo(c[0],'sm')}<span class="grow"><div class="b">${esc(c[1])}</div><div class="sm muted">${c[0]} · ${c[2]} · ${c[3]}</div><div class="xs muted">${c[4]}</div></span><button class="btn ${S.courses[id]&&S.courses[id].i===i?'btn-ok':'btn-s'} btn-sm" data-act="enroll" data-id="${id}:${i}" ${S.courses[id]&&S.courses[id].i===i?'disabled':''}>${S.courses[id]&&S.courses[id].i===i?'В плане':'Записаться'}</button></div>`).join('')}<p class="xs muted">Курсы партнёров показаны как пример интеграции.</p></div>`)}
+const COURSES=s=>[[ACAD,`${s.name} на практике`,'2 недели','Бесплатно','Итоговое задание с автопроверкой'],['Stepik',`${s.name}: интенсив для начинающих`,'3 недели','Бесплатно','Сертификат после итогового задания'],['Яндекс Практикум',`${s.name} для аналитиков`,'4 недели','Вводная часть бесплатно','Итоговое задание с ревью']];
+function courseModal(id){const s=sk(id),C=COURSES(s),cur=S.courses[id];
+ openModal(mh(`Курсы по навыку «${s.name}»`,'После итогового задания навык отмечается как подтверждённый курсом')+`<div class="modal-b col g8">${C.map((c,i)=>{const on=cur&&cur.i===i;return `<div class="conf-opt" style="cursor:default;${on?'border-color:var(--accent)':''}">${logo(c[0],'sm')}<span class="grow"><div class="b">${esc(c[1])}</div><div class="sm muted">${c[0]} · ${c[2]} · ${c[3]}</div><div class="xs muted">${c[4]}</div></span>${S.courseDone[id]&&on?`<span class="pill ok">${ic('check')}Пройден</span>`:on?`<button class="btn btn-p btn-sm" data-act="courseFinal" data-id="${id}">Итоговое задание</button>`:`<button class="btn btn-s btn-sm" data-act="enroll" data-id="${id}:${i}">${cur?'Выбрать этот':'Записаться'}</button>`}</div>`}).join('')}<p class="xs muted">Материалы курсов — у партнёров; итоговое задание сдаётся здесь и проверяется по критериям навыка.</p></div>`)}
+function courseTask(id){const s=SK[id];return {q:`Итоговое задание курса «${s.name}»: опишите реальную или учебную задачу, которую вы решили бы с помощью навыка «${s.name}». Напишите по шагам: ситуация, что конкретно делаете, какими инструментами, какой результат и как его измерите.`,kw:[...s.name.toLowerCase().split(/[\s()/,-]+/).filter(x=>x.length>3).map(x=>x.slice(0,Math.max(4,x.length-2))),...(SYN[s.name]||[])].slice(0,6),model:`Сильный ответ опирается на конкретную ситуацию, показывает шаги применения навыка «${s.name}» и заканчивается измеримым результатом.`}}
+function courseFinalModal(id,res){const s=SK[id],t=courseTask(id),c=S.courses[id]||{i:0},course=COURSES(sk(id))[c.i];
+ openModal(mh(`Итоговое задание: ${s.name}`,`${course[0]} · ${course[1]}`)+`<div class="modal-b col g12"><div class="task-q" style="font-weight:500;font-size:14px">${esc(t.q)}</div>
+  <textarea class="inp" id="cf-ans" rows="8" placeholder="Минимум 60 слов" ${res&&res.pass?'disabled':''}>${esc(UI.cfAns||'')}</textarea><span class="xs muted" id="cf-count">${(UI.cfAns||'').split(/\s+/).filter(Boolean).length} слов</span>
+  ${res?`<div class="card col g8" style="padding:14px;background:${res.pass?'var(--green-soft)':'var(--orange-soft)'}"><b>${res.pass?`Зачёт · ${res.score} из 10 — навык подтверждён курсом`:`Пока не зачёт · ${res.score} из 10 (нужно от 7)`}</b>${res.good.map(x=>`<div class="sm">✓ ${esc(x)}</div>`).join('')}${res.improve.map(x=>`<div class="sm">→ ${esc(x)}</div>`).join('')}</div>`:''}
+  <div class="row g8" style="justify-content:flex-end">${res&&res.pass?`<button class="btn btn-s" data-go="skills">Skill Passport</button><button class="btn btn-p" data-act="closeModal">Готово</button>`:`<button class="btn btn-s" data-act="closeModal">Позже</button><button class="btn btn-p" data-act="courseSubmit" data-id="${id}">Сдать задание</button>`}</div></div>`)}
 function mentorModal(){const u=UI.mb,s=sk(u.id);const list=[...MENTORS].sort((a,b)=>b.skills.includes(u.id)-a.skills.includes(u.id));
  openModal(mh(`Оценка ментора: ${s.name}`,'Ментор разберёт вашу работу на созвоне и подтвердит навык, если уровень достаточный')+`<div class="modal-b col g12"><span class="label">Ментор</span>
   <div class="col g8">${list.map(m=>`<button class="team-opt ${u.m===m.id?'on':''}" data-act="mbPick" data-id="${m.id}" style="flex-direction:row;align-items:center">${av(m.ini,m.color,40)}<span class="grow"><div class="b">${m.name}</div><div class="sm muted">${m.pos}</div></span><span class="pill">${ic('star')}${m.rating} · ${m.reviews}</span></button>`).join('')}</div>
   <span class="label">Время</span><div class="grid-3" style="gap:8px">${MSLOTS.map(t=>`<button class="slot ${u.slot===t?'on':''}" data-act="mbSlot" data-id="${t}" style="font-size:13px">${t}</button>`).join('')}</div>
   <label class="field"><span>Что показать ментору</span><select class="sel" id="mb-what"><option>Решение учебного кейса</option><option>Проект из портфолио</option><option>Выполнить задание на созвоне</option></select></label>
   <div class="row g8" style="justify-content:flex-end"><button class="btn btn-s" data-act="closeModal">Отмена</button><button class="btn btn-p" data-act="mbConfirm" ${u.m&&u.slot?'':'disabled'}>Записаться · бесплатно</button></div></div>`)}
+function consModal(){const {id,stars}=UI.ca;openModal(mh(`Оценка навыка «${SK[id].name}»`,'Алексей Иванов · консультация '+S.mentorReq[id].slot)+`<div class="modal-b col g12"><p class="sm t2">Оцените уровень по итогам разбора. От 4 баллов навык подтверждается и попадает в Skill Passport с вашей оценкой как основанием.</p><div class="row between"><span class="b">Уровень</span><span class="stars">${[1,2,3,4,5].map(n=>`<button class="${n<=stars?'on':''}" data-act="caStar" data-id="${n}" aria-label="${n} из 5">${ic('star')}</button>`).join('')}</span></div><label class="field"><span>Отзыв студенту</span><textarea class="inp" id="ca-comment" rows="3" placeholder="Что получилось и что подтянуть">${esc(UI.ca.comment||'')}</textarea></label><div class="row g8" style="justify-content:flex-end"><button class="btn btn-s" data-act="closeModal">Отмена</button><button class="btn btn-p" data-act="caSave">${stars>=4?'Подтвердить навык':'Сохранить оценку'}</button></div></div>`)}
 function teamsFor(p){const roles=p.prof==='Product Manager'?['Product Manager','Аналитик','UX-исследователь']:p.prof==='Marketing Manager'?['Маркетолог','Аналитик','Дизайнер']:['Аналитик','Product Manager','Дизайнер'];
  return [{name:p.id==='p5'?'Второе объявление':'Growth Team',members:[[...TEAMMATES[0],'Product Manager'],[...TEAMMATES[1],'Frontend / прототипы']],need:roles.filter(r=>r!=='Product Manager').slice(0,2)},
   {name:p.id==='p5'?'Seller Growth':'Data Ninjas',members:[[...TEAMMATES[2],'System Analyst']],need:roles.slice(0,2)},
   {name:'Кейс-клуб ВШЭ',members:[[...TEAMMATES[3],'Аналитик'],[...TEAMMATES[4],'Дизайнер'],[...TEAMMATES[5],'Бизнес-аналитик']],need:[roles[0]]}]}
 function teamModal(pid){const p=P(pid),u=UI.team,ts=teamsFor(p);
  openModal(mh(`Команда для проекта «${p.short}»`,'Выберите команду, где нужна ваша роль, или создайте свою')+`<div class="modal-b col g12">
-  ${ts.map((t,i)=>`<button class="team-opt ${u.t===i?'on':''}" data-act="teamPick" data-id="${i}"><div class="row between" style="flex-wrap:nowrap"><b>«${t.name}»</b><span class="members">${t.members.map(m=>av(m[1],m[2])).join('')}${t.need.map(()=>`<span class="open">${ic('plus',12)}</span>`).join('')}</span></div><div class="sm muted">${t.members.map(m=>m[0].split(' ')[0]+' — '+m[3]).join(' · ')}</div><div class="chips"><span class="xs muted" style="align-self:center">Ищут:</span>${t.need.map(r=>`<span class="pill ac">${r}</span>`).join('')}</div></button>`).join('')}
-  ${u.t!==undefined?`<label class="field"><span>Ваша роль в команде</span><select class="sel" id="team-role">${ts[u.t].need.map(r=>`<option>${r}</option>`).join('')}</select></label>`:''}
-  <div class="row between"><button class="btn btn-g btn-sm" data-act="teamOwn">${ic('plus')}Создать свою команду</button><div class="row g8"><button class="btn btn-s" data-act="closeModal">Отмена</button><button class="btn btn-p" data-act="teamJoin" data-id="${pid}" ${u.t===undefined?'disabled':''}>Вступить в команду</button></div></div></div>`)}
+  ${ts.map((t,i)=>`<button class="team-opt ${u.t===i&&!u.own?'on':''}" data-act="teamPick" data-id="${i}"><div class="row between" style="flex-wrap:nowrap"><b>«${t.name}»</b><span class="members">${t.members.map(m=>av(m[1],m[2])).join('')}${t.need.map(()=>`<span class="open">${ic('plus',12)}</span>`).join('')}</span></div><div class="sm muted">${t.members.map(m=>m[0].split(' ')[0]+' — '+m[3]).join(' · ')}</div><div class="chips"><span class="xs muted" style="align-self:center">Ищут:</span>${t.need.map(r=>`<span class="pill ac">${r}</span>`).join('')}</div></button>`).join('')}
+  ${u.own?`<div class="card col g12" style="padding:14px;border-color:var(--accent)"><b>Своя команда</b><div class="form-grid"><label class="field"><span>Название</span><input class="inp" id="team-name" placeholder="Например, Growth Squad" maxlength="40"></label><label class="field"><span>Размер команды</span><select class="sel" id="team-size"><option>2</option><option selected>3</option><option>4</option></select></label><label class="field full"><span>Ваша роль</span><select class="sel" id="team-role">${[...new Set([...teamsFor(p)[0].need,...teamsFor(p)[1].need,'Капитан команды'])].map(r=>`<option>${r}</option>`).join('')}</select></label></div><p class="xs muted">После создания вы получите ссылку-приглашение. Работать над проектом можно сразу, не дожидаясь участников.</p></div>`
+   :u.t!==undefined?`<label class="field"><span>Ваша роль в команде</span><select class="sel" id="team-role">${ts[u.t].need.map(r=>`<option>${r}</option>`).join('')}</select></label>`:''}
+  <div class="row between"><button class="btn btn-g btn-sm" data-act="teamOwn" ${u.own?'disabled':''}>${ic('plus')}Создать свою команду</button><div class="row g8"><button class="btn btn-s" data-act="closeModal">Отмена</button><button class="btn btn-p" data-act="teamJoin" data-id="${pid}" ${u.t===undefined&&!u.own?'disabled':''}>${u.own?'Создать команду':'Вступить в команду'}</button></div></div></div>`)}
 function simModal(key,qi=0,score=0,picked=null){
  const s=SIMS[key];const q=s.qs[qi];const last=qi===s.qs.length-1;
  if(qi>=s.qs.length){const good=score>=Math.ceil(s.qs.length*.66);const tr=Object.values(TRACKS).find(t=>t.goal===key);openModal(mh(key,'Симуляция завершена')+`<div class="modal-b col g16" style="text-align:center"><div style="margin:0 auto">${ring(Math.round(score/s.qs.length*100),100,'big')}</div><h2>${good?'Вы мыслите как '+key:'Хорошее начало'}</h2><p class="t2">${score} из ${s.qs.length} решений совпали с тем, как поступил бы опытный специалист.${tr?' Следующий шаг — реальный проект компании.':''}</p><div class="row g8" style="justify-content:center">${tr?`<button class="btn btn-p" data-act="goalFromSim" data-id="${tr.id}">Выбрать цель ${key}</button>`:''}<button class="btn btn-s" data-act="closeModal">Закрыть</button></div></div>`);return}
@@ -3054,7 +3221,7 @@ function candModal(id){
  openModal(mh(c.name,`${c.prof} · ${c.uni}`)+`<div class="modal-b col g16">
   <div class="row g16">${ring(c.match,80,'big')}<div class="grow col g6"><span class="label">Совпадение с ${e.hireFor}</span><div class="sm t2">${c.projects} ${plural(c.projects,'проект','проекта','проектов')} · ${c.city}</div>${candStatus(c)}</div></div>
   <div><div class="label" style="margin-bottom:8px">Подтверждённые навыки</div><div class="chips">${c.skills.map(s=>`<span class="pill ok">${ic('shield')}${s}</span>`).join('')}</div></div>
-  ${isA&&d?`<div class="pf-proj fresh"><div class="row between"><b>${p.short}</b><span class="pill">${ic('star')}${S.scores[e.main]||p.score}</span></div><div class="grid-3" style="gap:8px">${p.metrics.map(m=>`<div class="metric"><b>${m[0]}</b><span class="xs muted">${m[1]}</span></div>`).join('')}</div><div class="quote sm">${esc(p.slides[0][2])}</div><div class="xs muted">Проверено ментором ${e.main==='p4'?MENTORS[1].name:MENTORS[0].name} · навыки подтверждены</div></div>`:isA?`<div class="quote sm">Кандидат участвует в вашем проекте «${p.short}». ${pst(e.main)==='review'?'Решение на проверке у ментора.':'Решение ещё не отправлено.'}</div>`:`<div class="quote sm">Последний проект: оценка 4,5 из 5. Отзыв компании: «Самостоятельный, аккуратно работает с данными».</div>`}
+  ${isA&&d?`<div class="pf-proj fresh"><div class="row between"><b>${p.short}</b><span class="pill">${ic('star')}${S.scores[e.main]||p.score}</span></div><div class="grid-3" style="gap:8px">${p.metrics.map(m=>`<div class="metric"><b>${m[0]}</b><span class="xs muted">${m[1]}</span></div>`).join('')}</div><div class="quote sm">${esc(p.slides[0][2])}</div><div class="xs muted">Проверено ментором ${mentorOf(e.main).name} · навыки подтверждены</div></div>`:isA?`<div class="quote sm">Кандидат участвует в вашем проекте «${p.short}». ${pst(e.main)==='review'?'Решение на проверке у ментора.':'Решение ещё не отправлено.'}</div>`:`<div class="quote sm">Последний проект: оценка 4,5 из 5. Отзыв компании: «Самостоятельный, аккуратно работает с данными».</div>`}
   <div class="row g8" style="justify-content:flex-end">${isA&&S.inv[e.main]?`<button class="btn btn-s" data-go="empmessages-inv-${e.main}">${ic('msg')}Открыть чат</button>`:''}${candStatus(c)?'':`<button class="btn btn-p" data-act="invite" data-id="${c.id}">${ic('mail')}Пригласить на интервью</button>`}<button class="btn btn-s" data-act="closeModal">Закрыть</button></div>
  </div>`)}
 function inviteModal(id){const c=id==='c2'?alexCand():CANDS.find(x=>x.id===id);
@@ -3068,51 +3235,22 @@ function vacModal(type){openModal(mh(type==='Стажировка'?'Новая �
  <div class="row g8" style="justify-content:flex-end"><button class="btn btn-s" type="button" data-act="closeModal">Отмена</button><button class="btn btn-p" type="submit">Опубликовать</button></div></form>`)}
 function slotModal(pid){const inv=S.inv[pid]||{};UI.slotSel=inv.slot||SLOTS[1];const p=P(pid),e=empOfProj(pid);
  openModal(mh(`Интервью в ${p.company}`,`${p.invitePos} · 45 минут · онлайн с ${e.person}`)+`<div class="modal-b col g12"><span class="label">Выберите удобное время</span><div class="col g8">${SLOTS.map(s=>`<button class="slot ${s===UI.slotSel?'on':''}" data-act="pickSlot" data-id="${s}">${ic('cal')} ${s}</button>`).join('')}</div><div class="row g8" style="justify-content:flex-end;margin-top:6px"><button class="btn btn-s" data-act="closeModal">Отмена</button><button class="btn btn-p" data-act="confirmSlot" data-id="${pid}">Подтвердить интервью</button></div></div>`)}
-function fileModal(name){
+function fileModal(arg){
+ const [pid,name]=arg.includes('|')?arg.split('|'):['',arg];const p=P(pid);
  if(name.startsWith('funnel')){openModal(mh(name,'Выгрузка событий за сентябрь 2026 · 12 400 пользователей')+`<div class="modal-b col g16">${funnelHtml()}<div class="tbl-wrap"><table class="tbl"><thead><tr><th>user_id</th><th>event</th><th>platform</th><th>ts</th></tr></thead><tbody>${[['u_18342','signup','ios','2026-09-03 10:14'],['u_18342','profile_filled','ios','2026-09-03 10:17'],['u_18342','course_selected','ios','2026-09-03 10:25'],['u_20917','signup','web','2026-09-09 19:02'],['u_20917','cart_add','web','2026-09-09 19:40']].map(r=>`<tr>${r.map(x=>`<td style="font-family:ui-monospace,Menlo,monospace;font-size:12.5px">${x}</td>`).join('')}</tr>`).join('')}</tbody></table></div></div>`,'wide');return}
  if(name.startsWith('cohorts')){openModal(mh(name,'Обезличенные данные 48 000 клиентов · март–август 2026')+`<div class="modal-b col g16">${cohortHtml()}<div class="tbl-wrap"><table class="tbl"><thead><tr><th>client_id</th><th>open_month</th><th>product</th><th>autopay</th><th>active_m3</th></tr></thead><tbody>${[['c_40211','2026-03','debit','1','1'],['c_40877','2026-06','debit','0','0'],['c_41203','2026-06','credit','0','0'],['c_42019','2026-07','debit','1','—'],['c_42551','2026-08','debit','1','—']].map(r=>`<tr>${r.map(x=>`<td style="font-family:ui-monospace,Menlo,monospace;font-size:12.5px">${x}</td>`).join('')}</tr>`).join('')}</tbody></table></div></div>`,'wide');return}
- if(name.endsWith('.sql')){openModal(mh(name,'Схема таблиц')+`<div class="modal-b"><div class="code">CREATE TABLE clients (
-  client_id    TEXT PRIMARY KEY,
-  open_date    DATE,
-  product      TEXT,   -- debit | credit
-  channel      TEXT,   -- app | partner | office
-  autopay      BOOLEAN
-);
-CREATE TABLE activity (
-  client_id    TEXT REFERENCES clients,
-  month        DATE,
-  tx_count     INT
-);</div></div>`);return}
- toast('Файл «'+name+'» открыт в режиме предпросмотра','eye')}
+ if(name.endsWith('.sql')){openModal(mh(name,'Схема таблиц')+`<div class="modal-b"><div class="code">${name.includes('ozon')?'CREATE TABLE events (\n  user_id   TEXT,\n  grp       TEXT,    -- A | B\n  event     TEXT,    -- view | add_to_cart | purchase\n  revenue   NUMERIC,\n  ts        TIMESTAMP\n);':name.includes('payments')?'CREATE TABLE payments (\n  payment_id  TEXT PRIMARY KEY,\n  client_id   TEXT,\n  type        TEXT,   -- debit | credit | decline\n  amount      NUMERIC,\n  created_at  TIMESTAMP\n);':'CREATE TABLE clients (\n  client_id    TEXT PRIMARY KEY,\n  open_date    DATE,\n  product      TEXT,   -- debit | credit\n  channel      TEXT,   -- app | partner | office\n  autopay      BOOLEAN\n);\nCREATE TABLE activity (\n  client_id    TEXT REFERENCES clients,\n  month        DATE,\n  tx_count     INT\n);'}</div></div>`);return}
+ if(!p){toast('Материал недоступен','x');return}
+ const f=p.provide.find(x=>x[1]===name)||p.provide[0],isBrief=/^brief/.test(name)||f===p.provide[0];
+ if(isBrief){openModal(mh(name,`${p.company} · ${f[2]}`)+`<div class="modal-b col g12"><div class="paper-wrap" style="max-height:none"><div class="paper"><h4>Бриф проекта</h4><div class="pp-name" style="font-size:20px">${esc(p.title)}</div><p style="margin:10px 0">${esc(p.about)}</p><h4 style="margin-top:14px">Задача</h4><p>${esc(p.task)}</p><h4 style="margin-top:14px">Что сделать</h4><ol style="padding-left:18px;margin:4px 0">${p.steps.map(x=>`<li>${esc(x)}</li>`).join('')}</ol><h4 style="margin-top:14px">Критерии оценки</h4><ul style="padding-left:18px;margin:4px 0">${p.criteria.map(x=>`<li>${esc(x)}</li>`).join('')}</ul><h4 style="margin-top:14px">Сроки</h4><p>Приём решений до ${esc(p.deadline)}. ${p.hiring?'Лучших участников пригласят на интервью.':''}</p></div></div></div>`,'wide');return}
+ if(['XLS','CSV'].includes(f[0])&&p.data){openModal(mh(name,f[2])+`<div class="modal-b col g12">${dataTable(p.data)}</div>`,'wide');return}
+ openModal(mh(name,f[2])+`<div class="modal-b col g12"><div class="quote sm">${esc(f[2])}. ${f[0]==='FIG'?'Макеты доступны участникам проекта по ссылке компании после старта.':'Документ приложен компанией к проекту.'}</div><ul class="ul sm">${p.steps.slice(0,3).map(x=>`<li>${ic('check')}<span>Пригодится для шага: ${esc(x)}</span></li>`).join('')}</ul></div>`)}
 
-/* ================= AI ================= */
-function aiOpen(q){UI.ai=true;$('#fab').hidden=true;if(!UI.aiLog.length)UI.aiLog.push({me:0,html:`Привет, Алексей! Я карьерный AI-помощник ${BRAND}. Знаю ваш Skill Passport, проекты и цель — ${T().goal}. Чем помочь?`});renderAI();if(q)aiSend(q)}
-function renderAI(){if(!UI.ai){$('#aiRoot').innerHTML='';return}
- $('#aiRoot').innerHTML=`<section class="ai" aria-label="AI-помощник"><div class="ai-h"><span class="ai-ic">${ic('spark',18)}</span><div class="grow"><div class="b">AI Career Assistant</div><div class="xs muted">Отвечает на основе вашего профиля</div></div><button class="x" data-act="aiClose" aria-label="Закрыть">${ic('x',16)}</button></div>
- <div class="ai-body" id="aiBody">${UI.aiLog.map(m=>m.typing?`<div class="msg bot typing"><i></i><i></i><i></i></div>`:`<div class="msg ${m.me?'me':'bot'}">${m.html}${m.acts?`<div class="acts">${m.acts.map(a=>`<button class="btn btn-s btn-sm" ${btnAttr(a[1])}>${a[0]}</button>`).join('')}</div>`:''}</div>`).join('')}</div>
- ${UI.aiLog.length<3?`<div class="sugg">${[`Что мне нужно сделать, чтобы получить стажировку ${T().goal}?`,'Как подтвердить SQL?','Помоги подготовиться к интервью'].map(s=>`<button data-act="aiAsk" data-q="${s}">${s}</button>`).join('')}</div>`:''}
- <form class="ai-f" id="aiForm"><input id="aiInput" placeholder="Спросите о карьере, навыках, вакансиях" autocomplete="off" aria-label="Сообщение"><button class="btn btn-p" type="submit" aria-label="Отправить" style="width:42px;height:42px;padding:0">${ic('send')}</button></form></section>`;
- const b=$('#aiBody');b.scrollTop=b.scrollHeight}
-function aiReply(q){
- const t=q.toLowerCase(),tr=T(),r=readiness(),d=mainDone(tr.id),mp=P(tr.main),inv=S.inv[tr.main];
- if(/стажир|что .*нужно|получить|шанс/.test(t))return d?{html:`Сейчас ваш профиль соответствует стажировкам ${tr.goal} примерно на <b>${r}%</b> — после проекта ${mp.company} вы прошли порог 75%.<br><br>Чтобы дойти до уровня Junior:<ol><li>Подтвердить A/B-тестирование — проект Ozon.</li><li>${tr.id==='pm'?'Разобраться с юнит-экономикой.':'Подтвердить статистику тестом.'}</li><li>${inv&&inv.st==='accepted'?`Хорошо пройти интервью в ${mp.company}.`:`Ответить на приглашение ${mp.company}.`}</li></ol>Уже сейчас вам доступно ${fitCount()} подходящих стажировок.`,acts:[['Проект Ozon','go:project-p6'],['Стажировки','go:internships']]}
-  :{html:`Сейчас ваш профиль соответствует стажировкам ${tr.goal} примерно на <b>${r}%</b>.<br><br>Рекомендую:<ol><li>Подтвердить навык SQL.</li><li>Выполнить ещё один реальный ${tr.id==='pm'?'продуктовый':'аналитический'} проект.</li><li>Добавить ${tr.id==='pm'?'продуктовые метрики':'дашборд с метриками'} в портфолио.</li></ol>После этого вам будут доступны ещё около 12 подходящих стажировок.`,acts:[['Найти проект','go:projects-sql'],['Посмотреть карьерный путь','go:career']]};
- if(/sql/.test(t))return sk('sql').st==='ok'?{html:`SQL у вас уже подтверждён: ${esc(sk('sql').basis)}. Следующий уровень — оконные функции и когортный анализ: пригодятся в проекте Т-Банка по удержанию.`,acts:[['Проект Т-Банка','go:project-p4']]}:{html:`Сейчас SQL у вас на 70%. Есть два пути:<ol><li><b>Быстро:</b> тест из 5 вопросов, около 7 минут.</li><li><b>Сильнее всего:</b> проект ${mp.company} — вместе с SQL подтвердятся ещё ${confirmsOf(tr.main).length-1} навыка.</li></ol>`,acts:[['Пройти тест','act:test:sql'],['Проект '+mp.company,'go:project-'+tr.main]]};
- if(/интервью|собесед/.test(t))return {html:`${inv?`Интервью в ${mp.company} проведёт ${empOfProj(tr.main).person}. `:''}Как подготовиться:<ol><li>Расскажите кейс по схеме: проблема → данные → вывод → гипотеза → метрика.</li><li>Подготовьте ответ на вопрос «Как бы вы приоритизировали гипотезы?» — используйте RICE.</li><li>Изучите продукт компании: пройдите путь пользователя до оплаты.</li></ol>Могу провести тренировочное интервью — напишите «давай потренируемся».`};
- if(/потрен/.test(t))return {html:`Первый вопрос: <b>«${tr.id==='pm'?'Конверсия в оплату упала на 10%. Ваши первые три действия?':'Retention упал на 5 п.п. Как будете искать причину?'}»</b> Напишите ответ — я дам обратную связь.`};
- if(/проект|подход/.test(t))return {html:`Под цель ${tr.goal} лучше всего подходят: «${mp.title}» от ${mp.company} (подтвердит ${confirmsOf(tr.main).length} навыков), «A/B-тест карточки товара» от Ozon и командный «Онбординг продавцов» от Avito.`,acts:[['Каталог проектов','go:projects'],['Проект '+mp.company,'go:project-'+tr.main]]};
- if(/презентац|структур/.test(t))return {html:'Структура на 10 слайдов: 1) главный вывод, 2) контекст и данные, 3–5) анализ и проблемные места, 6–8) гипотезы с RICE, 9) что проверить первым, 10) ожидаемый эффект. Выводы пишите в заголовках слайдов.'};
- if(/вакан|ozon|vk|яндекс|банк|avito|kaspersky|skillup/.test(t))return {html:'Совпадение считается по подтверждённым навыкам. Для этой позиции проверьте блок «Нужно улучшить»: один подтверждённый навык обычно даёт +3–8% совпадения. Перед откликом добавьте в портфолио проект с метриками.',acts:[['Мои навыки','go:skills']]};
- if(/конверси|retention|причин|действи/.test(t))return {html:'Хороший ход мысли. Сильный ответ на интервью: 1) проверить, не сломался ли сбор данных, 2) разложить метрику по шагам и сегментам, 3) сопоставить с релизами и внешними событиями. Главное — сначала диагноз, потом решение.'};
- return {html:`Понял вопрос. Пока я лучше всего помогаю с планом развития, подбором проектов и стажировок и подготовкой к интервью. Ваша текущая готовность — ${r}%.`,acts:[['Мой путь','go:career']]};
-}
-function aiSend(q){UI.aiLog.push({me:1,html:esc(q)},{typing:1});renderAI();setTimeout(()=>{UI.aiLog=UI.aiLog.filter(m=>!m.typing);UI.aiLog.push(aiReply(q));renderAI()},750)}
-
-/* ================= project flow ================= */
-function finishProject(pid,score){S.pstat[pid]='done';S.recs=S.recs||{};if(!S.recs[pid])S.recs[pid]=REC_T(pid);S.scores[pid]=score;S.flags['d_'+pid]=todayStr();if(!S.inv[pid])S.inv[pid]={st:'new'};ensureInviteChat(pid);S.acted=true;save()}
-function runAutoReview(pid){const p=P(pid),mm=pid==='p4'?MENTORS[1]:MENTORS[0];
- openModal(mh('Проверка решения',`${p.company} и ментор ${mm.name} проверяют работу`)+`<div class="modal-b"><div id="rv">${['Автопроверка расчётов','Оценка ментора по критериям компании','Отзыв компании '+p.company,'Обновление Skill Passport'].map((s,i)=>`<div class="review-step" data-i="${i}"><span class="mk"></span><span>${s}</span></div>`).join('')}</div><p class="xs muted" style="margin-top:10px">В демо-режиме проверка занимает несколько секунд. В реальности — около трёх дней.</p></div>`);
- let i=0;const tick=()=>{const el=$(`#rv .review-step[data-i="${i}"]`);if(!el){finishProject(pid,p.score);closeModal();go('complete',pid);return}el.classList.add('on');el.querySelector('.mk').innerHTML=ic('check');i++;setTimeout(tick,600)};setTimeout(tick,450)}
+function finishProject(pid,score,comment){const p=P(pid);
+ S.flags['rb_'+pid]=readinessOf((trackOfProj(pid)||T()).id);S.flags['ub_'+pid]=newlyUnlocked().length;
+ S.pstat[pid]='done';S.recs=S.recs||{};if(!S.recs[pid])S.recs[pid]=REC_T(pid);S.scores[pid]=score;S.flags['d_'+pid]=todayStr();
+ S.reviews=S.reviews||{};S.reviews[pid]={comment:comment||p.review,date:todayStr()};const w=wsOf(pid);w.returned=null;
+ if(p.hiring&&!S.inv[pid]){S.inv[pid]={st:'new'};ensureInviteChat(pid)}S.acted=true;save()}
 function switchRole(r,then){S.lastRole=r;if(then){const i=then.indexOf('-');i<0?go(then):go(then.slice(0,i),then.slice(i+1))}else go(HOME[r])}
 
 const A={
@@ -3150,29 +3288,41 @@ const A={
  testNext(){const u=UI.test;u.a[u.i]=u.pick;u.pick=undefined;u.i++;testModal()},
  course(e){courseModal(e.dataset.id)},
  enroll(e){const [id,i]=e.dataset.id.split(':');S.courses[id]={i:+i};save();courseModal(id);render();toast('Курс добавлен в план развития','book')},
+ courseFinal(e){UI.cfAns='';courseFinalModal(e.dataset.id)},
+ courseSubmit(e){const id=e.dataset.id,a=($('#cf-ans').value||'').trim();UI.cfAns=a;if(a.split(/\s+/).filter(Boolean).length<30){toast('Ответ слишком короткий — нужно хотя бы 30–60 слов','x');return}
+  const r=evalLocal(courseTask(id),a),pass=r.score>=7;const res={pass,score:r.score,good:r.good,improve:r.improve};
+  if(pass){const c=COURSES(sk(id))[(S.courses[id]||{i:0}).i];S.courseDone[id]={title:c[1],provider:c[0],score:r.score+' из 10',date:todayStr()};S.acted=true;save();render();toast(`Навык «${SK[id].name}» подтверждён курсом`,'shield')}
+  courseFinalModal(id,res)},
  mentorBook(e){UI.mb={id:e.dataset.id,m:null,slot:null};mentorModal()},
  mbPick(e){UI.mb.m=e.dataset.id;mentorModal()},mbSlot(e){UI.mb.slot=e.dataset.id;mentorModal()},
  mbConfirm(){const u=UI.mb,m=MENTORS.find(x=>x.id===u.m);S.mentorReq[u.id]={m:u.m,slot:u.slot};S.acted=true;save();closeModal();render();toast(`Встреча с ментором ${m.name}: ${u.slot}`,'cal')},
  skTab(e){UI.skTab=e.dataset.id;render()},
- skillProof(e){const s=sk(e.dataset.id);openModal(mh(s.name,'Подтверждено · '+s.date)+`<div class="modal-b col g12"><div class="row g8"><span class="pill ok">${ic('shield')}Подтверждено</span>${s.via?`<span class="pill">${s.via==='test'?'Тест':'Проект компании'}</span>`:''}</div><div><span class="label">Основание</span><div class="b" style="margin-top:4px">${esc(s.basis)}</div><div class="sm muted">${esc(s.src)}</div></div><div class="quote sm">Проверка: результат оценён по критериям ${BRAND} и виден работодателям в Skill Passport вместе с основанием.</div>${s.pid?`<button class="btn btn-s btn-sm" data-go="complete-${s.pid}" style="align-self:flex-start">Открыть проект</button>`:''}</div>`)},
+ skillProof(e){const s=sk(e.dataset.id);openModal(mh(s.name,'Подтверждено · '+s.date)+`<div class="modal-b col g12"><div class="row g8"><span class="pill ok">${ic('shield')}Подтверждено</span>${s.via?`<span class="pill">${({test:'Тест',project:'Проект компании',mentor:'Оценка ментора',course:'Курс'})[s.via]}</span>`:''}</div><div><span class="label">Основание</span><div class="b" style="margin-top:4px">${esc(s.basis)}</div><div class="sm muted">${esc(s.src)}</div></div><div class="quote sm">Проверка: результат оценён по критериям ${BRAND} и виден работодателям в Skill Passport вместе с основанием.</div>${s.pid?`<button class="btn btn-s btn-sm" data-go="complete-${s.pid}" style="align-self:flex-start">Открыть проект</button>`:''}</div>`)},
  /* projects */
  resetPF(){UI.proj={q:'',prof:'',skill:'',diff:'',dur:'',format:'',company:''};if(parse().id)go('projects');else render()},
  resetJF(){UI.jobs={prof:'',company:'',format:'',level:'',skill:'',paid:false,fit:false};render()},
  join(e){const id=e.dataset.id,p=P(id);
   if(p.format==='Командный'){UI.team={};teamModal(id);return}
-  if(!p.wsTasks){S.projApplied[id]=1;S.acted=true;save();render();toast('Заявка отправлена. Компания подтвердит участие в течение 2 дней','send');return}
-  openModal(mh(`Участие в проекте ${p.company}`,p.title)+`<div class="modal-b col g12"><ul class="ul"><li>${ic('check')}<span>Приём решений до ${p.deadline}</span></li><li>${ic('check')}<span>Доступ к обезличенным данным компании</span></li><li>${ic('check')}<span>Ментор на связи в чате проекта</span></li></ul><label class="check"><input type="checkbox" id="nda" checked>Согласен с условиями использования данных компании</label><button class="btn btn-p btn-lg btn-block" data-act="confirmJoin" data-id="${id}">Подтвердить участие</button></div>`)},
+  openModal(mh(`Участие в проекте ${p.company}`,p.title)+`<div class="modal-b col g12"><ul class="ul"><li>${ic('check')}<span>Приём решений до ${esc(p.deadline)}</span></li><li>${ic('check')}<span>Материалы и обезличенные данные компании</span></li><li>${ic('check')}<span>Ментор ${esc(mentorOf(id).name)} проверит решение</span></li></ul><label class="check"><input type="checkbox" id="nda" checked>Согласен с условиями использования данных компании</label><button class="btn btn-p btn-lg btn-block" data-act="confirmJoin" data-id="${id}">Подтвердить участие</button></div>`)},
  confirmJoin(e){if(!$('#nda').checked){toast('Нужно согласиться с условиями использования данных','x');return}const id=e.dataset.id;S.pstat[id]='active';wsOf(id);S.acted=true;save();closeModal();go('workspace',id);toast(`Вы участник проекта ${P(id).company}`)},
- teamPick(e){UI.team.t=+e.dataset.id;teamModal(parse().id)},
- teamOwn(){toast('Команда создана — пригласите участников по ссылке. В демо выберите готовую команду','users')},
- teamJoin(e){const pid=e.dataset.id,p=P(pid),t=teamsFor(p)[UI.team.t];S.teams[pid]={name:t.name,role:$('#team-role').value,members:t.members};S.projApplied[pid]=1;S.acted=true;ensureTeamChat(pid);save();closeModal();render();toast(`Вы в команде «${t.name}»`,'users')},
+ teamPick(e){UI.team.t=+e.dataset.id;UI.team.own=false;teamModal(parse().id)},
+ teamOwn(){UI.team={own:true};teamModal(parse().id)},
+ teamJoin(e){const pid=e.dataset.id,p=P(pid);
+  if(UI.team.own){const name=($('#team-name').value||'').trim();if(name.length<2){toast('Придумайте название команды','x');return}S.teams[pid]={name,role:$('#team-role').value,members:[],own:true,size:+$('#team-size').value}}
+  else{const t=teamsFor(p)[UI.team.t];S.teams[pid]={name:t.name,role:$('#team-role').value,members:t.members}}
+  S.pstat[pid]='active';wsOf(pid);S.acted=true;ensureTeamChat(pid);save();closeModal();go('workspace',pid);toast(`Вы в команде «${S.teams[pid].name}»`,'users')},
+ teamLink(e){const u=location.href.split('#')[0]+'#project-'+e.dataset.id;copyText(u,'Ссылка на проект скопирована — отправьте её однокурсникам')},
  tick(e){const [pid,i]=e.dataset.id.split(':');const w=wsOf(pid);w.tasks[+i]=w.tasks[+i]?0:1;save();render()},
- demoFill(e){const p=P(e.dataset.id);S.ws[p.id]={tasks:[1,1,1,1],file:p.wsFile};save();render();toast('Демо-решение заполнено')},
- demoFile(e){const p=P(e.dataset.id);wsOf(p.id).file=p.wsFile;save();render()},
- rmFile(e){wsOf(e.dataset.id).file=null;save();render()},
- submit(e){const pid=e.dataset.id,p=P(pid),mm=pid==='p4'?MENTORS[1]:MENTORS[0];S.pstat[pid]='review';S.acted=true;save();render();
-  openModal(mh('Решение отправлено',`${p.short} · ${p.company}`)+`<div class="modal-b col g16"><div class="row g12" style="flex-wrap:nowrap">${av(mm.ini,mm.color,44)}<div><div class="b">Проверяет ${mm.name}</div><div class="sm muted">${mm.pos} · обычно до 3 дней</div></div></div><p class="t2">Ментор оценит решение по критериям компании, подтвердит навыки и передаст результат в ${p.company}. В демо можно пройти проверку за ментора или пропустить её.</p><div class="col g8"><button class="btn btn-p btn-lg btn-block" data-act="role" data-role="mentor" data-then="review-${pid}">${ic('shield')}Проверить глазами ментора</button><button class="btn btn-s btn-block" data-act="skipReview" data-id="${pid}">Пропустить проверку</button></div></div>`)},
- skipReview(e){runAutoReview(e.dataset.id)},
+ async demoFill(e){const p=P(e.dataset.id),w=wsOf(p.id);w.tasks=[1,1,1,1];if((w.summary||'').trim().length<SUM_MIN)w.summary=`${p.review} Что сделано: ${p.wsTasks.map(t=>t[0].toLowerCase()).join('; ')}. Ключевые результаты: ${p.metrics.map(m=>m[0]+' — '+m[1]).join(', ')}.`;await A.demoFile(e,null,true);toast('Пример решения заполнен — проверьте и отправьте')},
+ async demoFile(e,ev,quiet){const p=P(e.dataset.id),w=wsOf(p.id);if(!quiet&&(w.summary||'').trim().length<SUM_MIN){toast(`Сначала опишите итог решения — минимум ${SUM_MIN} знаков`,'x');const t=$('#ws-sum');if(t)t.focus();return}
+  const name=`Иванов_${p.short.replace(/[^\wА-Яа-яЁё]+/g,'_').slice(0,32)}.html`;const rec=await storeGenerated('ws-'+p.id,name,reportHtml(p,w));Object.assign(w,{file:name,fileSize:rec.size,fileDemo:true});save();render()},
+ rmFile(e){const w=wsOf(e.dataset.id);FS.del('ws-'+e.dataset.id);Object.assign(w,{file:null,fileSize:0,fileDemo:false});save();render()},
+ submit(e){const pid=e.dataset.id,p=P(pid),mm=mentorOf(pid),w=wsOf(pid);if(!wsReady(w)){toast(wsHint(w),'x');return}
+  w.sentAt=todayStr();S.pstat[pid]='review';S.acted=true;save();render();
+  openModal(mh('Решение отправлено',`${p.short} · ${p.company}`)+`<div class="modal-b col g16"><div class="row g12" style="flex-wrap:nowrap">${av(mm.ini,mm.color,44)}<div><div class="b">Проверяет ${esc(mm.name)}</div><div class="sm muted">${esc(mm.pos)} · обычно до 3 дней</div></div></div><p class="t2">Ментор оценит решение по критериям компании, подтвердит навыки${p.hiring?` и передаст результат в ${esc(p.company)}`:''}. Пока решение на проверке, его можно отозвать и доработать.</p><div class="col g8"><button class="btn btn-p btn-lg btn-block" data-act="role" data-role="mentor" data-then="review-${pid}">${ic('shield')}Проверить глазами ментора</button><button class="btn btn-s btn-block" data-act="closeModal">Понятно</button></div></div>`)},
+ openStored(e){openStored(e.dataset.id)},
+ async dlStored(e){const rec=await FS.get(e.dataset.id);if(!rec){toast('Файл не найден','x');return}saveFile(rec.name,rec.blob)},
+ withdraw(e){const pid=e.dataset.id;if(pst(pid)!=='review')return;S.pstat[pid]='active';save();render();toast('Решение отозвано — можно доработать и отправить снова','refresh')},
  openFile(e){fileModal(e.dataset.id)},
  addPortfolio(e){const pid=e.dataset.id||T().main;S.portfolio[pid]=true;save();render();toast('Проект добавлен в портфолио · готовность '+readiness()+'%','file')},
  acceptInvite(e){slotModal(e.dataset.id)},
@@ -3196,13 +3346,20 @@ const A={
  tier(e){toast(e.dataset.id==='Старт'?'Тариф можно сменить в конце расчётного периода':'Заявка отправлена — менеджер свяжется в течение дня','coin')},
  /* mentor */
  mTab(e){UI.mentorTab=e.dataset.id;render()},
- mentorOld(){toast('Это решение уже проверено. В демо полностью доступна проверка решения Алексея Иванова','eye')},
- mentorCons(){toast('Консультация подтверждена, студент получит уведомление','cal')},
- star(e){const [pid,i,n]=e.dataset.id.split(':');UI.rv[pid].stars[+i]=+n;render()},
- returnReview(){toast('В реальном сервисе студент получит замечания и сможет доработать решение','pen')},
+ mentorOld(e){const q=QUEUE[+e.dataset.id],p=P(q.pid);openModal(mh(`${q.who} · ${p.short}`,`${p.company} · проверено ${q.date}`)+`<div class="modal-b col g12"><div class="row between"><span class="label">Итоговая оценка</span><span class="price" style="font-size:24px">${q.score}</span></div><div>${p.criteria.map((c,i)=>`<div class="rub"><span class="sm">${esc(c)}</span><span class="stars">${[1,2,3,4,5].map(n=>`<span style="color:${n<=q.stars[i]?'var(--star)':'var(--track)'};line-height:0">${ic('star')}</span>`).join('')}</span></div>`).join('')}</div><div class="quote sm">«${esc(q.comment)}»</div><div class="chips">${p.confirms.map(id=>`<span class="pill ok">${ic('shield')}${esc(SK[id].name)}</span>`).join('')}</div><button class="btn btn-p" data-act="closeModal" style="align-self:flex-end">Закрыть</button></div>`)},
+ mentorCons(e){S.consOk[e.dataset.id]='ok';save();render();toast('Консультация подтверждена — студент увидит это в своём плане','cal')},
+ consAssess(e){const id=e.dataset.id;UI.ca={id,stars:4};consModal()},
+ caStar(e){UI.ca.comment=($('#ca-comment')||{}).value||'';UI.ca.stars=+e.dataset.id;consModal()},
+ caSave(){const {id,stars}=UI.ca,c=($('#ca-comment').value||'').trim();if(c.length<20){toast('Напишите короткий отзыв — хотя бы одно предложение','x');return}
+  const mm=MENTORS.find(m=>m.id===S.mentorReq[id].m)||mentorMe();S.consOk['s-'+id]='assessed';S.mentorConf=S.mentorConf||{};S.mentorConf[id]={passed:stars>=4,stars,comment:c,by:mm.name+', '+mm.pos,date:todayStr()};save();closeModal();render();
+  toast(stars>=4?`Навык «${SK[id].name}» подтверждён оценкой ментора`:`Оценка сохранена: навык пока не подтверждён`,stars>=4?'shield':'pen')},
+ star(e){const [pid,i,n]=e.dataset.id.split(':');UI.rv[pid].stars[+i]=+n;UI.rv[pid].comment=($('#rv-comment')||{}).value||UI.rv[pid].comment;render()},
+ returnReview(e){const pid=e.dataset.id,c=($('#rv-return').value||'').trim();if(c.length<20){toast('Опишите, что доработать, — минимум одно предложение','x');$('#rv-return').focus();return}
+  const w=wsOf(pid);w.returned={comment:c,date:todayStr()};w.history=[...(w.history||[]),{comment:c,date:todayStr()}];w.attempt=(w.attempt||1)+1;S.pstat[pid]='active';save();render();
+  openModal(mh('Решение возвращено',P(pid).short)+`<div class="modal-b col g12"><p class="t2">Студент увидит ваш комментарий в рабочем пространстве проекта и сможет отправить новую версию.</p><div class="quote sm">«${esc(c)}»</div><div class="col g8"><button class="btn btn-p btn-block" data-act="role" data-role="student" data-then="workspace-${pid}">Посмотреть глазами студента</button><button class="btn btn-s btn-block" data-act="closeModal">Готово</button></div></div>`)},
  finishReview(e){const pid=e.dataset.id,rv=UI.rv[pid];rv.sel=$$('[data-sk]').filter(x=>x.checked).map(x=>x.dataset.sk);if(!rv.sel.length){toast('Отметьте хотя бы один навык для подтверждения','x');return}
-  rv.comment=$('#rv-comment').value;S.sel[pid]=rv.sel;const score=dec((rv.stars.reduce((a,b)=>a+b,0)/rv.stars.length).toFixed(1));finishProject(pid,score);render();
-  openModal(mh('Проверка завершена',`Оценка ${score} · подтверждено ${rv.sel.length} ${plural(rv.sel.length,'навык','навыка','навыков')}`)+`<div class="modal-b col g12"><p class="t2">Студент получил подтверждение навыков, а ${P(pid).company} — результат с вашим отзывом. Компания сразу отправила приглашение на интервью.</p><div class="chips">${rv.sel.map(id=>`<span class="pill ok">${ic('shield')}${SK[id].name}</span>`).join('')}</div><div class="col g8"><button class="btn btn-p btn-lg btn-block" data-act="role" data-role="student" data-then="complete-${pid}">Посмотреть глазами студента</button><button class="btn btn-s btn-block" data-act="role" data-role="employer" data-then="empdash">Посмотреть глазами компании</button></div></div>`)},
+  rv.comment=$('#rv-comment').value.trim();if(rv.comment.length<20){toast('Напишите отзыв для студента и компании','x');return}S.sel[pid]=rv.sel;const score=dec((rv.stars.reduce((a,b)=>a+b,0)/rv.stars.length).toFixed(1));finishProject(pid,score,rv.comment);render();
+  openModal(mh('Проверка завершена',`Оценка ${score} · подтверждено ${rv.sel.length} ${plural(rv.sel.length,'навык','навыка','навыков')}`)+`<div class="modal-b col g12"><p class="t2">Студент получил подтверждение навыков, а ${esc(P(pid).company)} — результат с вашим отзывом.${P(pid).hiring?' Компания сразу отправила приглашение на интервью.':''}</p><div class="chips">${rv.sel.map(id=>`<span class="pill ok">${ic('shield')}${SK[id].name}</span>`).join('')}</div><div class="col g8"><button class="btn btn-p btn-lg btn-block" data-act="role" data-role="student" data-then="complete-${pid}">Посмотреть глазами студента</button>${EMPLOYERS[P(pid).emp]?`<button class="btn btn-s btn-block" data-act="role" data-role="employer" data-then="empdash">Посмотреть глазами компании</button>`:''}</div></div>`)},
  /* uni */
  uniReport(){toast('Отчёт за семестр сформирован и отправлен на почту центра карьеры','file')},
  uniIntegrate(){toast('Заявка на интеграцию проекта отправлена Т-Банку и руководителю курса','send')},
@@ -3223,11 +3380,13 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){if($('#modalRoot').
  if(e.key==='Enter'&&e.target.id==='gsearch'){const b=$('#searchPop .pop-item');if(b)b.click()}});
 document.addEventListener('input',e=>{
  const id=e.target.id;
+ if(id==='ws-sum'){const pid=e.target.dataset.id,w=wsOf(pid);w.summary=e.target.value;save();const c=$('#sumCount');if(c)c.textContent=`${w.summary.trim().length} / ${SUM_MIN}+ знаков`;const b=$('#wsSubmit');if(b)b.disabled=!wsReady(w);const h=$('#wsHint');if(h)h.textContent=wsHint(w);return}
  if(id==='gsearch')return doSearch(e.target.value);
  if(id==='pf-q'){UI.proj.q=e.target.value;renderProjList()}
  if(id==='uf-q'){UI.uni.q=e.target.value;renderUniList()}
  if(id==='cf-min'){UI.cand.min=+e.target.value;$('#cf-minv').textContent=UI.cand.min+'%';renderCandList()}
  if(id.startsWith('calc-')){const k=id.slice(5);UI.calc[k]=+e.target.value;const v=$('#'+id+'-v');if(v)v.textContent=k==='cost'?rub(UI.calc[k]):k==='fail'?UI.calc[k]+'%':UI.calc[k];$('#calcOut').innerHTML=calcOut()}
+ if(id==='cf-ans'){UI.cfAns=e.target.value;const c=$('#cf-count');if(c)c.textContent=e.target.value.split(/\s+/).filter(Boolean).length+' слов'}
  if(id==='rv-comment'){const pid=parse().id;if(UI.rv[pid])UI.rv[pid].comment=e.target.value}
 });
 document.addEventListener('change',e=>{
@@ -3237,7 +3396,7 @@ document.addEventListener('change',e=>{
  if(id==='cf-prof'){UI.cand.prof=v;renderCandList()}
  if(id==='uf-prog'){UI.uni.prog=v;renderUniList()}
  if(e.target.dataset.sk){const pid=parse().id;const rv=UI.rv[pid];if(rv)rv.sel=$$('[data-sk]').filter(x=>x.checked).map(x=>x.dataset.sk)}
- if(id==='upl'&&e.target.files[0]){wsOf(e.target.dataset.id).file=e.target.files[0].name;save();render()}
+ if(id==='upl'&&e.target.files[0]){const f=e.target.files[0],pid=e.target.dataset.id;if(f.size>50*1048576){toast('Файл больше 50 МБ — сожмите его или загрузите ссылкой в итоге решения','x');return}storeUpload('ws-'+pid,f).then(rec=>{Object.assign(wsOf(pid),{file:f.name,fileSize:f.size,fileDemo:false});save();render();toast('Файл загружен: '+f.name,'upload')})}
  if(id==='resumeFile'&&e.target.files[0]){UI.onb.file=e.target.files[0].name;UI.onb.step='parsing';renderOnb()}
 });
 document.addEventListener('submit',e=>{
@@ -3245,8 +3404,8 @@ document.addEventListener('submit',e=>{
  if(id==='aiForm'){const i=$('#aiInput');if(i.value.trim())aiSend(i.value.trim());return}
  if(id==='chatForm'){const inp=$('#chat-in'),txt=inp.value.trim();if(!txt)return;const th=S.chats[$('#chat-id').value],side=$('#chat-side').value;
   th.msgs.push({f:side==='student'?'me':'them',t:txt,tm:tnow()});if(side==='employer')th.unreadS=(th.unreadS||0)+1;else th.unreadE=(th.unreadE||0)+1;save();render();
-  if(side==='student'){UI.typing[th.id]=1;render();setTimeout(()=>{UI.typing[th.id]=0;const who=th.kind==='team'?S.teams[th.pid].members[0][0]:null;th.msgs.push({f:'them',who,t:chatReply(th,txt),tm:tnow()});save();if(parse().n==='messages'&&parse().id===th.id)render();else{th.unreadS=(th.unreadS||0)+1;save();renderShell(parse())}},1100)}
-  else{setTimeout(()=>{th.msgs.push({f:'me',t:'Спасибо! Всё понял, буду готов.',tm:tnow()});th.unreadE=0;save();if(parse().n==='empmessages')render()},1400)}
+  if(side==='student'&&chatReply(th,txt)!==null){UI.typing[th.id]=1;render();setTimeout(()=>{UI.typing[th.id]=0;const who=th.kind==='team'?S.teams[th.pid].members[0][0]:null;th.msgs.push({f:'them',who,t:chatReply(th,txt),tm:tnow()});save();if(parse().n==='messages'&&parse().id===th.id)render();else{th.unreadS=(th.unreadS||0)+1;save();renderShell(parse())}},1100)}
+  else if(side==='employer'){setTimeout(()=>{th.msgs.push({f:'me',t:'Спасибо! Всё понял, буду готов.',tm:tnow()});th.unreadE=0;save();if(parse().n==='empmessages')render()},1400)}
   return}
  if(id==='authForm'){const role=e.target.dataset.role;const ag=$('#au-agree');if(ag&&!ag.checked){$('#au-err').hidden=false;return}
   const b=$('#au-submit');b.disabled=true;b.innerHTML='<span class="spin" style="border-top-color:#fff"></span>'+(UI.login?'Входим…':'Создаём аккаунт…');
@@ -3256,7 +3415,7 @@ document.addEventListener('submit',e=>{
  if(id==='vacForm'){const v={type:$('#v-type').value,title:$('#v-title').value.trim()||'Новая позиция',prof:$('#v-prof').value,format:$('#v-format').value,city:$('#v-city').value,salary:$('#v-sal').value?$('#v-sal').value+(/₽/.test($('#v-sal').value)?'':' ₽'):'',paid:$('#v-paid').checked,skills:$('#v-skills').value.split(',').map(s=>s.trim()).filter(Boolean)};S.extraVac.push(v);save();closeModal();render();toast(`${v.type} «${v.title}» опубликована · подобрано 14 кандидатов`,'briefcase');return}
  if(id==='projForm'){const t=$('#pp-title').value.trim(),d=$('#pp-desc').value.trim();if(!t||!d){$('#pp-err').hidden=false;return}
   const fmtv=$('[data-act="ppFormat"].on')?.dataset.id||'Индивидуальный';
-  S.published.unshift({title:t,task:d,about:`${emp().company}: ${emp().ind}.`,dir:$('#pp-dir').value,prof:'Product Manager',skills:$('#pp-skills').value.split(',').map(s=>s.trim()).filter(Boolean),diff:$('#pp-diff').value,dur:$('#pp-dur').value,format:fmtv,hiring:$('#pp-hire').checked?1:0,deadline:'25 октября'});
+  const dir=$('#pp-dir').value;S.published.unshift({pid:'n'+Date.now().toString(36),company:emp().company,ind:emp().ind,emp:emp().id,title:t,task:d,about:`${emp().company}: ${emp().ind}.`,dir,prof:({'Product / Analytics':'Product Manager','Data Analytics':'Data Analyst','Business Analysis':'Business Analyst','Design':'UX/UI Designer','Marketing':'Marketing Manager','Development':'Frontend Developer'})[dir]||'Product Manager',skills:$('#pp-skills').value.split(',').map(s=>s.trim()).filter(Boolean),diff:$('#pp-diff').value,dur:$('#pp-dur').value,format:fmtv,hiring:$('#pp-hire').checked?1:0,deadline:'25 октября'});
   save();go('empjobs');toast('Проект опубликован и появился в каталоге студентов','send')}
 });
 
@@ -3460,7 +3619,7 @@ const offPrompt=()=>`Помоги студенту выбрать предлож
 Цель студента: ${T().goal}. Дай рекомендацию до 150 слов: что выбрать и почему, какой риск у выбора и 2 вопроса, которые стоит задать компании до ответа. Без выдуманных фактов о компаниях.`;
 function offLocal(){const os=[...offers()].sort((a,b)=>offTotal(b)-offTotal(a)),w=weights(),top=[...CRIT].sort((a,b)=>w[b[0]]-w[a[0]]).slice(0,2);
  return `**Рекомендация: ${os[0].co} — ${os[0].title}** (итог ${offTotal(os[0])} против ${offTotal(os[1])} у ${os[1].co}).\nДля вас важнее всего «${top[0][1].toLowerCase()}» и «${top[1][1].toLowerCase()}», и по ним ${os[0].co} сильнее.\n\n**Риск:** ${os[0].sal<os[1].sal?`оплата ниже на ${rub(os[1].sal-os[0].sal)} в месяц.`:'проверьте нагрузку и совместимость с учёбой.'}\n\n**Спросите до ответа:**\n- Кто будет наставником и как часто встречи один на один?\n- Какие задачи будут в первые 3 месяца и как оценят результат стажировки?`}
-const recPrompt=pid=>{const p=P(pid),mm=pid==='p4'?MENTORS[1]:MENTORS[0],rv=UI.rv[pid];return `Напиши рекомендательное письмо от имени ментора ${mm.name} (${mm.pos}) для студента Алексея Иванова. Ментор проверял решение проекта «${p.short}» для ${p.company}. Оценки по критериям: ${p.criteria.map((c,i)=>c+' — '+((rv&&rv.stars[i])||p.rubric[i])+'/5').join(', ')}. Отзыв: ${(rv&&rv.comment)||p.review} Результаты: ${p.metrics.map(m=>m[0]+' '+m[1]).join(', ')}. До 120 слов, конкретно, без клише, по-русски, подпись в конце. Верни только текст письма.`};
+const recPrompt=pid=>{const p=P(pid),mm=mentorOf(pid),rv=UI.rv[pid];return `Напиши рекомендательное письмо от имени ментора ${mm.name} (${mm.pos}) для студента Алексея Иванова. Ментор проверял решение проекта «${p.short}» для ${p.company}. Оценки по критериям: ${p.criteria.map((c,i)=>c+' — '+((rv&&rv.stars[i])||p.rubric[i])+'/5').join(', ')}. Отзыв: ${(rv&&rv.comment)||p.review} Результаты: ${p.metrics.map(m=>m[0]+' '+m[1]).join(', ')}. До 120 слов, конкретно, без клише, по-русски, подпись в конце. Верни только текст письма.`};
 
 /* ================= dashboard card ================= */
 function readyCard(){const a=analyzeCv(cv(),cvTargetJob()),L=appsList(),late=L.filter(x=>x.st==='sent'&&x.d>=7);
@@ -3544,7 +3703,7 @@ Object.assign(A,{
  offAdv(){runTask('offAdv',{prompt:offPrompt(),fallback:offLocal})},
  recSave(e){S.recs[e.dataset.id]=$('#rec-text').value.trim();save();render();toast('Рекомендация опубликована в профиле студента','send')},
  recAI(e){const pid=e.dataset.id;runTask('rec',{prompt:recPrompt(pid),fallback:()=>REC_T(pid),onDone:st=>{S.recs[pid]=String(st.data||REC_T(pid));save()}})},
- recToCv(e){const pid=e.dataset.id,mm=pid==='p4'?MENTORS[1]:MENTORS[0],c=cv();const line=`Рекомендация ментора: ${mm.name}, ${mm.pos} (проект для ${P(pid).company}).`;if(!c.extra.includes(line))c.extra=(c.extra?c.extra+' ':'')+line;save();toast('Рекомендация добавлена в резюме','plus')},
+ recToCv(e){const pid=e.dataset.id,mm=mentorOf(pid),c=cv();const line=`Рекомендация ментора: ${mm.name}, ${mm.pos} (проект для ${P(pid).company}).`;if(!c.extra.includes(line))c.extra=(c.extra?c.extra+' ':'')+line;save();toast('Рекомендация добавлена в резюме','plus')},
 });
 
 /* ================= events ================= */

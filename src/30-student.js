@@ -137,7 +137,7 @@ VIEWS.skills=()=>{
   <div><div class="b">${s.name}</div><div class="xs muted">${t.req.includes(s.id)?'Нужен для '+t.goal:'Дополнительный навык'}</div></div>
   <div class="basis sm">${s.st==='ok'?`<span class="muted">Основание:</span> <b>${esc(s.basis)}</b>`:s.st==='progress'?`<span class="muted">Прогресс:</span> <b>${s.pct}%</b> · курс и практика в процессе`:s.st==='self'?'<span class="muted">Указан в профиле, подтверждения пока нет</span>':'<span class="muted">Ещё не изучен</span>'}${s.plan?' '+planPill(s):''}</div>
   <div class="prog">${s.st==='progress'?bar(s.pct,'o thin'):stPill(s)}</div>
-  <div>${s.st==='ok'?`<button class="btn btn-g btn-sm" data-act="skillProof" data-id="${s.id}">${ic('eye')}Основание</button>`:`<button class="btn btn-s btn-sm" data-act="howConfirm" data-id="${s.id}">Как подтвердить</button>`}</div>
+  <div>${s.st==='ok'?`<button class="btn btn-g btn-sm" data-act="skillProof" data-id="${s.id}">${ic('eye')}Основание</button>`:s.plan==='course'?`<button class="btn btn-p btn-sm" data-act="courseFinal" data-id="${s.id}">Итоговое задание</button>`:`<button class="btn btn-s btn-sm" data-act="howConfirm" data-id="${s.id}">Как подтвердить</button>`}</div>
  </div>`).join('')||'<div class="empty">Здесь пока пусто</div>'}</section>`};
 
 /* ================= projects ================= */
@@ -160,51 +160,49 @@ function renderProjList(){
  l.sort((a,b)=>((b.id===T().main)-(a.id===T().main))||((b.prof===T().goal)-(a.prof===T().goal)));
  el.innerHTML=`<div class="sm muted" style="margin-bottom:12px">${l.length} ${plural(l.length,'проект','проекта','проектов')} · сначала подходящие под цель ${T().goal}</div>`+(l.length?`<div class="grid-2">${l.map(projCard).join('')}</div>`:`<div class="card empty">По этим фильтрам проектов нет. <button class="linkish" data-act="resetPF">Сбросить фильтры</button></div>`);
 }
-function fileRow(f){const c={CSV:['#E2F4EC','#11946A'],PDF:['#FBE9E9','#D14343'],PPT:['#FDF0E1','#E0730F'],XLS:['#E2F4EC','#11946A'],SQL:['#ECEEFE','#3B47E0']}[f[0]]||['#ECEEFE','#3B47E0'];return `<button class="fileln" data-act="openFile" data-id="${esc(f[1])}"><span class="fi" style="background:${c[0]};color:${c[1]}">${f[0]}</span><span class="grow"><div class="b" style="font-size:13.5px">${esc(f[1])}</div><div class="xs muted">${esc(f[2])}</div></span><span class="muted">${ic('eye')}</span></button>`}
-function teamBlock(pid){const t=S.teams[pid];if(!t)return '';
- return `<section class="card col g12"><div class="row between"><h2>Ваша команда «${esc(t.name)}»</h2><span class="pill ok">${ic('check')}Команда собрана</span></div>
-  <div class="col g8">${t.members.map(m=>`<div class="row g12" style="flex-wrap:nowrap">${av(m[1],m[2],32)}<div class="grow"><div class="b sm">${m[0]}</div><div class="xs muted">${m[3]}</div></div></div>`).join('')}<div class="row g12" style="flex-wrap:nowrap">${av('АИ','#3B47E0',32)}<div class="grow"><div class="b sm">Алексей Иванов (вы)</div><div class="xs muted">${t.role}</div></div></div></div>
-  <p class="sm muted">Старт проекта — 1 октября. Решение команда сдаёт одно, но навыки подтверждаются каждому по его роли.</p>
-  <button class="btn btn-s btn-sm" data-go="messages-team-${pid}" style="align-self:flex-start">${ic('msg')}Чат команды</button></section>`}
-VIEWS.project=(id)=>{
- const p=P(id)||PROJECTS[0];const hasWs=!!p.wsTasks;const st=hasWs?pst(p.id):(S.teams[p.id]?'team':S.projApplied[p.id]?'applied':'none');
- const steps=p.steps||['Изучить бриф и материалы компании','Провести анализ и собрать выводы','Подготовить решение','Представить результаты компании'];
- const provide=p.provide||[['PDF','brief.pdf','Бриф от компании'],['XLS','data.xlsx','Данные для анализа']];
- const team=p.format==='Командный';
- const cta=st==='done'?`<button class="btn btn-ok btn-lg btn-block" data-go="complete-${p.id}">${ic('check')}Проект завершён · результат</button>`
+function fileRow(f,pid){const c={CSV:['#E2F4EC','#11946A'],PDF:['#FBE9E9','#D14343'],PPT:['#FDF0E1','#E0730F'],XLS:['#E2F4EC','#11946A'],SQL:['#ECEEFE','#3B47E0'],FIG:['#F3E8FF','#7C3AED']}[f[0]]||['#ECEEFE','#3B47E0'];return `<button class="fileln" data-act="openFile" data-id="${esc((pid||'')+'|'+f[1])}"><span class="fi" style="background:${c[0]};color:${c[1]}">${f[0]}</span><span class="grow"><div class="b" style="font-size:13.5px">${esc(f[1])}</div><div class="xs muted">${esc(f[2])}</div></span><span class="muted">${ic('eye')}</span></button>`}
+function teamBlock(pid){const t=S.teams[pid];if(!t)return '';const open=t.own?Math.max(0,(t.size||3)-1-t.members.length):0;
+ return `<section class="card col g12"><div class="row between"><h2>Ваша команда «${esc(t.name)}»</h2>${open?`<span class="pill pr">Ищем ещё ${open}</span>`:`<span class="pill ok">${ic('check')}Команда собрана</span>`}</div>
+  <div class="col g8">${t.members.map(m=>`<div class="row g12" style="flex-wrap:nowrap">${av(m[1],m[2],32)}<div class="grow"><div class="b sm">${esc(m[0])}</div><div class="xs muted">${esc(m[3])}</div></div></div>`).join('')}<div class="row g12" style="flex-wrap:nowrap">${av('АИ','#3B47E0',32)}<div class="grow"><div class="b sm">Алексей Иванов (вы)</div><div class="xs muted">${esc(t.role)}${t.own?' · капитан':''}</div></div></div>
+  ${Array.from({length:open},()=>`<div class="row g12" style="flex-wrap:nowrap"><span class="avatar" style="background:var(--surface-2);color:var(--muted);border:1.5px dashed var(--border-strong)">${ic('plus',14)}</span><div class="grow xs muted">Свободное место</div></div>`).join('')}</div>
+  <p class="sm muted">Решение команда сдаёт одно, а навыки подтверждаются каждому участнику по его роли.</p>
+  <div class="row g8"><button class="btn btn-s btn-sm" data-go="messages-team-${pid}">${ic('msg')}Чат команды</button>${open?`<button class="btn btn-g btn-sm" data-act="teamLink" data-id="${pid}">${ic('copy')}Ссылка-приглашение</button>`:''}</div></section>`}
+function projCta(p,st){const team=p.format==='Командный';
+ return st==='done'?`<button class="btn btn-ok btn-lg btn-block" data-go="complete-${p.id}">${ic('check')}Проект завершён · результат</button>`
   :st==='active'?`<button class="btn btn-p btn-lg btn-block" data-go="workspace-${p.id}">Продолжить выполнение${ic('arR')}</button>`
   :st==='review'?`<button class="btn btn-s btn-lg btn-block" data-go="workspace-${p.id}">${ic('clock')}Решение на проверке</button>`
-  :st==='team'?`<button class="btn btn-s btn-lg btn-block" data-go="messages-team-${p.id}">${ic('users')}Открыть чат команды</button>`
-  :st==='applied'?`<button class="btn btn-s btn-lg btn-block" disabled>${ic('check')}Заявка отправлена</button>`
-  :`<button class="btn btn-p btn-lg btn-block" data-act="join" data-id="${p.id}">${team?ic('users')+'Найти команду':'Принять участие'}</button>`;
+  :`<button class="btn btn-p btn-lg btn-block" data-act="join" data-id="${p.id}">${team?ic('users')+'Найти команду':'Принять участие'}</button>`}
+VIEWS.project=(id)=>{
+ const p=P(id);if(!p)return `<div class="card empty">Проект не найден — возможно, компания его сняла. <button class="linkish" data-go="projects">В каталог</button></div>`;
+ const st=pst(p.id),team=p.format==='Командный';
  return `
  <button class="crumb" data-go="projects">${ic('arL',16)}Каталог проектов</button>
  <div class="split">
   <div class="stack">
    <section class="card">
     <div class="row g16" style="flex-wrap:nowrap;align-items:flex-start">${logo(p.company,'lg')}<div class="grow col g6"><div class="row g8"><span class="b t2">${esc(p.company)}</span><span class="xs muted">${esc(p.ind)}</span></div><h1>${esc(p.title)}</h1>
-    <div class="meta"><span>${ic('target')}${esc(p.dir)}</span><span>${ic('clock')}${p.dur}</span><span>${ic('layers')}${p.diff}</span><span>${ic(team?'users':'user')}${p.format}</span></div></div></div>
+    <div class="meta"><span>${ic('target')}${esc(p.dir)}</span><span>${ic('clock')}${esc(p.dur)}</span><span>${ic('layers')}${esc(p.diff)}</span><span>${ic(team?'users':'user')}${esc(p.format)}</span></div></div></div>
    </section>
    ${teamBlock(p.id)}
-   <section class="card col g12"><h2>О компании</h2><p class="t2">${esc(p.about||'Компания разместила проект на платформе, чтобы найти сильных стажёров через реальную задачу.')}</p></section>
-   <section class="card col g16"><h2>Задача</h2><div class="task-q">${esc(p.task||'')}</div>
-    <p class="t2">${esc(p.intro||'Что нужно сделать:')}</p>
-    <ol class="ol">${steps.map(s=>`<li>${esc(s)}</li>`).join('')}</ol></section>
-   <section class="card col g12"><h2>Материалы от компании</h2><div class="col g8">${provide.map(fileRow).join('')}</div></section>
-   ${p.criteria?`<section class="card col g12"><h2>Как оценивается</h2><ul class="ul">${p.criteria.map(c=>`<li>${ic('check')}<span>${c}</span></li>`).join('')}</ul><p class="sm muted">Решение проверяет ментор ${BRAND} вместе с командой компании. Средний срок проверки — 3 дня.</p></section>`:''}
+   <section class="card col g12"><h2>О компании</h2><p class="t2">${esc(p.about)}</p></section>
+   <section class="card col g16"><h2>Задача</h2><div class="task-q">${esc(p.task)}</div>
+    <p class="t2">${esc(p.intro)}</p>
+    <ol class="ol">${p.steps.map(s=>`<li>${esc(s)}</li>`).join('')}</ol></section>
+   <section class="card col g12"><h2>Материалы от компании</h2><div class="col g8">${p.provide.map(f=>fileRow(f,p.id)).join('')}</div></section>
+   <section class="card col g12"><h2>Как оценивается</h2><ul class="ul">${p.criteria.map(c=>`<li>${ic('check')}<span>${esc(c)}</span></li>`).join('')}</ul><p class="sm muted">Решение проверяет ментор ${BRAND} — ${esc(mentorOf(p.id).name)}, ${esc(mentorOf(p.id).pos)} — по критериям компании.</p></section>
   </div>
   <aside class="card sticky col g16">
    <h2>Что получит студент</h2>
-   <ul class="ul">${['Проект в портфолио','Подтверждение навыков в Skill Passport','Отзыв компании','Возможность получить приглашение на интервью'].map(x=>`<li>${ic('check')}<span>${x}</span></li>`).join('')}</ul>
+   <ul class="ul">${['Проект в портфолио','Подтверждение навыков в Skill Passport','Отзыв компании',p.hiring?'Возможность получить приглашение на интервью':'Рекомендацию ментора'].map(x=>`<li>${ic('check')}<span>${x}</span></li>`).join('')}</ul>
    <div class="divider" style="margin:0"></div>
-   <div><div class="label" style="margin-bottom:8px">Подтвердит навыки</div><div class="chips">${p.skills.map(s=>`<span class="pill ok">${ic('shield')}${esc(s)}</span>`).join('')}</div></div>
+   <div><div class="label" style="margin-bottom:8px">Подтвердит навыки</div><div class="chips">${p.confirms.map(id=>`<span class="pill ok">${ic('shield')}${esc(SK[id].name)}</span>`).join('')}</div></div>
    <div class="col g8 sm">
-    <div class="row between"><span class="muted">Приём решений</span><b>до ${p.deadline}</b></div>
+    <div class="row between"><span class="muted">Приём решений</span><b>до ${esc(p.deadline)}</b></div>
     <div class="row between"><span class="muted">Участников</span><b>${p.people||'—'}</b></div>
     ${team?`<div class="row between"><span class="muted">Команда</span><b>3–4 человека</b></div>`:''}
-    <div class="row between"><span class="muted">Найм по итогам</span><b>${p.hiring?'Да'+(p.invitePos?', '+p.invitePos:''):'Нет'}</b></div>
+    <div class="row between"><span class="muted">Найм по итогам</span><b>${p.hiring?'Да'+(p.invitePos?', '+esc(p.invitePos):''):'Нет'}</b></div>
    </div>
-   ${cta}
+   ${projCta(p,st)}
    ${p.hiring?`<p class="xs muted" style="text-align:center">Лучшие участники получают приглашение на интервью</p>`:''}
   </aside>
  </div>`};
@@ -214,52 +212,62 @@ function funnelHtml(){const F=[['Регистрация',12400,null],['Запо�
  return `<div class="funnel">${F.map(f=>`<div class="fn-row ${f[2]!==null&&f[2]<45?'hot':''}"><span class="t2">${f[0]}</span><div class="fn-bar"><i style="width:${Math.max(4,f[1]/124)}%"></i></div><span><b>${fmt(f[1])}</b> <span class="cv muted">${f[2]===null?'':f[2]+'%'}</span></span></div>`).join('')}</div><div class="row g8 xs muted" style="margin-top:10px"><span style="width:10px;height:10px;border-radius:3px;background:var(--orange)"></span>Конверсия шага ниже 45% · сквозная конверсия 7,0%</div>`}
 const COH=[['Март',[100,71,62,58]],['Апрель',[100,69,60,55]],['Май',[100,72,63,57]],['Июнь',[100,58,44,39]],['Июль',[100,70,61,null]],['Август',[100,68,null,null]]];
 function cohortHtml(){return `<div class="tbl-wrap"><table class="heat"><thead><tr><th>Когорта</th><th>Месяц 0</th><th>Месяц 1</th><th>Месяц 2</th><th>Месяц 3</th></tr></thead><tbody>${COH.map(([n,v])=>`<tr><td>${n}</td>${v.map((x,i)=>x===null?'<td style="background:var(--surface-2);color:var(--muted)">—</td>':`<td class="${n==='Июнь'&&i>0?'hot':''}" style="background:color-mix(in srgb,var(--accent) ${Math.round(x*.7)}%,var(--surface));color:${x>=90?'#fff':'var(--text)'}">${x}%</td>`).join('')}</tr>`).join('')}</tbody></table></div><div class="row g8 xs muted" style="margin-top:10px"><span style="width:10px;height:10px;border-radius:3px;border:2px solid var(--orange)"></span>Июньская когорта теряет клиентов заметно быстрее остальных</div>`}
+function dataTable(d){return `<div class="tbl-wrap"><table class="tbl"><thead><tr>${d.head.map(h=>`<th>${esc(h)}</th>`).join('')}</tr></thead><tbody>${d.rows.map(r=>`<tr>${r.map((c,i)=>`<td ${i?'':'class="b"'}>${esc(c)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>${d.note?`<p class="sm t2">${esc(d.note)}</p>`:''}`}
+const SUM_MIN=150;
+const wsReady=w=>w.tasks.every(Boolean)&&!!w.file&&(w.summary||'').trim().length>=SUM_MIN;
+function wsHint(w){const miss=[];const n=w.tasks.filter(Boolean).length;if(n<w.tasks.length)miss.push(`отметьте задачи (${n} из ${w.tasks.length})`);if(!w.file)miss.push('загрузите файл решения');const l=(w.summary||'').trim().length;if(l<SUM_MIN)miss.push(`опишите итог (ещё ${SUM_MIN-l} знаков)`);return miss.length?'Осталось: '+miss.join(', ')+'.':'Всё готово к отправке.'}
 VIEWS.workspace=(id)=>{
- const p=P(id||T().main);if(!p||!p.wsTasks)return `<div class="card empty">Для этого проекта рабочее пространство откроется после старта. <button class="linkish" data-go="projects">В каталог</button></div>`;
+ const p=P(id||T().main);if(!p)return `<div class="card empty">Проект не найден. <button class="linkish" data-go="projects">В каталог</button></div>`;
  const st=pst(p.id);
- if(st==='none')return `<div class="card empty">Вы ещё не участвуете в проекте. <button class="linkish" data-go="project-${p.id}">Открыть проект ${p.company}</button></div>`;
+ if(st==='none')return `<div class="card empty">Вы ещё не участвуете в проекте. <button class="linkish" data-go="project-${p.id}">Открыть проект ${esc(p.company)}</button></div>`;
  if(st==='done')return VIEWS.complete(p.id);
- const w=wsOf(p.id),n=w.tasks.filter(Boolean).length,ready=n===4&&w.file,rev=st==='review',mm=p.id==='p4'?MENTORS[1]:MENTORS[0];
+ const w=wsOf(p.id),n=w.tasks.filter(Boolean).length,ready=wsReady(w),rev=st==='review',mm=mentorOf(p.id),L=w.tasks.length;
+ const data=p.wsData==='funnel'?funnelHtml():p.wsData==='cohort'?cohortHtml():p.data?dataTable(p.data):'';
  return `
  <button class="crumb" data-go="project-${p.id}">${ic('arL',16)}Описание проекта</button>
- <div class="page-h"><div class="row g16" style="flex-wrap:nowrap">${logo(p.company,'lg')}<div><div class="row g8">${rev?'<span class="pill ac">На проверке</span>':'<span class="pill pr">В работе</span>'}<span class="sm muted">Приём решений до ${p.deadline}</span></div><h1 style="margin-top:6px">${esc(p.short)}</h1></div></div>
- ${rev?'':`<button class="btn btn-g btn-sm" data-act="demoFill" data-id="${p.id}">${ic('bolt')}Заполнить демо-решение</button>`}</div>
- ${rev?`<div class="banner ac"><span class="ic">${ic('clock',20)}</span><div class="grow"><div class="b">Решение отправлено и ждёт проверки</div><div class="sm t2">Ментор ${mm.name} проверит его по критериям компании и подтвердит навыки. Обычно это занимает до трёх дней.</div></div><div class="row g8"><button class="btn btn-p btn-sm" data-go="review-${p.id}">Проверить как ментор</button><button class="btn btn-s btn-sm" data-act="skipReview" data-id="${p.id}">Пропустить проверку</button></div></div>`:''}
+ <div class="page-h"><div class="row g16" style="flex-wrap:nowrap">${logo(p.company,'lg')}<div><div class="row g8">${rev?'<span class="pill ac">На проверке</span>':'<span class="pill pr">В работе</span>'}${w.attempt>1?`<span class="pill">Попытка ${w.attempt}</span>`:''}<span class="sm muted">Приём решений до ${esc(p.deadline)}</span></div><h1 style="margin-top:6px">${esc(p.short)}</h1></div></div>
+ ${rev?'':`<button class="btn btn-g btn-sm" data-act="demoFill" data-id="${p.id}">${ic('bolt')}Заполнить пример решения</button>`}</div>
+ ${rev?`<div class="banner ac"><span class="ic">${ic('clock',20)}</span><div class="grow"><div class="b">Решение отправлено ${esc(w.sentAt||'')} и ждёт проверки</div><div class="sm t2">Ментор ${esc(mm.name)} проверит его по критериям компании и подтвердит навыки. Проверку можно пройти за ментора в режиме «Ментор».</div></div><div class="row g8"><button class="btn btn-p btn-sm" data-act="role" data-role="mentor" data-then="review-${p.id}">Проверить как ментор</button><button class="btn btn-s btn-sm" data-act="withdraw" data-id="${p.id}">Отозвать решение</button></div></div>`:''}
+ ${!rev&&w.returned?`<div class="banner" style="background:var(--orange-soft)"><span class="ic" style="background:var(--orange)">${ic('pen',20)}</span><div class="grow"><div class="b">Ментор вернул решение на доработку · ${esc(w.returned.date)}</div><div class="sm t2">«${esc(w.returned.comment)}» — ${esc(mm.name)}</div></div></div>`:''}
  <div class="split">
   <div class="stack">
-   <section class="card col g12"><div class="row between"><h2>Задачи</h2><span class="sm b">${n} из 4</span></div>${bar(n*25,'gr thin')}
-    <div class="col g8" style="margin-top:6px">${p.wsTasks.map((t,i)=>`<div class="task ${w.tasks[i]?'done':''}"><button class="tick" ${rev?'disabled':''} data-act="tick" data-id="${p.id}:${i}" aria-label="Отметить задачу">${ic('check')}</button><div class="grow"><div class="b">${i+1}. ${t[0]}</div><div class="sm muted">${t[1]}</div></div></div>`).join('')}</div></section>
-   <section class="card col g12"><div class="row between"><h2>Данные компании</h2><span class="xs muted">${p.provide[0][1]}</span></div>${p.wsData==='funnel'?funnelHtml():cohortHtml()}</section>
+   <section class="card col g12"><div class="row between"><h2>Задачи</h2><span class="sm b">${n} из ${L}</span></div>${bar(Math.round(n/L*100),'gr thin')}
+    <div class="col g8" style="margin-top:6px">${p.wsTasks.map((t,i)=>`<div class="task ${w.tasks[i]?'done':''}"><button class="tick" ${rev?'disabled':''} data-act="tick" data-id="${p.id}:${i}" aria-label="${w.tasks[i]?'Снять отметку':'Отметить задачу'}: ${esc(t[0])}" aria-pressed="${!!w.tasks[i]}">${ic('check')}</button><div class="grow"><div class="b">${i+1}. ${esc(t[0])}</div><div class="sm muted">${esc(t[1])}</div></div></div>`).join('')}</div></section>
+   ${data?`<section class="card col g12"><div class="row between"><h2>Данные компании</h2><span class="xs muted">${esc(p.provide[1]?p.provide[1][1]:p.provide[0][1])}</span></div>${data}</section>`:''}
+   <section class="card col g12"><h2>Материалы</h2><div class="col g8">${p.provide.map(f=>fileRow(f,p.id)).join('')}</div></section>
+   ${teamBlock(p.id)}
   </div>
   <aside class="stack sticky">
    <section class="card col g12"><h2>Решение</h2>
-    ${w.file?`<div class="fileln" style="cursor:default"><span class="fi" style="background:var(--orange-soft);color:var(--orange)">PDF</span><span class="grow"><div class="b" style="font-size:13.5px">${esc(w.file)}</div><div class="xs muted">Загружено</div></span>${rev?'':`<button class="x" data-act="rmFile" data-id="${p.id}" aria-label="Удалить файл">${ic('x',14)}</button>`}</div>`
-     :`<label class="drop" for="upl" style="cursor:pointer">${ic('upload',22)}<span class="b">Загрузите презентацию или отчёт</span><span class="xs muted">PDF или PPTX до 50 МБ</span><input type="file" id="upl" data-id="${p.id}" hidden accept=".pdf,.pptx,.ppt,.key"></label><button class="linkish" data-act="demoFile" data-id="${p.id}">Прикрепить демо-файл</button>`}
-    ${rev?'':`<button class="btn btn-p btn-lg btn-block" data-act="submit" data-id="${p.id}" ${ready?'':'disabled'}>${ic('send')}Отправить решение</button><p class="xs muted">${ready?'Всё готово к отправке.':'Отметьте все задачи и загрузите решение.'}</p>`}
+    <label class="field"><span>Итог решения <span class="xs muted" id="sumCount">${(w.summary||'').trim().length} / ${SUM_MIN}+ знаков</span></span><textarea class="inp" id="ws-sum" data-id="${p.id}" rows="6" ${rev?'disabled':''} placeholder="Главный вывод, что сделали и какой результат. Это прочитают ментор и компания.">${esc(w.summary||'')}</textarea></label>
+    ${w.file?`<div class="fileln"><span class="fi" style="background:var(--orange-soft);color:var(--orange)">${esc(extOf(w.file).toUpperCase().slice(0,4))}</span><span class="grow"><div class="b" style="font-size:13.5px">${esc(w.file)}</div><div class="xs muted">${w.fileSize?fmtSize(w.fileSize)+' · ':''}${w.fileDemo?'пример, собран из вашего итога':'загружено'}</div></span><button class="x" data-act="openStored" data-id="ws-${p.id}" aria-label="Открыть файл">${ic('eye',14)}</button>${rev?'':`<button class="x" data-act="rmFile" data-id="${p.id}" aria-label="Удалить файл">${ic('x',14)}</button>`}</div>`
+     :`<label class="drop" for="upl" style="cursor:pointer">${ic('upload',22)}<span class="b">Загрузите презентацию или отчёт</span><span class="xs muted">PDF, PPTX, DOCX, изображение или архив до 50 МБ</span><input type="file" id="upl" data-id="${p.id}" hidden accept=".pdf,.pptx,.ppt,.key,.docx,.doc,.png,.jpg,.jpeg,.zip,.html,.txt,.md"></label><button class="linkish" data-act="demoFile" data-id="${p.id}">Собрать отчёт из итога решения</button>`}
+    ${rev?'':`<button class="btn btn-p btn-lg btn-block" id="wsSubmit" data-act="submit" data-id="${p.id}" ${ready?'':'disabled'}>${ic('send')}${w.attempt>1||w.returned?'Отправить повторно':'Отправить решение'}</button><p class="xs muted" id="wsHint">${wsHint(w)}</p>`}
    </section>
-   <section class="card col g12"><div class="row g12" style="flex-wrap:nowrap">${av(mm.ini,mm.color,36)}<div><div class="b">${mm.name}</div><div class="xs muted">Ментор · ${mm.pos}</div></div></div><div class="quote sm">${p.mentorTip}</div><button class="btn btn-s btn-sm" data-act="aiAsk" data-q="Как лучше структурировать итоговую презентацию проекта?">${ic('msg')}Задать вопрос</button></section>
+   <section class="card col g12"><div class="row g12" style="flex-wrap:nowrap">${av(mm.ini,mm.color,36)}<div><div class="b">${esc(mm.name)}</div><div class="xs muted">Ментор · ${esc(mm.pos)}</div></div></div><div class="quote sm">${esc(p.mentorTip)}</div><button class="btn btn-s btn-sm" data-act="aiAsk" data-q="Я делаю проект «${esc(p.short)}» для ${esc(p.company)}. Как лучше структурировать итоговое решение?">${ic('msg')}Задать вопрос</button></section>
   </aside>
  </div>`};
 
 /* ================= complete ================= */
 VIEWS.complete=(id)=>{
- const pid=id||T().main,p=P(pid);if(pst(pid)!=='done')return VIEWS.workspace(pid);
- const tr=trackOfProj(pid)||T(),r=readinessOf(tr.id),newSk=confirmsOf(pid).map(sk),inv=S.inv[pid]||{st:'new'},e=empOfProj(pid);
+ const pid=id||T().main,p=P(pid);if(!p)return VIEWS.project(pid);if(pst(pid)!=='done')return VIEWS.workspace(pid);
+ const tr=trackOfProj(pid)||T(),r=readinessOf(tr.id),rb=S.flags['rb_'+pid]!=null?S.flags['rb_'+pid]:r,newSk=confirmsOf(pid).map(sk),inv=S.inv[pid],e=empOfProj(pid);
+ const unl=newlyUnlocked().length-(S.flags['ub_'+pid]||0),fresh=newSk.filter(s=>s.fresh).length;
  const conf=Array.from({length:22},(_,i)=>`<span class="conf" style="left:${(i*4.6+3)%100}%;background:${['#3B47E0','#11946A','#E0730F','#7B5CF0'][i%4]};animation-delay:${(i%7)*.12}s"></span>`).join('');
  return `
- <section class="celebrate">${conf}<div class="burst">${ic('check')}</div><h1>Проект успешно завершён!</h1><p class="t2" style="margin-top:8px">${p.company} оценила решение на <b>${S.scores[pid]||p.score} из 5</b> — ${p.rank}.</p>
-  <div class="row g8" style="justify-content:center;margin-top:16px"><span class="pill ok">${ic('shield')}+${newSk.length} ${plural(newSk.length,'подтверждённый навык','подтверждённых навыка','подтверждённых навыков')}</span><span class="pill pr">${ic('trend')}Готовность ${tr.base}% → ${r}%</span><span class="pill ac">${ic('cap')}+5 стажировок</span><span class="pill">${ic('star')}+${400+150*newSk.length} XP</span></div>
+ <section class="celebrate">${conf}<div class="burst">${ic('check')}</div><h1>Проект успешно завершён!</h1><p class="t2" style="margin-top:8px">${esc(p.company)} и ментор оценили решение на <b>${S.scores[pid]||p.score} из 5</b>${S.scores[pid]?'':` — ${esc(p.rank)}`}.</p>
+  <div class="row g8" style="justify-content:center;margin-top:16px"><span class="pill ok">${ic('shield')}${newSk.length} ${plural(newSk.length,'навык подтверждён','навыка подтверждено','навыков подтверждено')}</span>${r>rb?`<span class="pill pr">${ic('trend')}Готовность ${rb}% → ${r}%</span>`:''}${unl>0?`<span class="pill ac">${ic('cap')}+${unl} ${plural(unl,'стажировка','стажировки','стажировок')}</span>`:''}<span class="pill">${ic('star')}+${400+150*fresh} XP</span></div>
  </section>
- <section class="invite" style="margin-top:20px">
+ ${p.hiring&&inv?`<section class="invite" style="margin-top:20px">
   ${logo(p.company,'lg')}
-  <div class="grow col g8" style="min-width:240px"><span class="label" style="color:var(--accent-ink)">Компания заинтересовалась вашим результатом</span><h2 style="font-size:20px">Компания ${p.company} приглашает вас на интервью на позицию ${p.invitePos}.</h2><p class="t2">«${p.review} Хотим обсудить решение с командой».<br><span class="sm muted">— ${e.person}, ${e.pos}</span></p></div>
-  <div class="col g8" style="min-width:200px">${inv.st==='accepted'?`<span class="pill ok" style="height:auto;padding:8px 12px">${ic('cal')}Интервью: ${inv.slot}</span><button class="btn btn-s" data-go="messages-inv-${pid}">${ic('msg')}Открыть чат</button><button class="btn btn-g" data-act="aiInterview">Подготовиться с AI</button>`:`<button class="btn btn-p btn-lg" data-act="acceptInvite" data-id="${pid}">Принять приглашение</button><button class="btn btn-s" data-go="messages-inv-${pid}">${ic('msg')}Написать компании</button>`}</div>
- </section>
+  <div class="grow col g8" style="min-width:240px"><span class="label" style="color:var(--accent-ink)">Компания заинтересовалась вашим результатом</span><h2 style="font-size:20px">${esc(p.company)} приглашает вас на интервью на позицию ${esc(p.invitePos)}.</h2><p class="t2">«${esc((S.reviews&&S.reviews[pid]||{}).comment||p.review)} ${esc(p.inviteHook||'Хотим обсудить решение с командой.')}»<br><span class="sm muted">— ${esc(e.person)}, ${esc(e.pos)}</span></p></div>
+  <div class="col g8" style="min-width:200px">${inv.st==='accepted'?`<span class="pill ok" style="height:auto;padding:8px 12px">${ic('cal')}Интервью: ${esc(inv.slot)}</span><button class="btn btn-s" data-go="messages-inv-${pid}">${ic('msg')}Открыть чат</button><button class="btn btn-g" data-act="appPrep" data-id="${p.inviteJob||''}">Подготовиться к интервью</button>`:`<button class="btn btn-p btn-lg" data-act="acceptInvite" data-id="${pid}">Принять приглашение</button><button class="btn btn-s" data-go="messages-inv-${pid}">${ic('msg')}Написать компании</button>`}</div>
+ </section>`:`<section class="card col g8" style="margin-top:20px"><span class="label">Отзыв компании</span><p class="t2">«${esc((S.reviews&&S.reviews[pid]||{}).comment||p.review)}»</p><span class="sm muted">— ${esc(e.person)}, ${esc(e.pos)}, ${esc(p.company)}</span>${p.hiring?'':`<span class="xs muted">В этом проекте компания не нанимает — зато результат уже в вашем Skill Passport, а ментор оставит рекомендацию.</span>`}</section>`}
  <div class="grid-2" style="margin-top:20px">
-  <section class="card col g12"><h2>Новые подтверждённые навыки</h2>${newSk.map(s=>`<div class="newskill"><span class="mk ok">${ic('check')}</span><div class="grow"><div class="b">${s.name}</div><div class="xs muted">${s.basis}</div></div><span class="pill ok">Подтверждено</span></div>`).join('')}<button class="btn btn-g btn-sm" data-go="skills" style="align-self:flex-start">Открыть Skill Passport${ic('arR')}</button></section>
+  <section class="card col g12"><h2>Подтверждённые навыки</h2>${newSk.map(s=>`<div class="newskill"><span class="mk ok">${ic('check')}</span><div class="grow"><div class="b">${esc(s.name)}</div><div class="xs muted">${esc(s.basis||'')}</div></div><span class="pill ok">Подтверждено</span></div>`).join('')}<button class="btn btn-g btn-sm" data-go="skills" style="align-self:flex-start">Открыть Skill Passport${ic('arR')}</button></section>
   <div class="stack">
-   <section class="card col g12"><h2>Карьерная готовность · ${tr.goal}</h2><div class="row g8" style="align-items:baseline"><span class="big-num" style="font-size:38px">${r}%</span><span class="delta">+${r-tr.base}%</span></div>${bar(r,'o fat')}<p class="sm muted">${r>=75?'Порог 75% пройден. Открылись новые стажировки: '+newlyUnlocked().slice(0,4).map(j=>j.company).join(', ')+'.':'Ещё немного до порога 75%.'}</p><button class="btn btn-s btn-sm" data-go="internships" style="align-self:flex-start">Смотреть новые стажировки</button></section>
-   <section class="card col g12"><h2>Портфолио</h2>${S.portfolio[pid]?`<div class="row g8"><span class="pill ok">${ic('check')}Проект добавлен в портфолио</span></div><button class="btn btn-s btn-sm" data-go="portfolio" style="align-self:flex-start">Открыть портфолио</button>`:`<p class="sm t2">Добавьте проект с результатами и отзывом компании — работодатели увидят его первым.</p><button class="btn btn-p" data-act="addPortfolio" data-id="${pid}" style="align-self:flex-start">${ic('plus')}Добавить проект в портфолио</button>`}</section>
+   <section class="card col g12"><h2>Карьерная готовность · ${esc(tr.goal)}</h2><div class="row g8" style="align-items:baseline"><span class="big-num" style="font-size:38px">${r}%</span>${r>rb?`<span class="delta">+${r-rb}%</span>`:''}</div>${bar(r,'o fat')}<p class="sm muted">${r>rb?`Проект поднял готовность к цели «${esc(tr.goal)}».`:`Навыки этого проекта не входят в требования цели «${esc(tr.goal)}», но видны работодателям в Skill Passport.`}${unl>0?' Открылись новые стажировки: '+newlyUnlocked().slice(0,4).map(j=>esc(j.company)).join(', ')+'.':''}</p><button class="btn btn-s btn-sm" data-go="internships" style="align-self:flex-start">Смотреть стажировки</button></section>
+   <section class="card col g12"><h2>Портфолио</h2>${S.portfolio[pid]?`<div class="row g8"><span class="pill ok">${ic('check')}Проект добавлен в портфолио</span></div><button class="btn btn-s btn-sm" data-go="portfolio" style="align-self:flex-start">Открыть портфолио</button>`:`<p class="sm t2">Добавьте проект с результатами и отзывом — работодатели увидят его первым.</p><button class="btn btn-p" data-act="addPortfolio" data-id="${pid}" style="align-self:flex-start">${ic('plus')}Добавить проект в портфолио</button>`}</section>
   </div>
  </div>`};
 

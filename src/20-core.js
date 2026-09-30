@@ -19,7 +19,7 @@ const btnAttr=spec=>{const [k,a,b]=spec.split(':');return k==='go'?`data-go="${a
 
 /* ================= state ================= */
 const KEY='delom-demo-v2';
-const fresh=()=>({authed:false,onboarded:false,resume:false,goal:'pm',pstat:{},ws:{},scores:{},sel:{},portfolio:{},inv:{},tests:{},courses:{},mentorReq:{},teams:{},chats:{},applied:{},projApplied:{},visited:{},flags:{},notifSeen:0,empInvited:{},published:[],extraVac:[],badgesSeen:null,acted:false,empCo:null,lastRole:'student',cv:null,cvTpl:'modern',cvTarget:null,cvBest:0,cvVersions:[],stories:[],interviews:[],apps:{},appsExtra:[],offers:null,offW:null,hrReview:null,peerDone:0,pitch:null,pitchVideo:null,recs:{}});
+const fresh=()=>({authed:false,onboarded:false,resume:false,goal:'pm',pstat:{},ws:{},scores:{},sel:{},portfolio:{},inv:{},tests:{},courses:{},mentorReq:{},teams:{},chats:{},applied:{},projApplied:{},visited:{},flags:{},notifSeen:0,empInvited:{},published:[],extraVac:[],badgesSeen:null,acted:false,empCo:null,lastRole:'student',cv:null,cvTpl:'modern',cvTarget:null,cvBest:0,cvVersions:[],stories:[],interviews:[],apps:{},appsExtra:[],offers:null,offW:null,hrReview:null,peerDone:0,pitch:null,pitchVideo:null,recs:{},reviews:{},mentorConf:{},courseDone:{},waitlist:{},tier:null,salesReq:[],consOk:{},uniCourses:[],hrAt:0,profile:null,vis:null});
 let S=fresh();
 try{const raw=localStorage.getItem(KEY);if(raw)S=Object.assign(fresh(),JSON.parse(raw))}catch(e){}
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
@@ -27,13 +27,14 @@ const UI={cvLeft:'tips',jobs:{prof:'',company:'',format:'',level:'',skill:'',pai
 
 /* ================= computed ================= */
 const T=()=>TRACKS[S.goal]||TRACKS.pm;
-const allProjects=()=>[...S.published.map((p,i)=>({...p,id:'n'+i,company:emp().company,ind:emp().ind,isNew:1,people:0,durK:'2',reward:p.skills.length,short:p.title})),...PROJECTS];
+const PUB_CACHE={};
+const allProjects=()=>[...S.published.map((p,i)=>{const k=p.pid||'n'+i;return PUB_CACHE[k]&&PUB_CACHE[k].title===p.title?PUB_CACHE[k]:(PUB_CACHE[k]=enrichProject({...p,id:k,company:p.company||emp().company,ind:p.ind||emp().ind,emp:p.emp||emp().id,isNew:1,people:0,durK:'2',reward:p.skills.length,short:p.title}))}),...PROJECTS];
 const P=id=>allProjects().find(p=>p.id===id);
 const pst=id=>S.pstat[id]||'none';
 const mainDone=t=>!!TRACKS[t]&&pst(TRACKS[t].main)==='done';
 const trackOfProj=pid=>Object.values(TRACKS).find(t=>t.main===pid);
 const confirmsOf=pid=>S.sel[pid]||(P(pid)&&P(pid).confirms)||[];
-const empOfProj=pid=>EMPLOYERS[(P(pid)||{}).emp]||EMPLOYERS.su;
+function empOfProj(pid){const p=P(pid)||{};if(EMPLOYERS[p.emp])return EMPLOYERS[p.emp];const c=CONTACTS[p.company]||p.contact||['Команда найма','рекрутер'];return {id:'co-'+p.company,company:p.company,person:c[0],first:c[0].split(' ')[0],pos:c[1],ini:initials(c[0]),color:(COMP[p.company]||{}).bg||'#475569'}}
 const emp=()=>EMPLOYERS[S.empCo||(S.goal==='da'?'tb':'su')];
 const mentorMe=()=>S.goal==='da'?MENTORS[1]:MENTORS[0];
 function sk(id){
@@ -41,8 +42,10 @@ function sk(id){
  const o={id,name:b.name,st:b.st,pct:b.pct||0,basis:b.basis,src:b.src,date:b.date,baseOk:b.st==='ok'};
  const pid=Object.keys(S.pstat).find(k=>S.pstat[k]==='done'&&confirmsOf(k).includes(id));
  if(pid){const p=P(pid);Object.assign(o,{st:'ok',basis:`Проект «${p.short}»`,src:`${p.company} · оценка ${S.scores[pid]||p.score} из 5`,date:S.flags['d_'+pid]||todayStr(),fresh:!o.baseOk,via:'project',pid})}
+ else if(S.mentorConf&&S.mentorConf[id]&&S.mentorConf[id].passed&&o.st!=='ok'){const m=S.mentorConf[id];Object.assign(o,{st:'ok',basis:`Оценка ментора · ${m.stars} из 5`,src:m.by,date:m.date,fresh:1,via:'mentor'})}
+ else if(S.courseDone[id]&&o.st!=='ok'){const c=S.courseDone[id];Object.assign(o,{st:'ok',basis:`Курс «${c.title}» · итоговое задание ${c.score}`,src:c.provider,date:c.date,fresh:1,via:'course'})}
  else if(S.tests[id]&&S.tests[id].passed&&o.st!=='ok')Object.assign(o,{st:'ok',basis:`Тест ${BRAND} · ${S.tests[id].score} из 5`,src:'Проверка знаний с таймером',date:S.tests[id].date,fresh:1,via:'test'});
- if(o.st!=='ok'){if(S.courses[id])o.plan='course';if(S.mentorReq[id])o.plan='mentor'}
+ if(o.st!=='ok'){if(S.courses&&S.courses[id])o.plan='course';if(S.mentorReq[id]&&!(S.mentorConf[id]))o.plan='mentor'}
  return o}
 const skIds=Object.keys(SK);
 const skAll=()=>skIds.map(sk);
@@ -67,7 +70,7 @@ const newlyUnlocked=()=>allJobs().filter(j=>isFit(j)&&j.min>0&&unlocked(j));
 const stLabel=s=>s.st==='ok'?'Подтверждено':s.st==='progress'?'В процессе':'Не подтверждено';
 const stPill=s=>s.st==='ok'?`<span class="pill ok">${ic('shield')}Подтверждено</span>`:s.st==='progress'?`<span class="pill pr">В процессе · ${s.pct}%</span>`:`<span class="pill no">Не подтверждено</span>`;
 const planPill=s=>s.plan==='course'?`<span class="pill ac">${ic('book')}Курс в плане</span>`:s.plan==='mentor'?`<span class="pill ac">${ic('users')}Встреча с ментором</span>`:'';
-const wsOf=pid=>S.ws[pid]||(S.ws[pid]={tasks:[0,0,0,0],file:null});
+const wsOf=pid=>{const w=S.ws[pid]||(S.ws[pid]={tasks:[0,0,0,0],file:null});if(!w.attempt)w.attempt=1;if(w.summary==null)w.summary='';return w};
 
 /* gamification */
 const LEVELS=[[0,'Новичок'],[500,'Исследователь'],[1000,'Практик'],[2000,'Профи'],[3500,'Эксперт'],[6000,'Мастер']];
@@ -100,13 +103,14 @@ function ensureInviteChat(pid){const id='inv-'+pid;if(S.chats[id])return;const p
   {f:'them',t:'Выберите, пожалуйста, удобное время. Интервью займёт 45 минут, онлайн.',tm:tnow()}]}}
 const TEAMMATES=[['Екатерина Волкова','ЕВ','#C2410C'],['Никита Орлов','НО','#1D4ED8'],['Полина Смирнова','ПС','#BE185D'],['Тимур Ахметов','ТА','#0E7490'],['Мария Кузнецова','МК','#DB2777'],['Илья Морозов','ИМ','#7C3AED']];
 function ensureTeamChat(pid){const id='team-'+pid;if(S.chats[id])return;const p=P(pid),t=S.teams[pid];
- S.chats[id]={id,kind:'team',co:p.company,title:`Команда «${t.name}»`,sub:`${p.short} · ${t.members.length+1} участника`,pid,unreadS:2,unreadE:0,msgs:[
+ S.chats[id]={id,kind:'team',co:p.company,title:`Команда «${t.name}»`,sub:`${p.short} · ${t.members.length+1} ${plural(t.members.length+1,'участник','участника','участников')}`,pid,unreadS:2,unreadE:0,msgs:[
   {f:'sys',t:`Алексей присоединился к команде как ${t.role}`},
-  {f:'them',who:t.members[0][0],t:`Привет, Алексей! Рады, что ты с нами. Предлагаю созвониться в понедельник в 19:00 и распределить задачи по брифу ${p.company}.`,tm:tnow()},
-  {f:'them',who:(t.members[1]||t.members[0])[0],t:'Я уже разобрала бриф и выписала вопросы к компании. Скину в документ команды до вечера.',tm:tnow()}]}}
+  ...(t.members.length?[{f:'them',who:t.members[0][0],t:`Привет, Алексей! Рады, что ты с нами. Предлагаю созвониться в понедельник в 19:00 и распределить задачи по брифу ${p.company}.`,tm:tnow()},
+  {f:'them',who:(t.members[1]||t.members[0])[0],t:'Я уже разобрала бриф и выписала вопросы к компании. Скину в документ команды до вечера.',tm:tnow()}]:[{f:'sys',t:'Команда создана. Пригласите участников по ссылке из карточки команды — их сообщения появятся здесь.'}])]};if(!t.members.length)S.chats[id].unreadS=0}
 function chatReply(th,text){const t=text.toLowerCase();
+ if(th.kind==='team'){const t=S.teams[th.pid];if(!t||!t.members.length)return null}
  if(th.kind==='team')return /созвон|понедельник|время|ок|давай/.test(t)?'Отлично, тогда в понедельник в 19:00. Ссылку на звонок кину сюда.':'Принято! Добавила это в наш план в документе команды.';
- if(/зарплат|оплат|деньг|сколько/.test(t))return 'Стажировка оплачиваемая: 60 000 ₽ в месяц, 30 часов в неделю, можно совмещать с учёбой.';
+ if(/зарплат|оплат|деньг|сколько/.test(t)){const j=jobById((P(th.pid)||{}).inviteJob);return j&&j.salary?`По позиции «${j.title}» оплата ${j.salary}${j.type==='intern'?' в месяц, график обсудим — можно совмещать с учёбой':''}.`:'Условия обсудим на интервью.'}
  if(/формат|как пройд|как проход|этап/.test(t))return 'Интервью в два этапа: 15 минут о вас и 30 минут — разбор вашего решения по проекту. Тестовых заданий больше не будет.';
  if(/подготов|что взять|нужно ли/.test(t))return 'Подготовьте 5-минутный рассказ о решении и пару вопросов к команде. Остальное мы уже видели в проекте.';
  if(/спасибо|благодар/.test(t))return 'Вам спасибо! До встречи.';

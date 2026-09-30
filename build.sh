@@ -2,7 +2,7 @@
 # Собирает все части из src/ в один файл index.html
 set -e
 cd "$(dirname "$0")/src"
-JS="10-data.js 20-core.js 30-student.js 33-ai.js 34-resume.js 36-career.js 40-roles.js 50-actions.js 46-landing3.js 55-actions2.js 58-mobile.js 99-init.js"
+JS="10-data.js 12-projects.js 20-core.js 22-files.js 30-student.js 33-ai.js 34-resume.js 36-career.js 40-roles.js 50-actions.js 46-landing3.js 55-actions2.js 58-mobile.js 99-init.js"
 {
   echo '<!DOCTYPE html>'; echo '<html lang="ru">'; echo '<head>'; echo '<meta charset="utf-8">'
   echo '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">'

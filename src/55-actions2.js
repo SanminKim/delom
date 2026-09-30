@@ -63,7 +63,7 @@ const offPrompt=()=>`Помоги студенту выбрать предлож
 Цель студента: ${T().goal}. Дай рекомендацию до 150 слов: что выбрать и почему, какой риск у выбора и 2 вопроса, которые стоит задать компании до ответа. Без выдуманных фактов о компаниях.`;
 function offLocal(){const os=[...offers()].sort((a,b)=>offTotal(b)-offTotal(a)),w=weights(),top=[...CRIT].sort((a,b)=>w[b[0]]-w[a[0]]).slice(0,2);
  return `**Рекомендация: ${os[0].co} — ${os[0].title}** (итог ${offTotal(os[0])} против ${offTotal(os[1])} у ${os[1].co}).\nДля вас важнее всего «${top[0][1].toLowerCase()}» и «${top[1][1].toLowerCase()}», и по ним ${os[0].co} сильнее.\n\n**Риск:** ${os[0].sal<os[1].sal?`оплата ниже на ${rub(os[1].sal-os[0].sal)} в месяц.`:'проверьте нагрузку и совместимость с учёбой.'}\n\n**Спросите до ответа:**\n- Кто будет наставником и как часто встречи один на один?\n- Какие задачи будут в первые 3 месяца и как оценят результат стажировки?`}
-const recPrompt=pid=>{const p=P(pid),mm=pid==='p4'?MENTORS[1]:MENTORS[0],rv=UI.rv[pid];return `Напиши рекомендательное письмо от имени ментора ${mm.name} (${mm.pos}) для студента Алексея Иванова. Ментор проверял решение проекта «${p.short}» для ${p.company}. Оценки по критериям: ${p.criteria.map((c,i)=>c+' — '+((rv&&rv.stars[i])||p.rubric[i])+'/5').join(', ')}. Отзыв: ${(rv&&rv.comment)||p.review} Результаты: ${p.metrics.map(m=>m[0]+' '+m[1]).join(', ')}. До 120 слов, конкретно, без клише, по-русски, подпись в конце. Верни только текст письма.`};
+const recPrompt=pid=>{const p=P(pid),mm=mentorOf(pid),rv=UI.rv[pid];return `Напиши рекомендательное письмо от имени ментора ${mm.name} (${mm.pos}) для студента Алексея Иванова. Ментор проверял решение проекта «${p.short}» для ${p.company}. Оценки по критериям: ${p.criteria.map((c,i)=>c+' — '+((rv&&rv.stars[i])||p.rubric[i])+'/5').join(', ')}. Отзыв: ${(rv&&rv.comment)||p.review} Результаты: ${p.metrics.map(m=>m[0]+' '+m[1]).join(', ')}. До 120 слов, конкретно, без клише, по-русски, подпись в конце. Верни только текст письма.`};
 
 /* ================= dashboard card ================= */
 function readyCard(){const a=analyzeCv(cv(),cvTargetJob()),L=appsList(),late=L.filter(x=>x.st==='sent'&&x.d>=7);
@@ -147,7 +147,7 @@ Object.assign(A,{
  offAdv(){runTask('offAdv',{prompt:offPrompt(),fallback:offLocal})},
  recSave(e){S.recs[e.dataset.id]=$('#rec-text').value.trim();save();render();toast('Рекомендация опубликована в профиле студента','send')},
  recAI(e){const pid=e.dataset.id;runTask('rec',{prompt:recPrompt(pid),fallback:()=>REC_T(pid),onDone:st=>{S.recs[pid]=String(st.data||REC_T(pid));save()}})},
- recToCv(e){const pid=e.dataset.id,mm=pid==='p4'?MENTORS[1]:MENTORS[0],c=cv();const line=`Рекомендация ментора: ${mm.name}, ${mm.pos} (проект для ${P(pid).company}).`;if(!c.extra.includes(line))c.extra=(c.extra?c.extra+' ':'')+line;save();toast('Рекомендация добавлена в резюме','plus')},
+ recToCv(e){const pid=e.dataset.id,mm=mentorOf(pid),c=cv();const line=`Рекомендация ментора: ${mm.name}, ${mm.pos} (проект для ${P(pid).company}).`;if(!c.extra.includes(line))c.extra=(c.extra?c.extra+' ':'')+line;save();toast('Рекомендация добавлена в резюме','plus')},
 });
 
 /* ================= events ================= */
