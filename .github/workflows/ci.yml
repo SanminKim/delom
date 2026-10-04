@@ -34,9 +34,39 @@ jobs:
           python -m playwright install --with-deps chromium
       - name: Тесты
         run: python -m pytest tests -n 4 -q
+  server:
+    name: Тесты серверной части
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: delom
+          POSTGRES_PASSWORD: delom
+          POSTGRES_DB: delom
+        ports: ["5432:5432"]
+        options: --health-cmd "pg_isready -U delom" --health-interval 5s --health-retries 10
+    env:
+      SECRET_KEY: ci-only-key
+      DATABASE_URL: postgres://delom:delom@localhost:5432/delom
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r server/requirements.txt
+      - name: Проверка настроек и миграций
+        working-directory: server
+        run: |
+          python manage.py check --deploy --fail-level ERROR
+          python manage.py makemigrations --check --dry-run
+      - name: Тесты
+        working-directory: server
+        run: python manage.py test core
   deploy:
     name: Публикация на GitHub Pages
-    needs: test
+    needs: [test, server]
     if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     environment:

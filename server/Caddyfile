@@ -1,0 +1,19 @@
+# Веб-сервер: сам получает и продлевает сертификат HTTPS для вашего домена.
+{$DOMAIN} {
+	encode gzip
+	request_body {
+		max_size 55MB
+	}
+	@backend path /api/* /admin/* /static/*
+	handle @backend {
+		reverse_proxy web:8000
+	}
+	handle {
+		root * /srv/site
+		file_server
+	}
+	header {
+		X-Content-Type-Options nosniff
+		Referrer-Policy strict-origin-when-cross-origin
+	}
+}
