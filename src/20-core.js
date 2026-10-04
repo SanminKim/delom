@@ -19,7 +19,7 @@ const btnAttr=spec=>{const [k,a,b]=spec.split(':');return k==='go'?`data-go="${a
 
 /* ================= state ================= */
 const KEY='delom-demo-v2';
-const fresh=()=>({authed:false,onboarded:false,resume:false,goal:'pm',pstat:{},ws:{},scores:{},sel:{},portfolio:{},inv:{},tests:{},courses:{},mentorReq:{},teams:{},chats:{},applied:{},projApplied:{},visited:{},flags:{},notifSeen:0,empInvited:{},published:[],extraVac:[],badgesSeen:null,acted:false,empCo:null,lastRole:'student',cv:null,cvTpl:'modern',cvTarget:null,cvBest:0,cvVersions:[],stories:[],interviews:[],apps:{},appsExtra:[],offers:null,offW:null,hrReview:null,peerDone:0,pitch:null,pitchVideo:null,recs:{},reviews:{},mentorConf:{},courseDone:{},resumeSkills:null,resumeFile:null,waitlist:{},tier:null,salesReq:[],consOk:{},uniCourses:[],hrAt:0,profile:null,vis:null});
+const fresh=()=>({authed:false,onboarded:false,resume:false,goal:'pm',pstat:{},ws:{},scores:{},sel:{},portfolio:{},inv:{},tests:{},courses:{},mentorReq:{},teams:{},chats:{},applied:{},projApplied:{},visited:{},flags:{},notifSeen:0,empInvited:{},published:[],extraVac:[],badgesSeen:null,acted:false,empCo:null,lastRole:'student',cv:null,cvTpl:'modern',cvTarget:null,cvBest:0,cvVersions:[],stories:[],interviews:[],apps:{},appsExtra:[],offers:null,offW:null,hrReview:null,peerDone:0,pitch:null,pitchVideo:null,recs:{},reviews:{},mentorConf:{},courseDone:{},resumeSkills:null,resumeFile:null,waitlist:{},tier:null,salesReq:[],consOk:{},uniCourses:[],hrAt:0,profile:null,vis:null,pipe:{},appSt:{},vacClosed:{},fav:{},closedProj:{},coReviews:[],uniReq:[],uniMail:[],t0:Date.now()});
 let S=fresh();
 try{const raw=localStorage.getItem(KEY);if(raw)S=Object.assign(fresh(),JSON.parse(raw))}catch(e){}
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
@@ -170,16 +170,16 @@ function animateBars(){requestAnimationFrame(()=>requestAnimationFrame(()=>$$('[
 /* ================= shell ================= */
 function navFor(role,r){
  const nMsg=unreadS(),nE=unreadE();
- if(role==='employer')return [{l:'Кабинет компании',i:[['empdash','grid','Обзор'],['candidates','users','Кандидаты'],['empjobs','briefcase','Вакансии и проекты'],['postproject','plus','Разместить проект'],['empmessages','msg','Сообщения',nE?String(nE):''],['pricing','coin','Тарифы и экономия']]}];
+ if(role==='employer')return [{l:'Кабинет компании',i:[['empdash','grid','Обзор'],['candidates','users','Кандидаты'],['hiring','layers','Воронка найма'],['empjobs','briefcase','Вакансии и проекты',orgBadge()],['postproject','plus','Разместить проект'],['empmessages','msg','Сообщения',nE?String(nE):''],['company-'+emp().id,'star','Рейтинг компании'],['pricing','coin','Тарифы и экономия']]}];
  if(role==='mentor')return [{l:'Кабинет ментора',i:[['mentor','shield','Проверка решений',pst(T().main)==='review'?'1':''],['review','test','Текущая проверка']]}];
- if(role==='uni')return [{l:'Кабинет вуза',i:[['uni','grid','Обзор'],['unistudents','users','Студенты']]}];
+ if(role==='uni')return [{l:'Кабинет вуза',i:[['uni','grid','Обзор'],['unistudents','users','Студенты'],['unipartners','building','Компании-партнёры'],['unimail','send','Рассылки']]}];
  const nApp=appsList().filter(a=>a.st==='sent'&&a.d>=7).length;
  return [{l:'Карьера',i:[['dashboard','home','Главная'],['career','route','Мой путь'],['skills','award','Навыки'],['projects','folder','Проекты'],['portfolio','file','Портфолио']]},
   {l:'Трудоустройство',i:[['internships','cap','Стажировки',mainDone(S.goal)?'+5':''],['vacancies','briefcase','Вакансии'],['applications','layers','Отклики',nApp?String(nApp):''],['resume','pen','Резюме'],['interview','msg','Интервью'],['messages','mail','Сообщения',nMsg?String(nMsg):'']]},
   {l:'Ещё',i:[['try','compass','Попробовать профессию'],['profile','user','Профиль']]}];
 }
 const ROLES={student:['Студент','user'],employer:['Работодатель','building'],mentor:['Ментор','shield'],uni:['Вуз','cap']};
-function curNavKey(r){if(r.n==='job')return (jobById(r.id)||{}).type==='job'?'vacancies':'internships';if(['project','workspace','complete'].includes(r.n))return 'projects';if(r.n==='jobs')return 'internships';if(r.n==='review'&&!r.id)return 'review';return r.n}
+function curNavKey(r){if(r.n==='job')return (jobById(r.id)||{}).type==='job'?'vacancies':'internships';if(['project','workspace','complete'].includes(r.n))return 'projects';if(r.n==='jobs')return 'internships';if(r.n==='review'&&!r.id)return 'review';if(r.n==='company')return 'company-'+r.id;if(r.n==='empvac'||r.n==='empproject')return 'empjobs';if(r.n==='uniprogram')return 'uni';return r.n}
 function renderShell(r){
  const role=curRole,cur=curNavKey(r),e=emp(),mm=mentorMe();
  const groups=navFor(role,r).map(g=>({l:g.l,i:g.i.map(x=>x[0]==='review'?[`review-${T().main}`,x[1],x[2],x[3]]:x)}));
@@ -229,6 +229,7 @@ function notifs(){
  if(pst(m)==='review')a.push({t:'Решение отправлено на проверку',s:p.short,time:'только что',go:'workspace-'+m,ic:'send'});
  a.push({t:'Новый проект от Ozon',s:'A/B-тест новой карточки товара',time:'2 ч назад',go:'project-p6',ic:'folder'});
  a.push({t:'Ментор оставил отзыв',s:'Customer Development подтверждён',time:'вчера',go:'skills',ic:'star'});
+ orgNotifs(a);
  const j=jobById(t.recJobs[0]);a.push({t:`${j.company}: ${j.title}`,s:'Совпадение с профилем '+matchOf(j)+'%',time:'2 дня назад',go:'job-'+j.id,ic:'briefcase'});
  return a}
 function notifHtml(){const a=notifs();S.notifSeen=a.length;save();return `<div class="pop" style="width:360px;max-width:88vw"><div class="pop-h"><b>Уведомления</b><span class="xs muted">${a.length}</span></div>${a.map(n=>`<button class="pop-item" data-go="${n.go}"><span class="${n.hot?'':'muted'}" style="${n.hot?'color:var(--accent-ink)':''}">${ic(n.ic)}</span><span class="grow"><div class="b" style="font-size:13.5px">${esc(n.t)}</div><div class="sm muted">${esc(n.s)} · ${n.time}</div></span>${n.hot?'<span class="dot"></span>':''}</button>`).join('')}</div>`}

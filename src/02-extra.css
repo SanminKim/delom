@@ -519,3 +519,10 @@
 .bt-srcp{display:inline-flex;gap:10px;align-items:center;padding:8px 12px 8px 8px;border-radius:12px;border:1px solid var(--border);background:var(--surface)}
 .bt-srcp>span:last-child{display:flex;flex-direction:column;line-height:1.25}
 .hc:nth-child(3){bottom:-6px}
+
+/* hiring board */
+.kan{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(220px,1fr);gap:12px;overflow-x:auto;padding-bottom:6px;min-width:0}
+.kan-col{background:var(--surface-2);border:1px solid var(--border);border-radius:14px;padding:10px;display:flex;flex-direction:column;gap:8px;min-height:140px;min-width:0}
+.kan-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.kan-card .btn{padding-inline:10px}
+.g6{gap:6px}

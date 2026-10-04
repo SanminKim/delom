@@ -2,7 +2,7 @@
 function alexCand(){const e=emp(),d=pst(e.main)==='done';return {id:'c2',name:'Алексей Иванов',prof:T().goal,uni:'НИУ ВШЭ · Бизнес-информатика, 3 курс',match:e.match[d?1:0],skills:confAll().map(s=>s.name),projects:projCount(),city:'Москва',color:'#3B47E0',fresh:d,score:d?(S.scores[e.main]||P(e.main).score):null}}
 const cands=()=>[...(VIS().show?[alexCand()]:[]),...CANDS].sort((a,b)=>b.match-a.match);
 function candStatus(c){const e=emp();if(c.id==='c2'){const inv=S.inv[e.main];if(inv&&inv.st==='accepted')return `<span class="pill ok">${ic('cal')}Интервью ${inv.slot.split(' · ')[0]}</span>`;if(inv)return `<span class="pill ac">${ic('mail')}Приглашён</span>`}if(S.empInvited[e.id+c.id])return `<span class="pill ac">${ic('mail')}Приглашён</span>`;return ''}
-const empVac=()=>[...emp().vac,...S.extraVac.map((v,i)=>({title:v.title,type:v.type,resp:S.applied['x'+i]?1:0,fresh:S.applied['x'+i]?1:0,format:v.format}))];
+const empVac=()=>vacList().map(v=>{const a=vacApps(emp(),v);return {...v,resp:v.extra?a.length:v.resp,fresh:a.filter(x=>x.st==='new').length}});
 VIEWS.empdash=()=>{
  const e=emp(),mp=P(e.main),d=pst(e.main)==='done',rev=pst(e.main)==='review';
  const top=[...e.top.map(([id,s])=>({c:CANDS.find(x=>x.id===id),s})),...(d?[{c:alexCand(),s:Number(String(S.scores[e.main]||mp.score).replace(',','.'))}]:[])].sort((a,b)=>b.s-a.s);
@@ -15,17 +15,17 @@ VIEWS.empdash=()=>{
  ${d?`<div class="banner"><span class="ic">${ic('star',20)}</span><div class="grow"><div class="b">Новое решение по проекту «${mp.short}»: Алексей Иванов, ${S.scores[e.main]||mp.score} из 5</div><div class="sm t2">Подтверждены ${confirmsOf(e.main).map(id=>SK[id].name).join(', ')}. Кандидату отправлено приглашение на интервью на позицию ${mp.invitePos}.</div></div><div class="row g8"><button class="btn btn-p btn-sm" data-act="candProfile" data-id="c2">Смотреть решение</button><button class="btn btn-s btn-sm" data-go="empmessages-inv-${e.main}">${ic('msg')}Написать</button></div></div>`:rev?`<div class="banner ac"><span class="ic">${ic('clock',20)}</span><div class="grow"><div class="b">Алексей Иванов отправил решение по проекту «${mp.short}»</div><div class="sm t2">Решение у ментора на проверке. Результат с подтверждёнными навыками появится здесь.</div></div></div>`:''}
  <div class="split">
   <div class="stack">
-   <section class="card"><div class="card-h"><div><h2>Лучшие решения проекта</h2><div class="sm muted">${mp.short} · ${(mp.id==='p1'?21:34)+(d?1:0)} решений</div></div><button class="btn btn-g btn-sm" data-go="candidates">Все кандидаты${ic('arR')}</button></div>
+   <section class="card"><div class="card-h"><div><h2>Лучшие решения проекта</h2><div class="sm muted">${mp.short} · ${(mp.id==='p1'?21:34)+(d?1:0)} решений</div></div><button class="btn btn-g btn-sm" data-go="empproject-${e.main}">Все решения${ic('arR')}</button></div>
     <div class="tbl-wrap"><table class="tbl"><thead><tr><th>Кандидат</th><th>Оценка</th><th>Совпадение</th><th></th></tr></thead><tbody>
     ${top.map(({c,s})=>`<tr><td><div class="row g12" style="flex-wrap:nowrap">${av(initials(c.name),c.color)}<div><div class="b">${c.name} ${c.fresh?'<span class="new-tag">Новое</span>':''}</div><div class="xs muted">${c.prof}</div></div></div></td><td><span class="pill">${ic('star')}${dec(s.toFixed(1))}</span></td><td><b>${c.match}%</b></td><td style="text-align:right"><div class="row g8" style="justify-content:flex-end;flex-wrap:nowrap">${candStatus(c)||`<button class="btn btn-s btn-sm" data-act="invite" data-id="${c.id}">Пригласить</button>`}<button class="btn btn-g btn-sm" data-act="candProfile" data-id="${c.id}">Профиль</button></div></td></tr>`).join('')}
     </tbody></table></div></section>
    <section class="card"><div class="card-h"><h2>Активные вакансии</h2><button class="btn btn-g btn-sm" data-go="empjobs">Управлять${ic('arR')}</button></div>
-    ${empVac().map(v=>`<div class="row between" style="padding:10px 0;border-top:1px solid var(--border)"><div><div class="b">${esc(v.title)}</div><div class="xs muted">${v.type} · ${esc(v.format)}</div></div><div class="row g8"><span class="sm"><b>${v.resp}</b> <span class="muted">${plural(v.resp,'отклик','отклика','откликов')}</span></span>${v.fresh?`<span class="pill ok">+${v.fresh} новых</span>`:'<span class="pill">Опубликована</span>'}</div></div>`).join('')}</section>
+    ${empVac().map(v=>`<div class="row between" style="padding:10px 0;border-top:1px solid var(--border);cursor:pointer" data-go="empvac-${v.i}"><div><div class="b">${esc(v.title)}</div><div class="xs muted">${v.type} · ${esc(v.format)}</div></div><div class="row g8"><span class="sm"><b>${v.resp}</b> <span class="muted">${plural(v.resp,'отклик','отклика','откликов')}</span></span>${vacState(emp(),v)==='auto'?'<span class="pill red">Закрыта: нет ответа</span>':v.fresh?`<span class="pill pr">${v.fresh} ${plural(v.fresh,'ждёт','ждут','ждут')} ответа</span>`:'<span class="pill">Все отвечены</span>'}</div></div>`).join('')}</section>
   </div>
   <aside class="stack">
    <section class="card"><div class="card-h"><h2>Воронка найма через проекты</h2></div>
     ${hbars([['Просмотры проектов',1240],['Участники',55],['Отправили решения',27+(d?1:0)],['Приглашены',6+(d?1:0)],['Наняты',2]])}
-    <p class="xs muted" style="margin-top:10px">Кандидаты из проектов проходят интервью в 2,4 раза чаще, чем из обычных откликов.</p></section>
+    <p class="xs muted" style="margin-top:10px">Кандидаты из проектов проходят интервью в 2,4 раза чаще, чем из обычных откликов.</p><button class="btn btn-s btn-sm" data-go="hiring" style="margin-top:10px">${ic('layers')}Кандидаты по этапам</button></section>
    <section class="card col g12"><h2>Ваш тариф: ${esc(curTier())}</h2><p class="sm muted">Использовано 2 из 5 проектов и 11 из 30 приглашений в этом месяце.</p>${bar(37,'thin')}<button class="btn btn-s btn-sm" data-go="pricing" style="align-self:flex-start">${ic('calc')}Тарифы и калькулятор экономии</button></section>
   </aside>
  </div>`};
@@ -48,13 +48,6 @@ function renderCandList(){
   <div class="cand-act row g12" style="flex-wrap:nowrap">${ring(c.match,58)}<div class="col g6"><button class="btn btn-s btn-sm" data-act="candProfile" data-id="${c.id}">Посмотреть профиль</button>${candStatus(c)?'':`<button class="btn btn-p btn-sm" data-act="invite" data-id="${c.id}">Пригласить</button>`}</div></div>
  </article>`).join('')||'<div class="card empty">Нет кандидатов с таким набором подтверждённых навыков</div>')+'</div>';
 }
-VIEWS.empjobs=()=>{
- const e=emp(),mp=P(e.main);
- const projs=[{title:mp.title,people:mp.people,sub:(mp.id==='p1'?21:34)+(pst(e.main)==='done'?1:0),dl:mp.deadline,hiring:1},...e.extraProj,...allProjects().filter(p=>p.isNew&&p.emp===e.id).map(p=>({title:p.title,people:['active','review','done'].includes(pst(p.id))?1:0,sub:['review','done'].includes(pst(p.id))?1:0,dl:p.deadline||'—',hiring:p.hiring}))];
- return `
- <div class="page-h"><div><span class="label">${e.company}</span><h1 style="margin-top:4px">Вакансии и проекты</h1></div><div class="row g8"><button class="btn btn-s" data-act="newVac" data-type="Вакансия">${ic('plus')}Вакансия</button><button class="btn btn-s" data-act="newVac" data-type="Стажировка">${ic('plus')}Стажировка</button><button class="btn btn-p" data-go="postproject">${ic('plus')}Проект</button></div></div>
- <section class="card" style="margin-bottom:20px"><div class="card-h"><h2>Вакансии и стажировки</h2><span class="sm muted">${empVac().length} активных</span></div><div class="tbl-wrap"><table class="tbl"><thead><tr><th>Позиция</th><th>Тип</th><th>Формат</th><th>Отклики</th><th>Статус</th></tr></thead><tbody>${empVac().map(v=>`<tr><td class="b">${esc(v.title)}</td><td>${v.type}</td><td>${esc(v.format)}</td><td><b>${v.resp}</b>${v.fresh?` <span class="xs" style="color:var(--green)">+${v.fresh}</span>`:''}</td><td><span class="pill ok">Активна</span></td></tr>`).join('')}</tbody></table></div></section>
- <section class="card"><div class="card-h"><h2>Проекты для студентов</h2><span class="sm muted">${projs.length}</span></div><div class="tbl-wrap"><table class="tbl"><thead><tr><th>Проект</th><th>Участники</th><th>Решения</th><th>Дедлайн</th><th>Найм</th></tr></thead><tbody>${projs.map(p=>`<tr><td class="b">${esc(p.title)}</td><td>${p.people}</td><td>${p.sub}</td><td>${esc(p.dl)}</td><td>${p.hiring?'<span class="pill ac">Интервью лучшим</span>':'<span class="pill">Нет</span>'}</td></tr>`).join('')}</tbody></table></div></section>`};
 VIEWS.postproject=()=>`
  <div class="page-h"><div><span class="label">Для работодателя</span><h1 style="margin-top:4px">Разместить проект</h1><p>Опишите реальную задачу вашей команды. Студенты решат её, а вы увидите, как они работают, до интервью.</p></div></div>
  <div class="split">
@@ -184,7 +177,7 @@ VIEWS.uni=()=>{
  <div class="split">
   <div class="stack">
    <section class="card"><div class="card-h"><div><h2>Подтверждённые навыки по месяцам</h2><div class="sm muted">Октябрь 2025 — сентябрь 2026</div></div></div>${barChart(UNI.months,vals,{hl:11})}</section>
-   <section class="card"><div class="card-h"><h2>Образовательные программы</h2></div><div class="tbl-wrap"><table class="tbl"><thead><tr><th>Программа</th><th>Студентов</th><th>Средняя готовность</th><th>Стажировки</th></tr></thead><tbody>${UNI.programs.map(r=>`<tr><td class="b">${r[0]}</td><td>${r[1]}</td><td><div class="row g8" style="flex-wrap:nowrap"><div style="width:90px">${bar(r[2],'o thin')}</div><b>${r[2]}%</b></div></td><td>${r[3]}</td></tr>`).join('')}</tbody></table></div></section>
+   <section class="card"><div class="card-h"><h2>Образовательные программы</h2></div><div class="tbl-wrap"><table class="tbl"><thead><tr><th>Программа</th><th>Студентов</th><th>Средняя готовность</th><th>Стажировки</th></tr></thead><tbody>${UNI.programs.map((r,i)=>`<tr data-go="uniprogram-${i}" style="cursor:pointer"><td class="b"><span class="linkish">${r[0]}</span></td><td>${r[1]}</td><td><div class="row g8" style="flex-wrap:nowrap"><div style="width:90px">${bar(r[2],'o thin')}</div><b>${r[2]}%</b></div></td><td>${r[3]}</td></tr>`).join('')}</tbody></table></div></section>
   </div>
   <aside class="stack">
    <section class="card"><div class="card-h"><h2>Кто приглашает студентов</h2></div>${hbars(UNI.hiring)}</section>
@@ -202,13 +195,7 @@ function uniReportHtml(){const fresh=skAll().filter(s=>s.fresh).length,inv=Objec
  <h2>Кто приглашает студентов</h2><table><tr><th>Компания</th><th>Приглашений</th></tr>${UNI.hiring.map(h=>row(h)).join('')}</table>
  ${(S.uniCourses||[]).length?`<h2>Проекты компаний в курсах</h2><table><tr><th>Курс</th><th>Проект</th><th>Студентов</th></tr>${S.uniCourses.map(c=>row([c.course,P(c.pid).company+' · '+P(c.pid).short,c.students])).join('')}</table>`:''}
  <p style="color:#6A7090;font-size:12px;margin-top:28px">Данные студентов, разрешивших делиться прогрессом с вузом. Демо-показатели платформы.</p></body></html>`}
-VIEWS.unistudents=()=>`
- <div class="page-h"><div><span class="label">${UNI.unit} · НИУ ВШЭ</span><h1 style="margin-top:4px">Студенты</h1><p>Карьерная готовность, подтверждённые навыки и статус трудоустройства студентов вуза.</p></div></div>
- <div class="filters"><div class="search" style="max-width:280px;flex:1 1 220px">${ic('search')}<input class="inp" id="uf-q" placeholder="Имя студента" value="${esc(UI.uni.q)}" style="width:100%;padding-left:38px"></div>${select('uf-prog','Все программы',UNI.programs.map(p=>p[0]),UI.uni.prog)}</div>
- <div id="uniList"></div>`;
-function renderUniList(){const el=$('#uniList');if(!el)return;const f=UI.uni;
- const rows=[...(VIS().uni?[uniAlex()]:[]),...UNI.students].filter(r=>(!f.q||r[0].toLowerCase().includes(f.q.toLowerCase()))&&(!f.prog||r[1].startsWith(f.prog)));
- el.innerHTML=`<section class="card" style="padding:0"><div class="tbl-wrap"><table class="tbl"><thead><tr><th>Студент</th><th>Цель</th><th>Готовность</th><th>Навыки</th><th>Проекты</th><th>Статус</th></tr></thead><tbody>${rows.map(r=>`<tr ${r[7]?'style="background:var(--accent-soft)"':''}><td><div class="row g12" style="flex-wrap:nowrap">${av(initials(r[0]),r[7]?'#3B47E0':'#8A90B0')}<div><div class="b">${r[0]}</div><div class="xs muted">${r[1]}</div></div></div></td><td>${r[2]}</td><td><div class="row g8" style="flex-wrap:nowrap"><div style="width:70px">${bar(r[3],'o thin')}</div><b>${r[3]}%</b></div></td><td>${r[4]}</td><td>${r[5]}</td><td><span class="pill ${/Оффер|Стажировка|Интервью/.test(r[6])?'ok':/Приглашение|Отклик/.test(r[6])?'ac':''}">${r[6]}</span></td></tr>`).join('')||'<tr><td colspan="6" class="empty">Никого не нашлось</td></tr>'}</tbody></table></div></section>`}
+function renderUniList(){}
 
 /* ================= metrics ================= */
 VIEWS.metrics=()=>{const bare=!S.authed;const tot=MET.funnel[0][1];

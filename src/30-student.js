@@ -171,6 +171,7 @@ function projCta(p,st){const team=p.format==='Командный';
  return st==='done'?`<button class="btn btn-ok btn-lg btn-block" data-go="complete-${p.id}">${ic('check')}Проект завершён · результат</button>`
   :st==='active'?`<button class="btn btn-p btn-lg btn-block" data-go="workspace-${p.id}">Продолжить выполнение${ic('arR')}</button>`
   :st==='review'?`<button class="btn btn-s btn-lg btn-block" data-go="workspace-${p.id}">${ic('clock')}Решение на проверке</button>`
+  :S.closedProj[p.id]?`<button class="btn btn-s btn-lg btn-block" disabled>${ic('lock')}Приём решений закрыт</button>`
   :`<button class="btn btn-p btn-lg btn-block" data-act="join" data-id="${p.id}">${team?ic('users')+'Найти команду':'Принять участие'}</button>`}
 VIEWS.project=(id)=>{
  const p=P(id);if(!p)return `<div class="card empty">Проект не найден — возможно, компания его сняла. <button class="linkish" data-go="projects">В каталог</button></div>`;
@@ -184,7 +185,7 @@ VIEWS.project=(id)=>{
     <div class="meta"><span>${ic('target')}${esc(p.dir)}</span><span>${ic('clock')}${esc(p.dur)}</span><span>${ic('layers')}${esc(p.diff)}</span><span>${ic(team?'users':'user')}${esc(p.format)}</span></div>${(S.uniCourses||[]).filter(c=>c.pid===p.id).map(c=>`<span class="pill ac" style="align-self:flex-start">${ic('cap')}Входит в курс «${esc(c.course)}» · НИУ ВШЭ</span>`).join('')}</div></div>
    </section>
    ${teamBlock(p.id)}
-   <section class="card col g12"><h2>О компании</h2><p class="t2">${esc(p.about)}</p></section>
+   <section class="card col g12"><div class="card-h"><h2>О компании</h2>${EMPLOYERS[p.emp]?`<button class="btn btn-g btn-sm" data-go="company-${p.emp}">${ic('star')}Рейтинг и отзывы${ic('arR')}</button>`:''}</div><p class="t2">${esc(p.about)}</p></section>
    <section class="card col g16"><h2>Задача</h2><div class="task-q">${esc(p.task)}</div>
     <p class="t2">${esc(p.intro)}</p>
     <ol class="ol">${p.steps.map(s=>`<li>${esc(s)}</li>`).join('')}</ol></section>

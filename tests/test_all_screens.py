@@ -14,7 +14,12 @@ S.pstat.p2='active';wsOf('p2');
 S.teams.p5={name:'Growth Team',role:'Аналитик',members:[['Екатерина Волкова','ЕВ','#C2410C','Product Manager']]};S.pstat.p5='active';wsOf('p5');ensureTeamChat('p5');
 finishProject('p1','4,8','Отличная работа по воронке, выводы подтверждены данными.');S.portfolio.p1=true;
 S.mentorReq.sql={m:'m2',slot:MSLOTS[0]};S.courses.pa={i:0};
-S.hrReview={who:'m1',st:'pending',date:todayStr()};S.applied.j1=1;
+S.hrReview={who:'m1',st:'pending',date:todayStr()};S.applied.j1=1;S.applied.j9=1;
+S.pipe.su={c3:{st:'interview',slot:SLOTS[0],prev:'invited'},c6:{st:'offer',offer:{sal:'60 000 ₽',start:'1 ноября',note:''},prev:'interview'},c4:{st:'rejected',reason:REASONS[0],at:todayStr(),prev:'new'}};
+S.appSt['su:0:c1']={st:'rejected',reason:REASONS[1],at:todayStr()};S.fav['p1:c3']=1;
+S.uniReq=[{id:1,co:'SkillUp',course:'Анализ данных',skill:'SQL',n:40,note:'к началу ноября',date:todayStr(),st:'sent'}];
+S.uniMail=[{id:7,aud:'Бизнес-информатика',names:[],target:{kind:'project',id:'p4'},msg:'Центр карьеры рекомендует проект.',date:todayStr()}];
+S.coReviews=[{co:'su',stars:5,text:'Настоящая задача и быстрый ответ.',role:'участник проекта',date:todayStr()}];
 save();
 """
 
@@ -23,10 +28,11 @@ ROUTES = {
                 "workspace-p5", "workspace-p6", "complete-p1", "internships", "vacancies", "job-j1", "job-j6", "portfolio",
                 "profile", "try", "messages", "messages-inv-p1", "resume", "resume-versions", "resume-recruiter",
                 "resume-english", "resume-hh", "resume-people", "interview", "interview-decode", "interview-star",
-                "interview-pitch", "interview-letters", "applications", "applications-offers", "applications-salary", "u"],
-    "employer": ["empdash", "candidates", "empjobs", "postproject", "pricing", "empmessages"],
+                "interview-pitch", "interview-letters", "applications", "applications-offers", "applications-salary", "u", "company-su"],
+    "employer": ["empdash", "candidates", "empjobs", "postproject", "pricing", "empmessages", "hiring", "empvac-0", "empvac-1",
+                 "empproject-p1", "company-su"],
     "mentor": ["mentor", "review-p6", "review-p1"],
-    "uni": ["uni", "unistudents"],
+    "uni": ["uni", "unistudents", "uniprogram-0", "unipartners", "unimail"],
     "public": ["welcome", "auth-student", "auth-employer", "metrics"],
 }
 ALL = [(role, r) for role, rs in ROUTES.items() for r in rs]
