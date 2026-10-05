@@ -219,3 +219,16 @@ html:has(#modalRoot .scrim){overflow:hidden}
 }
 @media (max-width:720px){.rub{flex-wrap:wrap}.stars{flex:none}}
 @media (max-width:400px){.n3-in [data-login]{display:none}.lp-nav .lp-in{gap:8px}.lp-nav .btn{padding-inline:10px;font-size:12px}.lp-nav .brand span{font-size:16px}}
+@media (max-width:960px){
+ /* onboarding sheet scrolls: on short screens the buttons used to be cut off below the edge */
+ .modal.onb{display:block;overflow-y:auto;-webkit-overflow-scrolling:touch;max-height:92dvh}
+}
+@media (max-width:720px){
+ .modal.onb{min-height:0}
+ .onb-l{padding:16px 18px 14px;gap:8px}.onb-l h2{font-size:18px!important}
+ .onb-r{padding:16px 18px calc(18px + env(safe-area-inset-bottom,0px))}
+}
+@media (max-width:720px){
+ /* the main onboarding button stays in view while the list of professions scrolls */
+ .onb-r [data-act="startGoal"],.onb-r [data-act="onbSkillsOk"]{position:sticky;bottom:calc(10px + env(safe-area-inset-bottom,0px));z-index:2;box-shadow:0 0 0 10px var(--surface),0 -14px 18px 6px var(--surface)}
+}

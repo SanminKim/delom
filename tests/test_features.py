@@ -192,3 +192,23 @@ def test_pitch_video_and_track_waitlist(app):
     app.page.wait_for_timeout(150)
     app.click('[data-act="soonGoal"][data-id="UX/UI Designer"]')
     assert app.val("S.waitlist['UX/UI Designer']") is True
+
+
+def test_onboarding_on_short_phone_screen(phone):
+    """На невысоком экране телефона кнопки онбординга доступны: окно прокручивается, главная кнопка закреплена."""
+    phone.page.set_viewport_size({"width": 360, "height": 600})
+    phone.open(onboarded=False)
+    phone.go("dashboard", wait=500)
+    assert phone.modal_open()
+    phone.page.locator('#modalRoot [data-act="onbGoal"]').tap()
+    phone.page.wait_for_timeout(300)
+    assert phone.val("UI.onb.step") == "goal"
+    # кнопка «Выбрать…» видна сразу, без прокрутки списка профессий
+    box = phone.page.locator('[data-act="startGoal"]').bounding_box()
+    assert box["y"] + box["height"] <= 600, box
+    phone.page.locator('[data-act="pickGoal"][data-id="da"]').tap()
+    phone.page.wait_for_timeout(200)
+    phone.page.locator('[data-act="startGoal"]').tap()
+    phone.page.wait_for_timeout(400)
+    assert phone.val("S.onboarded") is True
+    assert phone.val("S.goal") == "da"
