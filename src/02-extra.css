@@ -495,7 +495,8 @@
 @media (max-width:1180px){.bento{grid-template-columns:repeat(2,minmax(0,1fr))}.bt-a{grid-column:span 2}.bt-b,.bt-c,.bt-d,.bt-e{grid-column:span 1}}
 @media (max-width:960px){
  .n3-links{display:none}
- .h3-in,.how3-grid,.cmp3-in,.aud3-panel,.faq3-in{grid-template-columns:1fr}
+ .h3-in,.how3-grid,.cmp3-in,.aud3-panel,.faq3-in{grid-template-columns:minmax(0,1fr)}
+ .h3-in>*,.how3-grid>*,.cmp3-in>*,.aud3-panel>*,.faq3-in>*{min-width:0}
  .h3{padding-block:40px 72px}
  .h3-vis{min-height:440px;max-width:560px;width:100%;margin-inline:auto}
  .how3-steps{padding:0}.h3s{min-height:0}.h3s button{opacity:1}

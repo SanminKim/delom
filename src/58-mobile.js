@@ -69,3 +69,8 @@ landingInit=function(){_landingInit();const lp=$('.lp3');if(!lp)return;
  let bar=$('#lpSticky');if(!bar){lp.insertAdjacentHTML('beforeend',`<div class="lp-sticky" id="lpSticky"><button class="btn btn-p btn-lg" data-go="auth-student">Начать бесплатно</button><button class="btn btn-s btn-lg" data-act="demoLogin" aria-label="Открыть демо">Демо</button></div>`);bar=$('#lpSticky')}
  const hero=$('#h3'),fin=$('.fin3');const f=()=>{if(!isM()){bar.classList.remove('on');return}const hb=hero?hero.getBoundingClientRect().bottom:0,ft=fin?fin.getBoundingClientRect().top:1e9;bar.classList.toggle('on',hb<60&&ft>innerHeight*.9)};
  window.addEventListener('scroll',f,{passive:true});L3.fns.push(['scroll',f]);f()};
+
+/* tables become stacked cards on phones: every cell gets its column name */
+function mTables(){$$('#view table.tbl:not(.tbl-x)').forEach(t=>{const heads=$$('thead th',t).map(h=>h.textContent.trim());
+ $$('tbody tr',t).forEach(tr=>[...tr.children].forEach((td,i)=>{if(td.colSpan>1)return;const l=i===0?'':heads[i]||'';if(td.dataset.l!==l)td.dataset.l=l}));t.classList.add('tbl-m')})}
+new MutationObserver(()=>{if(mTables.q)return;mTables.q=requestAnimationFrame(()=>{mTables.q=0;mTables()})}).observe(document.getElementById('view'),{childList:true,subtree:true});

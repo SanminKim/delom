@@ -103,4 +103,14 @@ def test_every_button_works(app, role, route):
 def test_phone_layout(phone, role, route):
     snap = snapshot(phone)
     load(phone, snap, role, route)
-    assert phone.val("document.documentElement.scrollWidth") <= 390
+    assert phone.val("document.documentElement.scrollWidth") <= 360
+    # ничего не обрезано краем экрана: элемент либо помещается, либо лежит в прокручиваемой ленте
+    clipped = phone.val("""(()=>{const W=360;  // не innerWidth: при переполнении браузер расширяет область просмотра
+
+      const scrolls=e=>{for(let p=e.parentElement;p;p=p.parentElement){const s=getComputedStyle(p);if(/(auto|scroll)/.test(s.overflowX)&&p.scrollWidth>p.clientWidth+2)return true}return false};
+      return [...document.querySelectorAll('#view *')].filter(e=>{if(e.children.length||e.closest('.mq,[aria-hidden=true]'))return false;const r=e.getBoundingClientRect();
+        return r.width>2&&r.height>2&&(r.right>W+1||r.left<-1)&&!scrolls(e)&&!e.closest('svg')}).slice(0,5).map(e=>e.tagName+'.'+String(e.className.baseVal??e.className).slice(0,30)+' «'+(e.innerText||'').trim().slice(0,30)+'»')})()""")
+    assert not clipped, clipped
+    # таблицы на телефоне превращаются в карточки и не требуют прокрутки вбок
+    wide = phone.val("[...document.querySelectorAll('#view table.tbl:not(.tbl-x)')].filter(t=>t.getBoundingClientRect().width>360).length")
+    assert wide == 0

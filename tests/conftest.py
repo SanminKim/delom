@@ -90,7 +90,8 @@ def app(browser):
 
 @pytest.fixture
 def phone(browser):
-    ctx = browser.new_context(viewport={"width": 390, "height": 844}, is_mobile=True, has_touch=True)
+    # 360 px — самая узкая из распространённых ширин; всё, что помещается здесь, помещается и на 390
+    ctx = browser.new_context(viewport={"width": 360, "height": 780}, is_mobile=True, has_touch=True)
     ctx.route(re.compile(r"fonts\.(googleapis|gstatic)\.com"), lambda r: r.abort())
     ctx.add_init_script(NO_VT)
     page = ctx.new_page()

@@ -164,7 +164,7 @@ const offTotal=o=>{const w=weights();const sw=CRIT.reduce((a,[k])=>a+w[k],0);ret
 function appOffers(){const os=offers(),w=weights(),st=task('offAdv');const best=[...os].sort((a,b)=>offTotal(b)-offTotal(a))[0];const topC=[...CRIT].sort((a,b)=>w[b[0]]-w[a[0]])[0];
  return `<div class="split"><div class="stack">
   <section class="card col g12"><h2>Сравнение предложений</h2><p class="sm t2">Оцените каждое предложение от 1 до 10 по критериям и задайте, что важно лично вам.</p>
-   <div class="tbl-wrap"><table class="tbl"><thead><tr><th>Критерий</th>${os.map(o=>`<th>${esc(o.co)}<div class="xs muted" style="text-transform:none;letter-spacing:0">${esc(o.title)} · ${rub(o.sal)}</div></th>`).join('')}</tr></thead><tbody>
+   <div class="tbl-wrap"><table class="tbl tbl-x"><thead><tr><th>Критерий</th>${os.map(o=>`<th>${esc(o.co)}<div class="xs muted" style="text-transform:none;letter-spacing:0">${esc(o.title)} · ${rub(o.sal)}</div></th>`).join('')}</tr></thead><tbody>
    ${CRIT.map(([k,n])=>`<tr><td class="b">${n}</td>${os.map(o=>`<td><select class="sel" style="height:32px" data-off="${o.id}:${k}">${[1,2,3,4,5,6,7,8,9,10].map(v=>`<option ${o.sc[k]===v?'selected':''}>${v}</option>`).join('')}</select></td>`).join('')}</tr>`).join('')}
    <tr><td class="b">Итог с учётом весов</td>${os.map(o=>`<td><div class="row g8" style="flex-wrap:nowrap"><div style="width:70px">${bar(offTotal(o),o===best?'gr':'')}</div><b>${offTotal(o)}</b>${o===best?'<span class="pill ok" style="height:20px;font-size:11px">лучше</span>':''}</div></td>`).join('')}</tr></tbody></table></div>
    <div class="quote sm">С вашими приоритетами лидирует <b>${esc(best.co)}</b>: для вас важнее всего «${topC[1].toLowerCase()}», и здесь это предложение сильнее.</div>

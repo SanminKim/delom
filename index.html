@@ -940,7 +940,8 @@ textarea.inp{height:auto;padding:10px 12px;resize:vertical;line-height:1.5}
 @media (max-width:1180px){.bento{grid-template-columns:repeat(2,minmax(0,1fr))}.bt-a{grid-column:span 2}.bt-b,.bt-c,.bt-d,.bt-e{grid-column:span 1}}
 @media (max-width:960px){
  .n3-links{display:none}
- .h3-in,.how3-grid,.cmp3-in,.aud3-panel,.faq3-in{grid-template-columns:1fr}
+ .h3-in,.how3-grid,.cmp3-in,.aud3-panel,.faq3-in{grid-template-columns:minmax(0,1fr)}
+ .h3-in>*,.how3-grid>*,.cmp3-in>*,.aud3-panel>*,.faq3-in>*{min-width:0}
  .h3{padding-block:40px 72px}
  .h3-vis{min-height:440px;max-width:560px;width:100%;margin-inline:auto}
  .how3-steps{padding:0}.h3s{min-height:0}.h3s button{opacity:1}
@@ -1134,7 +1135,64 @@ textarea.inp{height:auto;padding:10px 12px;resize:vertical;line-height:1.5}
 }
 /* long words and links never widen the page */
 .quote,.bub,.msg,.task-q,.letter,.card p,.fileln .b,.iss .sm{overflow-wrap:anywhere}
-.card-h{flex-wrap:wrap}
+.card-h{flex-wrap:wrap
+}
+
+@media (max-width:720px){
+ /* --- fixes after the phone audit --- */
+ /* landing: nothing wider than the screen */
+ .n3-in{gap:10px}.n3-in .row{flex-wrap:nowrap}.n3-in .btn{white-space:nowrap}
+ .lp3 .h3-title{font-size:clamp(30px,9.4vw,44px);overflow-wrap:anywhere}
+ .lp3 .annc{max-width:100%}.lp3 .annc span:last-of-type{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+ .lp3 .h3-note{flex-wrap:wrap}
+ /* page header actions wrap instead of hiding behind the edge */
+ .page-h>.row{flex-wrap:wrap;overflow:visible;margin-inline:0;padding-inline:0;max-width:100%;width:100%}
+ .page-h>.row .btn{flex:1 1 auto}
+ /* filters: two per row, search on its own line */
+ .filters{flex-wrap:wrap;overflow:visible;margin:0 0 14px;padding:0}
+ .filters>*{flex:1 1 calc(50% - 4px);min-width:0}
+ .filters .search{flex:1 1 100%!important;max-width:none!important}
+ .filters .sel{width:100%}
+ /* long button labels wrap inside the button */
+ .btn-block,.btn-lg{white-space:normal;height:auto;min-height:46px;padding-block:10px;line-height:1.25;text-align:center}
+ /* role switch in the More sheet */
+ .m-roles{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .m-role{flex-direction:row;justify-content:center;font-size:13px;padding:12px 8px}
+ /* resume tips: label and button on one line, text below at full width */
+ .iss{flex-wrap:wrap}.iss>.grow{flex:1 1 100%;order:3;min-width:0}.iss>.btn{margin-left:auto}
+ /* tables as cards */
+ .tbl-m thead{display:none}
+ .tbl-m,.tbl-m tbody,.tbl-m tr,.tbl-m td{display:block;width:100%;min-width:0}
+ .tbl-wrap:has(.tbl-m){overflow:visible}
+ .tbl-m tr{padding:12px 16px;border-bottom:1px solid var(--border)}
+ .tbl-m tr:last-child{border-bottom:0}
+ .card:not([style*="padding:0"]) .tbl-m tr{padding-inline:0}
+ .tbl-m td{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:4px 0;border:0;text-align:left!important}
+ .tbl-m td[data-l]:not([data-l=""])::before{content:attr(data-l);color:var(--muted);font-size:12px;font-weight:500;flex:none;max-width:45%}
+ .tbl-m td[data-l=""]{justify-content:flex-start}
+ .tbl-m td:first-child{font-size:15px;padding-bottom:6px}
+ .tbl-m td:empty{display:none}
+ .tbl-m td>.row{flex-wrap:wrap!important;justify-content:flex-start!important}
+ .tbl-m td:last-child[data-l=""]{padding-top:8px}
+ .tbl-m td:last-child[data-l=""] .btn{flex:1 1 auto}
+ .tbl-m td .check{padding:4px 0}
+}
+/* the page behind an open sheet, menu or assistant does not scroll */
+html:has(#modalRoot .scrim){overflow:hidden}
+@media (max-width:720px){html:has(.ai:not([hidden])){overflow:hidden}}
+.modal,.ai,.pop{overscroll-behavior:contain}
+@media (max-width:720px){
+ /* narrow phones (360 and 320 px): long labels wrap instead of pushing the page wider */
+ .btn{max-width:100%;white-space:normal;height:auto;line-height:1.2;padding-block:8px;text-align:center}
+ .btn-sm{min-height:40px}
+ .pill{max-width:100%;white-space:normal;height:auto;min-height:24px;padding-block:3px;text-align:left}
+ .tabbar{width:100%;max-width:100vw}.tb-i{min-width:0;flex:1 1 0}.tb-i span:last-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}
+ .hbar{grid-template-columns:minmax(84px,36%) minmax(0,1fr) auto!important;gap:8px}
+ .m-cta{left:0;right:0;width:auto;max-width:100vw}
+ .lp-nav .btn,.n3-in .btn{white-space:nowrap}
+}
+@media (max-width:720px){.rub{flex-wrap:wrap}.stars{flex:none}}
+@media (max-width:400px){.n3-in [data-login]{display:none}.lp-nav .lp-in{gap:8px}.lp-nav .btn{padding-inline:10px;font-size:12px}.lp-nav .brand span{font-size:16px}}
 </style>
 </head>
 <body>
@@ -2098,7 +2156,7 @@ function funnelHtml(){const F=[['Регистрация',12400,null],['Запо�
  return `<div class="funnel">${F.map(f=>`<div class="fn-row ${f[2]!==null&&f[2]<45?'hot':''}"><span class="t2">${f[0]}</span><div class="fn-bar"><i style="width:${Math.max(4,f[1]/124)}%"></i></div><span><b>${fmt(f[1])}</b> <span class="cv muted">${f[2]===null?'':f[2]+'%'}</span></span></div>`).join('')}</div><div class="row g8 xs muted" style="margin-top:10px"><span style="width:10px;height:10px;border-radius:3px;background:var(--orange)"></span>Конверсия шага ниже 45% · сквозная конверсия 7,0%</div>`}
 const COH=[['Март',[100,71,62,58]],['Апрель',[100,69,60,55]],['Май',[100,72,63,57]],['Июнь',[100,58,44,39]],['Июль',[100,70,61,null]],['Август',[100,68,null,null]]];
 function cohortHtml(){return `<div class="tbl-wrap"><table class="heat"><thead><tr><th>Когорта</th><th>Месяц 0</th><th>Месяц 1</th><th>Месяц 2</th><th>Месяц 3</th></tr></thead><tbody>${COH.map(([n,v])=>`<tr><td>${n}</td>${v.map((x,i)=>x===null?'<td style="background:var(--surface-2);color:var(--muted)">—</td>':`<td class="${n==='Июнь'&&i>0?'hot':''}" style="background:color-mix(in srgb,var(--accent) ${Math.round(x*.7)}%,var(--surface));color:${x>=90?'#fff':'var(--text)'}">${x}%</td>`).join('')}</tr>`).join('')}</tbody></table></div><div class="row g8 xs muted" style="margin-top:10px"><span style="width:10px;height:10px;border-radius:3px;border:2px solid var(--orange)"></span>Июньская когорта теряет клиентов заметно быстрее остальных</div>`}
-function dataTable(d){return `<div class="tbl-wrap"><table class="tbl"><thead><tr>${d.head.map(h=>`<th>${esc(h)}</th>`).join('')}</tr></thead><tbody>${d.rows.map(r=>`<tr>${r.map((c,i)=>`<td ${i?'':'class="b"'}>${esc(c)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>${d.note?`<p class="sm t2">${esc(d.note)}</p>`:''}`}
+function dataTable(d){return `<div class="tbl-wrap"><table class="tbl tbl-x"><thead><tr>${d.head.map(h=>`<th>${esc(h)}</th>`).join('')}</tr></thead><tbody>${d.rows.map(r=>`<tr>${r.map((c,i)=>`<td ${i?'':'class="b"'}>${esc(c)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>${d.note?`<p class="sm t2">${esc(d.note)}</p>`:''}`}
 const SUM_MIN=150;
 const wsReady=w=>w.tasks.every(Boolean)&&!!w.file&&(w.summary||'').trim().length>=SUM_MIN;
 function wsHint(w){const miss=[];const n=w.tasks.filter(Boolean).length;if(n<w.tasks.length)miss.push(`отметьте задачи (${n} из ${w.tasks.length})`);if(!w.file)miss.push('загрузите файл решения');const l=(w.summary||'').trim().length;if(l<SUM_MIN)miss.push(`опишите итог (ещё ${SUM_MIN-l} знаков)`);return miss.length?'Осталось: '+miss.join(', ')+'.':'Всё готово к отправке.'}
@@ -2846,7 +2904,7 @@ const offTotal=o=>{const w=weights();const sw=CRIT.reduce((a,[k])=>a+w[k],0);ret
 function appOffers(){const os=offers(),w=weights(),st=task('offAdv');const best=[...os].sort((a,b)=>offTotal(b)-offTotal(a))[0];const topC=[...CRIT].sort((a,b)=>w[b[0]]-w[a[0]])[0];
  return `<div class="split"><div class="stack">
   <section class="card col g12"><h2>Сравнение предложений</h2><p class="sm t2">Оцените каждое предложение от 1 до 10 по критериям и задайте, что важно лично вам.</p>
-   <div class="tbl-wrap"><table class="tbl"><thead><tr><th>Критерий</th>${os.map(o=>`<th>${esc(o.co)}<div class="xs muted" style="text-transform:none;letter-spacing:0">${esc(o.title)} · ${rub(o.sal)}</div></th>`).join('')}</tr></thead><tbody>
+   <div class="tbl-wrap"><table class="tbl tbl-x"><thead><tr><th>Критерий</th>${os.map(o=>`<th>${esc(o.co)}<div class="xs muted" style="text-transform:none;letter-spacing:0">${esc(o.title)} · ${rub(o.sal)}</div></th>`).join('')}</tr></thead><tbody>
    ${CRIT.map(([k,n])=>`<tr><td class="b">${n}</td>${os.map(o=>`<td><select class="sel" style="height:32px" data-off="${o.id}:${k}">${[1,2,3,4,5,6,7,8,9,10].map(v=>`<option ${o.sc[k]===v?'selected':''}>${v}</option>`).join('')}</select></td>`).join('')}</tr>`).join('')}
    <tr><td class="b">Итог с учётом весов</td>${os.map(o=>`<td><div class="row g8" style="flex-wrap:nowrap"><div style="width:70px">${bar(offTotal(o),o===best?'gr':'')}</div><b>${offTotal(o)}</b>${o===best?'<span class="pill ok" style="height:20px;font-size:11px">лучше</span>':''}</div></td>`).join('')}</tr></tbody></table></div>
    <div class="quote sm">С вашими приоритетами лидирует <b>${esc(best.co)}</b>: для вас важнее всего «${topC[1].toLowerCase()}», и здесь это предложение сильнее.</div>
@@ -3011,7 +3069,7 @@ VIEWS.review=(id)=>{
  <div class="page-h"><div><span class="label">Проверка решения · ${esc(p.company)}</span><h1 style="margin-top:4px">${esc(p.short)}</h1></div>${done?`<span class="pill ok" style="height:32px;padding:0 12px">${ic('check')}Проверено · оценка ${S.scores[pid]||p.score}</span>`:'<span class="pill pr" style="height:32px;padding:0 12px">Ждёт проверки</span>'}</div>
  <div class="split">
   <div class="stack">
-   <section class="card col g12"><div class="row g12" style="flex-wrap:nowrap">${av('АИ','#3B47E0',44)}<div class="grow"><div class="b">Алексей Иванов</div><div class="sm muted">НИУ ВШЭ · Бизнес-информатика, 3 курс${S.teams[pid]?` · команда «${esc(S.teams[pid].name)}»`:''}</div></div><span class="xs muted">Отправлено ${esc(w.sentAt||todayStr())}${w.attempt>1?` · попытка ${w.attempt}`:''}</span></div>
+   <section class="card col g12"><div class="row g12" style="flex-wrap:nowrap">${av('АИ','#3B47E0',44)}<div class="grow"><div class="b">Алексей Иванов</div><div class="sm muted">НИУ ВШЭ · Бизнес-информатика, 3 курс${S.teams[pid]?` · команда «${esc(S.teams[pid].name)}»`:''}</div><div class="xs muted">Отправлено ${esc(w.sentAt||todayStr())}${w.attempt>1?` · попытка ${w.attempt}`:''}</div></div></div>
     <div class="quote sm"><b>Итог решения.</b> ${esc(w.summary||'—')}</div>
     ${w.file?`<button class="fileln" data-act="openStored" data-id="ws-${pid}"><span class="fi" style="background:var(--orange-soft);color:var(--orange)">${esc(extOf(w.file).toUpperCase().slice(0,4))}</span><span class="grow"><div class="b" style="font-size:13.5px">${esc(w.file)}</div><div class="xs muted">${w.fileSize?fmtSize(w.fileSize)+' · ':''}открыть решение</div></span><span class="muted">${ic('eye')}</span></button>`:''}
     ${(w.history||[]).length?`<div class="col g6"><span class="label">История доработок</span>${w.history.map(h=>`<div class="sm t2">${esc(h.date)} — ${esc(h.comment)}</div>`).join('')}</div>`:''}</section>
@@ -3057,7 +3115,7 @@ VIEWS.uni=()=>{
  </div>`};
 function uniReportHtml(){const fresh=skAll().filter(s=>s.fresh).length,inv=Object.values(S.inv).filter(i=>i.st==='accepted').length;
  const row=r=>`<tr>${r.map(c=>`<td>${esc(String(c))}</td>`).join('')}</tr>`;
- return `<!DOCTYPE html><html lang="ru"><head><meta charset="utf-8"><title>Отчёт центра карьеры НИУ ВШЭ</title><style>body{font:14px/1.55 system-ui,sans-serif;max-width:860px;margin:32px auto;padding:0 24px;color:#1B1F33}h1{font-size:22px}h2{font-size:16px;margin-top:26px;color:#3B47E0}table{border-collapse:collapse;width:100%}td,th{border-bottom:1px solid #E2E6F0;padding:6px 8px;text-align:left}th{font-size:12px;color:#6A7090}.k{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.k div{border:1px solid #E2E6F0;border-radius:10px;padding:10px}.k b{display:block;font-size:22px}</style></head><body>
+ return `<!DOCTYPE html><html lang="ru"><head><meta charset="utf-8"><title>Отчёт центра карьеры НИУ ВШЭ</title><style>body{font:14px/1.55 system-ui,sans-serif;max-width:860px;margin:32px auto;padding:0 24px;color:#1B1F33}h1{font-size:22px}h2{font-size:16px;margin-top:26px;color:#3B47E0}table{border-collapse:collapse;width:100%}td,th{border-bottom:1px solid #E2E6F0;padding:6px 8px;text-align:left}th{font-size:12px;color:#6A7090}.k{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}table{display:block;overflow-x:auto}.k div{border:1px solid #E2E6F0;border-radius:10px;padding:10px}.k b{display:block;font-size:22px}</style></head><body>
  <p style="color:#6A7090">НИУ ВШЭ · ${UNI.unit} · сформировано ${todayStr()} на платформе ${BRAND}</p><h1>Карьерная готовность студентов: осенний семестр 2026</h1>
  <div class="k"><div><b>${fmt(1240)}</b>студентов на платформе</div><div><b>${fmt(3860+fresh)}</b>подтверждённых навыков</div><div><b>${fmt(612+doneProjects().length)}</b>проектов с компаниями</div><div><b>${fmt(184+inv)}</b>приглашений на интервью</div></div>
  <h2>Образовательные программы</h2><table><tr><th>Программа</th><th>Студентов</th><th>Средняя готовность</th><th>Стажировки</th></tr>${UNI.programs.map(r=>row([r[0],r[1],r[2]+'%',r[3]])).join('')}</table>
@@ -4151,6 +4209,11 @@ landingInit=function(){_landingInit();const lp=$('.lp3');if(!lp)return;
  let bar=$('#lpSticky');if(!bar){lp.insertAdjacentHTML('beforeend',`<div class="lp-sticky" id="lpSticky"><button class="btn btn-p btn-lg" data-go="auth-student">Начать бесплатно</button><button class="btn btn-s btn-lg" data-act="demoLogin" aria-label="Открыть демо">Демо</button></div>`);bar=$('#lpSticky')}
  const hero=$('#h3'),fin=$('.fin3');const f=()=>{if(!isM()){bar.classList.remove('on');return}const hb=hero?hero.getBoundingClientRect().bottom:0,ft=fin?fin.getBoundingClientRect().top:1e9;bar.classList.toggle('on',hb<60&&ft>innerHeight*.9)};
  window.addEventListener('scroll',f,{passive:true});L3.fns.push(['scroll',f]);f()};
+
+/* tables become stacked cards on phones: every cell gets its column name */
+function mTables(){$$('#view table.tbl:not(.tbl-x)').forEach(t=>{const heads=$$('thead th',t).map(h=>h.textContent.trim());
+ $$('tbody tr',t).forEach(tr=>[...tr.children].forEach((td,i)=>{if(td.colSpan>1)return;const l=i===0?'':heads[i]||'';if(td.dataset.l!==l)td.dataset.l=l}));t.classList.add('tbl-m')})}
+new MutationObserver(()=>{if(mTables.q)return;mTables.q=requestAnimationFrame(()=>{mTables.q=0;mTables()})}).observe(document.getElementById('view'),{childList:true,subtree:true});
 if(!location.hash)history.replaceState(null,'',S.authed?'#dashboard':'#welcome');
 render(true);
 </script>
