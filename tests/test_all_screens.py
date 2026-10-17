@@ -114,3 +114,29 @@ def test_phone_layout(phone, role, route):
     # таблицы на телефоне превращаются в карточки и не требуют прокрутки вбок
     wide = phone.val("[...document.querySelectorAll('#view table.tbl:not(.tbl-x)')].filter(t=>t.getBoundingClientRect().width>360).length")
     assert wide == 0
+
+
+@pytest.fixture
+def narrow(browser):
+    # 320 px — iPhone SE первого поколения и небольшие Android
+    import re as _re
+    from conftest import App, NO_VT
+    ctx = browser.new_context(viewport={"width": 320, "height": 640}, is_mobile=True, has_touch=True)
+    ctx.route(_re.compile(r"fonts\.(googleapis|gstatic)\.com"), lambda r: r.abort())
+    ctx.add_init_script(NO_VT)
+    a = App(ctx.new_page())
+    yield a
+    a.check()
+    ctx.close()
+
+
+@pytest.mark.parametrize("role,route", [("student", "project-p1"), ("student", "applications"), ("employer", "hiring"),
+                                        ("student", "interview"), ("student", "resume-versions")])
+def test_narrow_phone(narrow, role, route):
+    snap = snapshot(narrow)
+    load(narrow, snap, role, route)
+    assert narrow.val("document.documentElement.scrollWidth") <= 320
+    # доски откликов и найма идут столбиком, а не уходят вбок
+    assert narrow.val("[...document.querySelectorAll('#view .kb,#view .kan')].every(b=>getComputedStyle(b).flexDirection==='column')")
+    # переключатели переносятся на новую строку, ни один вариант не спрятан за краем
+    assert narrow.val("[...document.querySelectorAll('#view .seg button')].every(b=>{const r=b.getBoundingClientRect();return r.left>=0&&r.right<=320})")

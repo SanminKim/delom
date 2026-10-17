@@ -27,8 +27,12 @@ function mAfter(){
  // keep the active tab of any tab strip in view
  $$('#view .tabs, #view .seg').forEach(t=>{const on=$('.on',t);if(on&&t.scrollWidth>t.clientWidth)t.scrollLeft=on.offsetLeft-(t.clientWidth-on.offsetWidth)/2});
  // detail screens: primary action pinned above the tab bar
+ document.body.classList.remove('fab-away');
  const old=$('#mCta');if(old)old.remove();document.body.classList.remove('has-cta');
  const n=parse().n;if(!bare&&['project','job','workspace'].includes(n)){const b=$('#view aside .btn-lg');if(b){const w=document.createElement('div');w.id='mCta';w.className='m-cta';w.appendChild(b.cloneNode(true));w.firstChild.removeAttribute('id');document.body.appendChild(w);document.body.classList.add('has-cta')}}}
+/* assistant button steps aside while the page scrolls down and comes back on scroll up */
+(()=>{let y=scrollY;addEventListener('scroll',()=>{if(!isM())return;const ny=scrollY,d=ny-y;if(Math.abs(d)<10)return;
+ document.body.classList.toggle('fab-away',d>0&&ny>140&&ny<document.documentElement.scrollHeight-innerHeight-40);y=ny},{passive:true})})();
 const _afterRender=afterRender;
 afterRender=function(){_afterRender();mAfter()};
 MQ_M.addEventListener&&MQ_M.addEventListener('change',()=>{if(!BARE.includes(parse().n))render()});
@@ -72,5 +76,8 @@ landingInit=function(){_landingInit();const lp=$('.lp3');if(!lp)return;
 
 /* tables become stacked cards on phones: every cell gets its column name */
 function mTables(){$$('#view table.tbl:not(.tbl-x)').forEach(t=>{const heads=$$('thead th',t).map(h=>h.textContent.trim());
- $$('tbody tr',t).forEach(tr=>[...tr.children].forEach((td,i)=>{if(td.colSpan>1)return;const l=i===0?'':heads[i]||'';if(td.dataset.l!==l)td.dataset.l=l}));t.classList.add('tbl-m')})}
+ $$('tbody tr',t).forEach(tr=>{const cells=[...tr.children];
+  // a leading cell with only a checkbox is a row selector: it and the main cell after it need no column name
+  const sel=cells[0]&&cells[0].querySelector('input[type=checkbox]')&&!cells[0].textContent.trim();tr.classList.toggle('m-sel',!!sel);
+  cells.forEach((td,i)=>{if(td.colSpan>1)return;const l=(i===0||sel&&i===1)?'':heads[i]||'';if(td.dataset.l!==l)td.dataset.l=l})});t.classList.add('tbl-m')})}
 new MutationObserver(()=>{if(mTables.q)return;mTables.q=requestAnimationFrame(()=>{mTables.q=0;mTables()})}).observe(document.getElementById('view'),{childList:true,subtree:true});

@@ -1206,6 +1206,57 @@ html:has(#modalRoot .scrim){overflow:hidden}
  /* the main onboarding button stays in view while the list of professions scrolls */
  .onb-r [data-act="startGoal"],.onb-r [data-act="onbSkillsOk"]{position:sticky;bottom:calc(10px + env(safe-area-inset-bottom,0px));z-index:2;box-shadow:0 0 0 10px var(--surface),0 -14px 18px 6px var(--surface)}
 }
+@media (max-width:720px){
+ /* ===== polish after the second phone audit ===== */
+ /* assistant button: smaller, under menus and sheets, steps aside while typing or scrolling down */
+ .fab{width:48px!important;height:48px!important;z-index:29;transition:transform .28s cubic-bezier(.2,.9,.25,1),opacity .2s}
+ body.fab-away .fab{transform:translateY(160px);opacity:0;pointer-events:none}
+ body:has(#modalRoot .scrim) .fab,body:has(.topbar .pop) .fab,body:has(#view input:not([type=checkbox]):not([type=range]):focus,#view textarea:focus) .fab{opacity:0;pointer-events:none}
+ /* boards: stages go one under another instead of sideways */
+ .kb,.kan{display:flex!important;flex-direction:column;overflow:visible;margin-inline:0;padding-inline:0;scroll-snap-type:none;gap:12px}
+ .kb-col,.kan-col{min-height:0;width:100%}
+ .kb-empty{padding:12px}
+ /* segmented controls wrap instead of hiding options behind the edge */
+ .seg{flex-wrap:wrap!important;overflow:visible;max-width:100%}
+ .seg button{flex:1 1 auto;white-space:normal;text-align:center}
+ /* scale captions (min · note · max): the note moves under the ends */
+ .row.between.xs:has(>span:nth-child(3)){flex-wrap:wrap;row-gap:2px}
+ .row.between.xs:has(>span:nth-child(3))>span:nth-child(2){order:3;flex-basis:100%;text-align:center}
+ /* stat cards: icon stays in the corner */
+ .kpi>.row.between{flex-wrap:nowrap;align-items:flex-start;gap:8px}
+ .kpi>.row.between>:first-child{min-width:0}
+ /* people lists: avatar at the top of the card */
+ .cand{align-items:start}
+ /* confirmed skills: status under the name, the name gets the full width */
+ .newskill{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center}
+ .newskill>.pill{grid-column:2;justify-self:start;margin-top:-4px}
+ /* resume version: vacancy picker and button stack */
+ .row:has(>#ver-job){flex-wrap:wrap}.row>#ver-job{flex:1 1 100%}.row:has(>#ver-job)>.btn{flex:1 1 100%}
+ /* comparison tables that scroll sideways keep the first column in place */
+ .tbl-x th:first-child,.tbl-x td:first-child{position:sticky;left:0;background:var(--surface);z-index:1;box-shadow:1px 0 0 var(--border)}
+ /* rows with a selection checkbox: checkbox and name on one line */
+ .tbl-m tr.m-sel{display:grid;grid-template-columns:auto minmax(0,1fr);column-gap:12px;align-items:center}
+ .tbl-m tr.m-sel>td{grid-column:1/-1}
+ .tbl-m tr.m-sel>td:first-child{grid-column:1;width:auto;padding:0}
+ .tbl-m tr.m-sel>td:nth-child(2){grid-column:2;padding-bottom:6px}
+ /* comfortable touch targets at phone width */
+ .tick{width:30px;height:30px}
+ .stars button{padding:6px}
+ input[type=checkbox],input[type=radio]{width:20px;height:20px;flex:none;accent-color:var(--accent)}
+ .linkish{min-height:36px;display:inline-flex;align-items:center}
+ .icon-btn{min-width:40px;min-height:40px}
+ /* nothing below 11px */
+ .new-tag{font-size:11px}
+ .label{font-size:11.5px}
+}
+@media (max-width:720px){
+ /* long Russian words in headings break with a hyphen instead of widening the page */
+ .view h1,.view h2,.view h3{overflow-wrap:break-word;hyphens:auto;-webkit-hyphens:auto}
+}
+@media (max-width:720px){
+ /* the demo role switch lives in the "More" sheet; the top bar keeps search, notifications and profile */
+ .topbar .role-btn{display:none}
+}
 </style>
 </head>
 <body>
@@ -4180,8 +4231,12 @@ function mAfter(){
  // keep the active tab of any tab strip in view
  $$('#view .tabs, #view .seg').forEach(t=>{const on=$('.on',t);if(on&&t.scrollWidth>t.clientWidth)t.scrollLeft=on.offsetLeft-(t.clientWidth-on.offsetWidth)/2});
  // detail screens: primary action pinned above the tab bar
+ document.body.classList.remove('fab-away');
  const old=$('#mCta');if(old)old.remove();document.body.classList.remove('has-cta');
  const n=parse().n;if(!bare&&['project','job','workspace'].includes(n)){const b=$('#view aside .btn-lg');if(b){const w=document.createElement('div');w.id='mCta';w.className='m-cta';w.appendChild(b.cloneNode(true));w.firstChild.removeAttribute('id');document.body.appendChild(w);document.body.classList.add('has-cta')}}}
+/* assistant button steps aside while the page scrolls down and comes back on scroll up */
+(()=>{let y=scrollY;addEventListener('scroll',()=>{if(!isM())return;const ny=scrollY,d=ny-y;if(Math.abs(d)<10)return;
+ document.body.classList.toggle('fab-away',d>0&&ny>140&&ny<document.documentElement.scrollHeight-innerHeight-40);y=ny},{passive:true})})();
 const _afterRender=afterRender;
 afterRender=function(){_afterRender();mAfter()};
 MQ_M.addEventListener&&MQ_M.addEventListener('change',()=>{if(!BARE.includes(parse().n))render()});
@@ -4225,7 +4280,10 @@ landingInit=function(){_landingInit();const lp=$('.lp3');if(!lp)return;
 
 /* tables become stacked cards on phones: every cell gets its column name */
 function mTables(){$$('#view table.tbl:not(.tbl-x)').forEach(t=>{const heads=$$('thead th',t).map(h=>h.textContent.trim());
- $$('tbody tr',t).forEach(tr=>[...tr.children].forEach((td,i)=>{if(td.colSpan>1)return;const l=i===0?'':heads[i]||'';if(td.dataset.l!==l)td.dataset.l=l}));t.classList.add('tbl-m')})}
+ $$('tbody tr',t).forEach(tr=>{const cells=[...tr.children];
+  // a leading cell with only a checkbox is a row selector: it and the main cell after it need no column name
+  const sel=cells[0]&&cells[0].querySelector('input[type=checkbox]')&&!cells[0].textContent.trim();tr.classList.toggle('m-sel',!!sel);
+  cells.forEach((td,i)=>{if(td.colSpan>1)return;const l=(i===0||sel&&i===1)?'':heads[i]||'';if(td.dataset.l!==l)td.dataset.l=l})});t.classList.add('tbl-m')})}
 new MutationObserver(()=>{if(mTables.q)return;mTables.q=requestAnimationFrame(()=>{mTables.q=0;mTables()})}).observe(document.getElementById('view'),{childList:true,subtree:true});
 if(!location.hash)history.replaceState(null,'',S.authed?'#dashboard':'#welcome');
 render(true);
